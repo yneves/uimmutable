@@ -10,7 +10,9 @@
 
 module.exports = {
   React: require("react-immutable"),
+  ReactDOM: require("react-dom"),
   Immutable: require("immutable"),
+  classNames: require("classnames"),
   Button: require("./components/Button.jsx"),
   ButtonGroup: require("./components/ButtonGroup.jsx"),
   Checkbox: require("./components/Checkbox.jsx"),

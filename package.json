@@ -26,6 +26,7 @@
     "jsdom": "^7.0.2",
     "mocha-jsdom": "^1.0.0",
     "react-addons-test-utils": "*",
+    "react-dom": "^0.14.3",
     "react-immutable": "*",
     "react-tools": "*"
   },

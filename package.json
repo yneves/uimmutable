@@ -1,0 +1,29 @@
+{
+  "name": "uimmutable",
+  "version": "0.1.0",
+  "description": "React components with Immutable powers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/yneves/uimmutable.git"
+  },
+  "keywords": [
+    "react",
+    "immutable"
+  ],
+  "author": "Yuri Neves Silveira",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yneves/uimmutable/issues"
+  },
+  "homepage": "https://github.com/yneves/uimmutable#readme",
+  "dependencies": {
+    
+  },
+  "devDependencies": {
+    "mocha": "^2.3.3"
+  }
+}

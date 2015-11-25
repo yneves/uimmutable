@@ -30,6 +30,7 @@ var List = React.createClass({
     name: React.PropTypes.string.isRequired,
     rows: React.PropTypes.List.isRequired,
     columns: React.PropTypes.List.isRequired,
+    emptyText: React.PropTypes.any,
     onClick: React.PropTypes.func,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
@@ -119,17 +120,28 @@ var List = React.createClass({
     var classes = { list: true };
     classes[this.props.className] = !!this.props.className;
     
-    return (
-      <div data-list-name={this.props.name} className={classNames(classes)}>
-        
-        <div className="list-head list-row">
+    var content;
+    
+    if (this.props.rows.size > 0) {
+      content = [
+        <div key="head" className="list-head list-row">
           {this.props.columns.map(this.renderHeadCol)}
         </div>
-        
-        <div className="list-body">
+        ,
+        <div key="body" className="list-body">
           {this.props.rows.map(this.renderRow)}
         </div>
-        
+      ];
+      
+    } else {
+      content = (
+        <div className="list-empty">{this.props.emptyText}</div>
+      )
+    }
+    
+    return (
+      <div data-list-name={this.props.name} className={classNames(classes)}>
+        {content}
       </div>
     );
   },

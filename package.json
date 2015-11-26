@@ -21,9 +21,9 @@
   },
   "homepage": "https://github.com/yneves/uimmutable#readme",
   "dependencies": {
-    "classnames": "*",
+    "classnames": "^2.2.1",
     "immutable": "^3.7.5",
-    "jsdom": "^7.0.2",
+    "jsdom": "^7.1.0",
     "mocha-jsdom": "^1.0.0",
     "react-addons-test-utils": "*",
     "react-dom": "^0.14.3",

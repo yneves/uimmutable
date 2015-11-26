@@ -1,6 +1,6 @@
 {
   "name": "uimmutable",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "React components with Immutable powers.",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,11 @@
     "react",
     "immutable"
   ],
-  "author": "Yuri Neves Silveira",
+  "author": {
+    "name": "Yuri Neves Silveira",
+    "url": "http://yneves.com/",
+    "email": "yurinevessilveira@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/yneves/uimmutable/issues"
@@ -27,7 +31,7 @@
     "mocha-jsdom": "^1.0.0",
     "react-addons-test-utils": "*",
     "react-dom": "^0.14.3",
-    "react-immutable": "*",
+    "react-immutable": "^0.1.1",
     "react-tools": "*"
   },
   "devDependencies": {

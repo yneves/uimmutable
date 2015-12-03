@@ -18,6 +18,7 @@ var Menu = require("./Menu.jsx");
 var Value = require("./Value.jsx");
 var Button = require("./Button.jsx");
 var LinkButton = require("./LinkButton.jsx");
+var IconButton = require("./IconButton.jsx");
 var SelectButton = require("./SelectButton.jsx");
 var Renderer = require("./Renderer.jsx");
 
@@ -43,6 +44,7 @@ var Toolbar = React.createClass({
         Link: Link,
         Value: Value,
         Button: Button,
+        IconButton: IconButton,
         LinkButton: LinkButton,
         SelectButton: SelectButton
       })

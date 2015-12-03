@@ -54,7 +54,6 @@ var List = React.createClass({
   },
   
   handleClick: function(row, column, event) {
-    event.event.stopPropagation();
     if (this.props.onClick) {
       event.row = row;
       event.column = column;

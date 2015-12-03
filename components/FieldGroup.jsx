@@ -21,10 +21,17 @@ var FieldGroup = React.createClass({
   propTypes: {
     path: React.PropTypes.List.isRequired,
     types: React.PropTypes.object.isRequired,
+    collapsed: React.PropTypes.bool.isRequired,
     fields: React.PropTypes.List.isRequired,
     values: React.PropTypes.Map.isRequired,
     extraProps: React.PropTypes.object,
     className: React.PropTypes.string
+  },
+  
+  getDefaultProps: function() {
+    return {
+      collapsed: false
+    };
   },
   
   renderField: function(field, index) {
@@ -45,8 +52,13 @@ var FieldGroup = React.createClass({
     var classes = { "field-group": true };
     classes[this.props.className] = !!this.props.className;
     
+    var style = {};
+    if (this.props.collapsed) {
+      style.display = "none";
+    }
+    
     return (
-      <div className={classNames(classes)}>
+      <div className={classNames(classes)} style={style}>
         {this.props.fields.map(this.renderField)}
       </div>
     );

@@ -55,6 +55,7 @@ var SelectButton = React.createClass({
   
   handleClick: function(option, event) {
     event.stopPropagation();
+    this.setState({ showOptions: !this.state.showOptions });
     if (this.props.onChange) {
       this.props.onChange({
         name: this.props.name,
@@ -64,7 +65,17 @@ var SelectButton = React.createClass({
         event: event
       });
     }
-    this.setState({ showOptions: !this.state.showOptions });
+  },
+  
+  handleClickValue: function(event) {
+    if (this.props.onClick) {
+      this.props.onClick({
+        name: this.props.name,
+        path: this.props.path,
+        value: this.props.value,
+        event: event
+      });
+    }
   },
   
   renderOption: function(option, index) {
@@ -112,6 +123,7 @@ var SelectButton = React.createClass({
     
     return (
       <Value
+        onClick={this.handleClickValue}
         className={classNames(classes)}
         path={this.props.path}
         name={this.props.name}

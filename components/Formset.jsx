@@ -36,6 +36,7 @@ var Formset = React.createClass({
     fields: React.PropTypes.List.isRequired,
     values: React.PropTypes.Map.isRequired,
     input: React.PropTypes.bool.isRequired,
+    collapsible: React.PropTypes.bool.isRequired,
     onClick: React.PropTypes.func,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
@@ -43,6 +44,7 @@ var Formset = React.createClass({
   
   getDefaultProps: function() {
     return {
+      collapsible: false,
       input: true,
       path: Immutable.List(),
       types: Immutable.Map({
@@ -60,6 +62,20 @@ var Formset = React.createClass({
     };
   },
   
+  getInitialState: function() {
+    return {
+      collapsed: false
+    };
+  },
+  
+  handleClickTitle: function() {
+    if (this.props.collapsible) {
+      this.setState({
+        collapsed: !this.state.collapsed
+      });
+    }
+  },
+  
   render: function() {
     
     var classes = { formset: true };
@@ -74,7 +90,7 @@ var Formset = React.createClass({
     var title;
     if (this.props.label) {
       title = (
-        <h1 className="title">
+        <h1 className="title" onClick={this.handleClickTitle}>
           <span>{this.props.label}</span>
         </h1>
       );
@@ -88,7 +104,8 @@ var Formset = React.createClass({
           types={this.props.types}
           fields={this.props.fields}
           values={this.props.values}
-          extraProps={extraProps} />
+          extraProps={extraProps}
+          collapsed={this.state.collapsed} />
       </div>
     );
   },

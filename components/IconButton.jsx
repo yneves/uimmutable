@@ -12,11 +12,11 @@ var React = require("react-immutable");
 var Immutable = require("immutable");
 var classNames = require("classnames");
 
-var Link = require("./Link.jsx");
+var Icon = require("./Icon.jsx");
 
 // - -------------------------------------------------------------------- - //
 
-var LinkButton = React.createClass({
+var IconButton = React.createClass({
   
   statics: {
     
@@ -25,8 +25,7 @@ var LinkButton = React.createClass({
       return {
         path: path,
         name: field.get("name"),
-        href: field.get("href"),
-        label: field.get("label"),
+        icon: field.get("icon"),
         disabled: field.get("disabled"),
         className: field.get("className")
       };
@@ -36,7 +35,7 @@ var LinkButton = React.createClass({
   propTypes: {
     path: React.PropTypes.List.isRequired,
     name: React.PropTypes.string.isRequired,
-    label: React.PropTypes.string.isRequired,
+    icon: React.PropTypes.string.isRequired,
     disabled: React.PropTypes.bool.isRequired,
     onClick: React.PropTypes.func,
     className: React.PropTypes.string
@@ -60,14 +59,13 @@ var LinkButton = React.createClass({
   
   render: function() {
     
-    var classes = { button: true, "link-button": true };
+    var classes = { "icon-button": true };
     classes[this.props.className] = !!this.props.className;
     
     return (
-      <Link
+      <Icon
         name={this.props.name}
-        href={this.props.href}
-        label={this.props.label}
+        icon={this.props.icon}
         className={classNames(classes)}
         data-button-name={this.props.name}
         disabled={this.props.disabled}
@@ -79,6 +77,6 @@ var LinkButton = React.createClass({
 
 // - -------------------------------------------------------------------- - //
 
-module.exports = LinkButton;
+module.exports = IconButton;
 
 // - -------------------------------------------------------------------- - //

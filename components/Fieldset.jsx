@@ -40,9 +40,30 @@ var Fieldset = React.createClass({
     label: React.PropTypes.string.isRequired,
     fields: React.PropTypes.List.isRequired,
     values: React.PropTypes.Map.isRequired,
+    collapsible: React.PropTypes.bool.isRequired,
     input: React.PropTypes.bool.isRequired,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
+  },
+  
+  getDefaultProps: function() {
+    return {
+      collapsible: false
+    };
+  },
+  
+  getInitialState: function() {
+    return {
+      collapsed: false
+    };
+  },
+  
+  handleClickLegend: function() {
+    if (this.props.collapsible) {
+      this.setState({
+        collapsed: !this.state.collapsed
+      });
+    }
   },
   
   render: function() {
@@ -59,13 +80,16 @@ var Fieldset = React.createClass({
     return (
       <div data-field-name={this.props.name} className={classNames(classes)}>
         <fieldset>
-          <legend>{this.props.label}</legend>
+          <legend onClick={this.handleClickLegend}>
+            {this.props.label}
+          </legend>
           <FieldGroup
             path={this.props.path}
             types={this.props.types}
             fields={this.props.fields}
             values={this.props.values} 
-            extraProps={extraProps} />
+            extraProps={extraProps}
+            collapsed={this.state.collapsed} />
         </fieldset>
       </div>
     );

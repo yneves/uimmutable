@@ -37,7 +37,8 @@ var Value = React.createClass({
     name: React.PropTypes.string,
     value: React.PropTypes.any,
     format: React.PropTypes.string,
-    className: React.PropTypes.string
+    className: React.PropTypes.string,
+    onClick: React.PropTypes.func
   },
   
   render: function() {
@@ -64,7 +65,7 @@ var Value = React.createClass({
     }
     
     return (
-      <div className={classNames(classes)}>
+      <div className={classNames(classes)} onClick={this.props.onClick}>
         {value}
       </div>
     );

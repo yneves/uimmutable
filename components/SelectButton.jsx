@@ -27,6 +27,8 @@ var SelectButton = React.createClass({
         path: path,
         name: field.get("name"),
         options: field.get("options"),
+        disabled: field.get("disabled"),
+        disabledValue: field.get("disabledValue"),
         className: field.get("className"),
         value: values.getIn(path)
       };
@@ -37,6 +39,8 @@ var SelectButton = React.createClass({
     path: React.PropTypes.List.isRequired,
     name: React.PropTypes.string.isRequired,
     options: React.PropTypes.List.isRequired,
+    disabled: React.PropTypes.bool.isRequired,
+    disabledValue: React.PropTypes.any,
     value: React.PropTypes.any,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
@@ -48,12 +52,18 @@ var SelectButton = React.createClass({
     };
   },
   
+  getDefaultProps: function() {
+    return {
+      disabled: false
+    };
+  },
+  
   handleClickCaret: function(event) {
     event.event.stopPropagation();
     this.setState({ showOptions: !this.state.showOptions });
   },
   
-  handleClick: function(option, event) {
+  handleClickOption: function(option, event) {
     event.stopPropagation();
     this.setState({ showOptions: !this.state.showOptions });
     if (this.props.onChange) {
@@ -85,10 +95,14 @@ var SelectButton = React.createClass({
     classes[option.get("className")] = !!option.get("className");
     
     return (
-      <li key={index} className={classNames(classes)} onClick={this.handleClick.bind(this, option)}>
+      <li key={index} className={classNames(classes)} onClick={this.handleClickOption.bind(this, option)}>
         {option.get("label")}
       </li>
     );
+  },
+  
+  isDisabled: function() {
+    return (this.props.disabled || this.props.value === this.props.disabledValue);
   },
   
   getSelectedOption: function() {
@@ -131,20 +145,30 @@ var SelectButton = React.createClass({
     );
   },
   
+  renderOptions: function() {
+    if (!this.isDisabled()) {
+      return ([
+        <Icon key="icon" name="caret-down" onClick={this.handleClickCaret} />
+        ,
+        <ul key="list">
+          {this.props.options.map(this.renderOption)}
+        </ul>
+      ]);
+    }
+  },
+  
   render: function() {
     
     var classes = {};
     classes["select-button"] = true;
     classes["show-options"] = this.state.showOptions;
+    classes["disabled"] = this.isDisabled();
     classes[this.props.className] = !!this.props.className;
     
     return (
       <button data-button-name={this.props.name} className={classNames(classes)} type="button">
         {this.renderSelectedOption()}
-        <Icon name="caret-down" onClick={this.handleClickCaret} />
-        <ul>
-          {this.props.options.map(this.renderOption)}
-        </ul>
+        {this.renderOptions()}
       </button>
     );
   },

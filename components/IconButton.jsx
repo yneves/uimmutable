@@ -43,6 +43,7 @@ var IconButton = React.createClass({
   
   getDefaultProps: function() {
     return {
+      path: Immutable.List(),
       disabled: false
     };
   },

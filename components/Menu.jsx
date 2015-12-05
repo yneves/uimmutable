@@ -13,6 +13,7 @@ var classNames = require("classnames");
 
 var Link = require("./Link.jsx");
 var Icon = require("./Icon.jsx");
+var IconButton = require("./IconButton.jsx");
 
 // - -------------------------------------------------------------------- - //
 
@@ -25,6 +26,7 @@ var Menu = React.createClass({
         name: field.get("name"),
         icon: field.get("icon"),
         links: field.get("links"),
+        button: field.get("button"),
         className: field.get("className")
       };
     }
@@ -34,12 +36,14 @@ var Menu = React.createClass({
     name: React.PropTypes.string.isRequired,
     icon: React.PropTypes.string.isRequired,
     links: React.PropTypes.List.isRequired,
+    button: React.PropTypes.bool.isRequired,
     className: React.PropTypes.string
   },
   
   getDefaultProps: function() {
     return {
-      icon: "bars"
+      icon: "bars",
+      button: false
     };
   },
   
@@ -64,12 +68,27 @@ var Menu = React.createClass({
     );
   },
   
+  renderIcon: function() {
+    if (this.props.button) {
+      return (
+        <IconButton
+          name={this.props.icon}
+          icon={this.props.icon}
+          onClick={this.handleClick} />
+      );
+    } else {
+      return (
+        <Icon name={this.props.icon} onClick={this.handleClick} />
+      );
+    }
+  },
+  
   render: function() {
     var classes = { menu: true, show: this.state.showMenu };
     
     return (
       <div className={classNames(classes)}>
-        <Icon name={this.props.icon} onClick={this.handleClick} />
+        {this.renderIcon()}
         <ul>
           {this.props.links.map(this.renderLink)}
         </ul>

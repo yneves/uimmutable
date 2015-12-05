@@ -20,6 +20,7 @@ var LinkButton = require("./LinkButton.jsx");
 var SelectButton = require("./SelectButton.jsx");
 var Value = require("./Value.jsx");
 var Renderer = require("./Renderer.jsx");
+var Paginator = require("./Paginator.jsx");
 
 // - -------------------------------------------------------------------- - //
 
@@ -28,8 +29,9 @@ var List = React.createClass({
   propTypes: {
     path: React.PropTypes.List.isRequired,
     name: React.PropTypes.string.isRequired,
-    rows: React.PropTypes.List.isRequired,
+    data: React.PropTypes.Map.isRequired,
     columns: React.PropTypes.List.isRequired,
+    pageUrl: React.PropTypes.string,
     emptyText: React.PropTypes.any,
     onClick: React.PropTypes.func,
     onChange: React.PropTypes.func,
@@ -38,8 +40,8 @@ var List = React.createClass({
   
   getDefaultProps: function() {
     return {
+      data: Immutable.Map(),
       path: Immutable.List(),
-      rows: Immutable.List(),
       columns: Immutable.List(),
       types: Immutable.Map({
         Icon: Icon,
@@ -121,16 +123,31 @@ var List = React.createClass({
     
     var content;
     
-    if (this.props.rows.size > 0) {
+    var rows = this.props.data.get("rows");
+    var count = Number(this.props.data.get("count")) || rows.size;
+    var page = count > 0 ? Number(this.props.data.get("page")) || 1 : 0;
+    var pages = count > 0 ? Number(this.props.data.get("pages")) || 1 : 0;
+    
+    if (count > 0) {
       content = [
         <div key="head" className="list-head list-row">
           {this.props.columns.map(this.renderHeadCol)}
         </div>
         ,
         <div key="body" className="list-body">
-          {this.props.rows.map(this.renderRow)}
+          {rows.map(this.renderRow)}
         </div>
       ];
+      
+      if (pages > 1) {
+        content.push(
+          <Paginator
+            key="pages"
+            page={page}
+            pages={pages}
+            pageUrl={this.props.pageUrl} />
+        );
+      }
       
     } else {
       content = (

@@ -41,7 +41,8 @@ module.exports = {
   TextField: require("./components/TextField.jsx"),
   TimeField: require("./components/TimeField.jsx"),
   Toolbar: require("./components/Toolbar.jsx"),
-  Value: require("./components/Value.jsx")
+  Value: require("./components/Value.jsx"),
+  Paginator: require("./components/Paginator.jsx")
 };
 
 // - -------------------------------------------------------------------- - //

@@ -28,6 +28,7 @@ var TextField = React.createClass({
         name: field.get("name"),
         label: field.get("label"),
         className: field.get("className"),
+        options: field.get("options"),
         value: values.getIn(path)
       };
     }
@@ -39,6 +40,7 @@ var TextField = React.createClass({
     label: React.PropTypes.string.isRequired,
     input: React.PropTypes.bool.isRequired,
     value: React.PropTypes.any,
+    options: React.PropTypes.List,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
   },
@@ -51,6 +53,24 @@ var TextField = React.createClass({
         value: this.refs.input.value,
         event: event
       });
+    }
+  },
+  
+  getId: function() {
+    return this.props.path.toJS().join("-");
+  },
+  
+  renderOptions: function() {
+    if (this.props.input && this.props.options) {
+      return (
+        <datalist id={this.getId() + "-options"}>
+          {this.props.options.map(function(option, index) {
+            return (
+              <option key={index} value={option}>{option}</option>
+            );
+          })}
+        </datalist>
+      )
     }
   },
   
@@ -68,6 +88,7 @@ var TextField = React.createClass({
           ref="input"
           type="text"
           value={this.props.value}
+          list={this.getId() + "-options"}
           onChange={this.handleChange} />
       );
       
@@ -88,6 +109,7 @@ var TextField = React.createClass({
         className={classNames(classes)}>
         
         {content}
+        {this.renderOptions()}
       </Field>
     );
   },

@@ -51,8 +51,8 @@ var Paginator = React.createClass({
     
     var previous = current > 1;
     var next = current < pages;
-    var first = Math.max(1, pages + this.props.firstPage);
-    var last = Math.min(pages, current + this.props.lastPage );
+    var first = Math.max(1, current + this.props.firstPage);
+    var last = Math.min(pages, current + this.props.lastPage);
     
     if (previous) {
       parts.push(

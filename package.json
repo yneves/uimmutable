@@ -1,6 +1,6 @@
 {
   "name": "uimmutable",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "React components with Immutable powers.",
   "main": "index.js",
   "scripts": {

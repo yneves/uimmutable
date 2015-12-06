@@ -28,7 +28,7 @@ var SelectButton = React.createClass({
         name: field.get("name"),
         options: field.get("options"),
         disabled: field.get("disabled"),
-        disabledValue: field.get("disabledValue"),
+        disabledValues: field.get("disabledValue"),
         className: field.get("className"),
         value: values.getIn(path)
       };
@@ -40,7 +40,7 @@ var SelectButton = React.createClass({
     name: React.PropTypes.string.isRequired,
     options: React.PropTypes.List.isRequired,
     disabled: React.PropTypes.bool.isRequired,
-    disabledValue: React.PropTypes.any,
+    disabledValues: React.PropTypes.List,
     value: React.PropTypes.any,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
@@ -102,7 +102,9 @@ var SelectButton = React.createClass({
   },
   
   isDisabled: function() {
-    return (this.props.disabled || this.props.value === this.props.disabledValue);
+    return this.props.disabled || (this.props.disabledValues ? 
+      this.props.disabledValues.indexOf(this.props.value) !== -1 : 
+      false);
   },
   
   getSelectedOption: function() {

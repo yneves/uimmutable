@@ -41,6 +41,12 @@ var PasswordField = React.createClass({
     className: React.PropTypes.string
   },
   
+  componentDidUpdate: function() {
+    if (this.props.empty) {
+      this.refs.input.value = "";
+    }
+  },
+  
   handleChange: function(event) {
     if (this.props.onChange) {
       this.props.onChange({
@@ -62,8 +68,7 @@ var PasswordField = React.createClass({
       <input
         ref="input"
         type="password"
-        onChange={this.handleChange}
-        {...(this.props.empty ? { value: "" } : {})} />
+        onChange={this.handleChange} />
     );
     
     return (

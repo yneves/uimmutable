@@ -11,6 +11,7 @@
 module.exports = {
   React: require("react-immutable"),
   ReactDOM: require("react-dom"),
+  ReactCSSTransitionGroup: require("react-addons-css-transition-group"),
   Immutable: require("immutable"),
   classNames: require("classnames"),
   Button: require("./components/Button.jsx"),

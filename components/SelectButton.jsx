@@ -28,7 +28,7 @@ var SelectButton = React.createClass({
         name: field.get("name"),
         options: field.get("options"),
         disabled: field.get("disabled"),
-        disabledValues: field.get("disabledValue"),
+        disabledValues: field.get("disabledValues"),
         className: field.get("className"),
         value: values.getIn(path)
       };

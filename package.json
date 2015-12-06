@@ -1,6 +1,6 @@
 {
   "name": "uimmutable",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "React components with Immutable powers.",
   "main": "index.js",
   "scripts": {
@@ -27,8 +27,9 @@
   "dependencies": {
     "classnames": "^2.2.1",
     "immutable": "^3.7.5",
-    "jsdom": "^7.1.0",
+    "jsdom": "^7.1.1",
     "mocha-jsdom": "^1.0.0",
+    "react-addons-css-transition-group": "^0.14.3",
     "react-addons-test-utils": "*",
     "react-dom": "^0.14.3",
     "react-immutable": "^0.1.1",

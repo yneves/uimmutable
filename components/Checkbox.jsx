@@ -16,14 +16,43 @@ var classNames = require("classnames");
 
 var Checkbox = React.createClass({
   
+  statics: {
+    
+    pickProps: function(path, field, values) {
+      path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+      return {
+        path: path,
+        name: field.get("name"),
+        label: field.get("label"),
+        className: field.get("className"),
+        disabled: field.get("disabled"),
+        value: field.get("value"),
+        checked: !!values.getIn(path)
+      };
+    }
+  },
+  
   propTypes: {
     path: React.PropTypes.List.isRequired,
     name: React.PropTypes.string.isRequired,
     label: React.PropTypes.string.isRequired,
     checked: React.PropTypes.bool.isRequired,
+    onClick: React.PropTypes.func.isRequired,
     onChange: React.PropTypes.func.isRequired,
+    value: React.PropTypes.any,
     disabled: React.PropTypes.bool,
     className: React.PropTypes.string
+  },
+  
+  handleClick: function(event) {
+    if (this.props.onClick) {
+      this.props.onClick({
+        name: this.props.name,
+        path: this.props.path,
+        value: this.refs.input.checked,
+        event: event
+      });
+    }
   },
   
   handleChange: function(event) {
@@ -49,6 +78,8 @@ var Checkbox = React.createClass({
           name={this.props.name}
           checked={this.props.checked}
           disabled={this.props.disabled}
+          value={this.props.value}
+          onClick={this.handleClick}
           onChange={this.handleChange} />
         <span>{this.props.label}</span>
       </label>

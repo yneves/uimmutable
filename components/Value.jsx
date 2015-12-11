@@ -41,6 +41,17 @@ var Value = React.createClass({
     onClick: React.PropTypes.func
   },
   
+  handleClick: function(event) {
+    if (this.props.onClick) {
+      this.props.onClick({
+        name: this.props.name,
+        path: this.props.path,
+        value: this.props.value,
+        event: event
+      });
+    }
+  },
+  
   render: function() {
     
     var classes = { value: true };
@@ -65,7 +76,7 @@ var Value = React.createClass({
     }
     
     return (
-      <div className={classNames(classes)} onClick={this.props.onClick}>
+      <div className={classNames(classes)} onClick={this.handleClick}>
         {value}
       </div>
     );

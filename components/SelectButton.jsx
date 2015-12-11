@@ -30,6 +30,7 @@ var SelectButton = React.createClass({
         disabled: field.get("disabled"),
         disabledValues: field.get("disabledValues"),
         className: field.get("className"),
+        blankValue: field.get("blankValue"),
         value: values.getIn(path)
       };
     }
@@ -41,6 +42,7 @@ var SelectButton = React.createClass({
     options: React.PropTypes.List.isRequired,
     disabled: React.PropTypes.bool.isRequired,
     disabledValues: React.PropTypes.List,
+    blankValue: React.PropTypes.string,
     value: React.PropTypes.any,
     onChange: React.PropTypes.func,
     className: React.PropTypes.string
@@ -54,6 +56,7 @@ var SelectButton = React.createClass({
   
   getDefaultProps: function() {
     return {
+      path: Immutable.List(),
       disabled: false
     };
   },
@@ -88,6 +91,16 @@ var SelectButton = React.createClass({
     }
   },
   
+  renderIcon: function(option) {
+    var icon;
+    if (option.has("icon")) {
+      icon = (
+        <Icon key="icon" name={option.get("icon")} />
+      );
+    }
+    return icon;
+  },
+  
   renderOption: function(option, index) {
     
     var classes = {};
@@ -96,6 +109,7 @@ var SelectButton = React.createClass({
     
     return (
       <li key={index} className={classNames(classes)} onClick={this.handleClickOption.bind(this, option)}>
+        {this.renderIcon(option)}
         {option.get("label")}
       </li>
     );
@@ -131,10 +145,16 @@ var SelectButton = React.createClass({
     
     var selectedOption = this.getSelectedOption();
     var value;
+    var icon;
     
     if (selectedOption) {
       classes[selectedOption.get("className")] = !!selectedOption.get("className");
       value = selectedOption.get("selectedLabel") || selectedOption.get("label");
+      icon = this.renderIcon(selectedOption);
+      
+    } else if (this.props.blankValue) {
+      classes["select-button-blank"] = true;
+      value = this.props.blankValue;
     }
     
     return (
@@ -143,7 +163,7 @@ var SelectButton = React.createClass({
         className={classNames(classes)}
         path={this.props.path}
         name={this.props.name}
-        value={value} />
+        value={[icon, value]} />
     );
   },
   

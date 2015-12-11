@@ -66,6 +66,16 @@ var SelectField = React.createClass({
     );
   },
   
+  getSelectedLabel: function() {
+    var value = this.props.value;
+    var selected = this.props.options.find(function(option) {
+      return option.get("value") === value;
+    });
+    if (selected) {
+      return selected.get("label");
+    }
+  },
+  
   render: function() {
     
     var classes = {};
@@ -87,7 +97,7 @@ var SelectField = React.createClass({
           className="select-value"
           path={this.props.path}
           name={this.props.name}
-          value={this.props.value} />
+          value={this.getSelectedLabel()} />
       );
     }
     

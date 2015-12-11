@@ -26,6 +26,22 @@ var Renderer = require("./Renderer.jsx");
 
 var Toolbar = React.createClass({
   
+  statics: {
+    
+    pickProps: function(path, field, values) {
+      path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+      return {
+        path: path,
+        name: field.get("name"),
+        tools: field.get("tools"),
+        className: field.get("className"),
+        values: values,
+      };
+    },
+    
+    formatters: {}
+  },
+  
   propTypes: {
     path: React.PropTypes.List.isRequired,
     types: React.PropTypes.Map.isRequired,

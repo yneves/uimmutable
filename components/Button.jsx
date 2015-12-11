@@ -43,6 +43,7 @@ var Button = React.createClass({
   
   getDefaultProps: function() {
     return {
+      path: Immutable.List(),
       htmlType: "button",
       disabled: false
     };

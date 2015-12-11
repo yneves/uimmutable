@@ -75,7 +75,8 @@ var DateField = React.createClass({
           className="date-value"
           path={this.props.path}
           name={this.props.name}
-          value={this.props.value} />
+          value={this.props.value}
+          format="date" />
       );
     }
   

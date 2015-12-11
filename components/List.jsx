@@ -18,6 +18,7 @@ var Menu = require("./Menu.jsx");
 var Button = require("./Button.jsx");
 var LinkButton = require("./LinkButton.jsx");
 var SelectButton = require("./SelectButton.jsx");
+var Checkbox = require("./Checkbox.jsx");
 var Value = require("./Value.jsx");
 var Renderer = require("./Renderer.jsx");
 var Paginator = require("./Paginator.jsx");
@@ -31,6 +32,8 @@ var List = React.createClass({
     name: React.PropTypes.string.isRequired,
     data: React.PropTypes.Map.isRequired,
     columns: React.PropTypes.List.isRequired,
+    header: React.PropTypes.bool.isRequired,
+    footer: React.PropTypes.any,
     pageUrl: React.PropTypes.string,
     emptyText: React.PropTypes.any,
     onClick: React.PropTypes.func,
@@ -43,6 +46,7 @@ var List = React.createClass({
       data: Immutable.Map(),
       path: Immutable.List(),
       columns: Immutable.List(),
+      header: true,
       types: Immutable.Map({
         Icon: Icon,
         Menu: Menu,
@@ -50,7 +54,8 @@ var List = React.createClass({
         Value: Value,
         Button: Button,
         LinkButton: LinkButton,
-        SelectButton: SelectButton
+        SelectButton: SelectButton,
+        Checkbox: Checkbox
       })
     };
   },
@@ -129,15 +134,39 @@ var List = React.createClass({
     var pages = count > 0 ? Number(this.props.data.get("pages")) || 1 : 0;
     
     if (count > 0) {
-      content = [
-        <div key="head" className="list-head list-row">
-          {this.props.columns.map(this.renderHeadCol)}
-        </div>
-        ,
-        <div key="body" className="list-body">
+      
+      content = [];
+      
+      if (this.props.header === true) {
+        content.push(
+          <div key="head" className="list-head list-row">
+            {this.props.columns.map(this.renderHeadCol)}
+          </div>
+        );
+        
+      } else if (this.props.header) {
+        content.push(
+          <div key="head" className="list-head list-row">
+            {this.props.header}
+          </div>
+        );
+      }
+      
+      content.push(
+        <div key="body" className={classNames({"list-body": true, "no-foot": !this.props.footer }) }>
           {rows.map(this.renderRow)}
         </div>
-      ];
+      );
+      
+      if (this.props.footer) {
+        content.push(
+          <div key="foot" className="list-foot list-row">
+            <div className="list-column">
+              {this.props.footer}
+            </div>
+          </div>
+        );
+      }
       
       if (pages > 1) {
         content.push(

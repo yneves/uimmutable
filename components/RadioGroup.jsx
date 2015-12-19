@@ -14,6 +14,7 @@ var classNames = require("classnames");
 
 var Field = require("./Field.jsx");
 var Radio = require("./Radio.jsx");
+var Value = require("./Value.jsx");
 
 // - -------------------------------------------------------------------- - //
 
@@ -60,18 +61,43 @@ var RadioGroup = React.createClass({
     );
   },
   
+  getSelectedLabel: function() {
+    var value = this.props.value;
+    var selected = this.props.options.find(function(option) {
+      return option.get("value") === value;
+    });
+    if (selected) {
+      return selected.get("label");
+    }
+  },
+  
   render: function() {
     
     var classes = {};
     classes["radio-group"] = true;
     classes[this.props.className] = !!this.props.className;
+    
+    var content;
+    
+    if (this.props.input) {
+      content = this.props.options.map(this.renderRadio);
+      
+    } else {
+      content = (
+        <Value
+          className="radio-value"
+          path={this.props.path}
+          name={this.props.name}
+          value={this.getSelectedLabel()} />
+      );
+    }
   
     return (
       <Field ref="field"
         name={this.props.name}
         label={this.props.label}
         className={classNames(classes)}>
-        {this.props.options.map(this.renderRadio)}
+        {content}
       </Field>
     );
   },

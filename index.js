@@ -26,6 +26,7 @@ module.exports = {
   Formset: require("./components/Formset.jsx"),
   Icon: require("./components/Icon.jsx"),
   Link: require("./components/Link.jsx"),
+  LinkGroup: require("./components/LinkGroup.jsx"),
   LinkButton: require("./components/LinkButton.jsx"),
   List: require("./components/List.jsx"),
   Loading: require("./components/Loading.jsx"),

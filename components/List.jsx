@@ -68,14 +68,34 @@ var List = React.createClass({
     }
   },
   
-  handleClickRow: function(row, event) {
-    if (this.props.onClick) {
-      this.props.onClick({
-        name: this.props.name,
-        path: this.props.path,
-        row: row,
-        event: event
-      });
+  handleClickBody: function(event) {
+    
+    var target = event.target;
+    
+    while (!target.hasAttribute("data-row-index") || !target.hasAttribute("data-column-index")) {
+      target = target.parentNode;
+      if (target === document.body) {
+        break;
+      }
+    }
+    
+    if (target.hasAttribute("data-row-index") && target.hasAttribute("data-column-index")) {
+      
+      var rowIndex = Number(target.getAttribute("data-row-index"));
+      var colIndex = Number(target.getAttribute("data-column-index"));
+      
+      var row = this.props.data.getIn(["rows", rowIndex]);
+      var column = row.getIn(["columns", colIndex]);
+      
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          row: row,
+          column: column,
+          event: event
+        });
+      }
     }
   },
   
@@ -89,21 +109,29 @@ var List = React.createClass({
   
   renderHeadCol: function(column, index) {
     return (
-      <div key={index} data-column-name={column.get("name")} className="list-column">
+      <div key={index}
+        className="list-column"
+        data-column-index={index}
+        data-column-name={column.get("name")}>
         {column.get("label")}
       </div>
     );
   },
   
-  renderCol: function(row, column, index) {
+  renderCol: function(row, rowIndex, column, colIndex) {
+    
     var extraProps = {
       onClick: this.handleClick.bind(this, row, column),
       onChange: this.handleChange.bind(this, row, column)
     };
+    
     return (
-      <div key={index} data-column-name={column.get("name")} className="list-column">
+      <div key={colIndex}
+        className="list-column"
+        data-row-index={rowIndex}
+        data-column-index={colIndex}
+        data-column-name={column.get("name")}>
         <Renderer
-          key={index}
           path={this.props.path}
           field={column}
           values={row}
@@ -113,10 +141,21 @@ var List = React.createClass({
     );
   },
   
-  renderRow: function(row, index) {
+  renderRow: function(row, rowIndex) {
     return (
-      <div key={index} className="list-row" onClick={this.handleClickRow.bind(this, row)}>
-        {this.props.columns.map(this.renderCol.bind(this, row))}
+      <div key={rowIndex} className="list-row" data-row-index={rowIndex}>
+        {this.props.columns.map(function(column, colIndex) {
+          return this.renderCol(row, rowIndex, column, colIndex);
+        }, this)}
+      </div>
+    );
+  },
+  
+  renderBody: function() {
+    var classes = {"list-body": true, "no-foot": !this.props.footer };
+    return (
+      <div key="body" className={classNames(classes)} onClick={this.handleClickBody}>
+        {this.props.data.get("rows").map(this.renderRow)}
       </div>
     );
   },
@@ -152,11 +191,7 @@ var List = React.createClass({
         );
       }
       
-      content.push(
-        <div key="body" className={classNames({"list-body": true, "no-foot": !this.props.footer }) }>
-          {rows.map(this.renderRow)}
-        </div>
-      );
+      content.push(this.renderBody());
       
       if (this.props.footer) {
         content.push(

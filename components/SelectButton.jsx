@@ -68,15 +68,17 @@ var SelectButton = React.createClass({
   
   handleClickOption: function(option, event) {
     event.stopPropagation();
-    this.setState({ showOptions: !this.state.showOptions });
-    if (this.props.onChange) {
-      this.props.onChange({
-        name: this.props.name,
-        path: this.props.path,
-        value: option.get("value"),
-        option: option,
-        event: event
-      });
+    if (!option.get("disabled")) {
+      this.setState({ showOptions: !this.state.showOptions });
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: option.get("value"),
+          option: option,
+          event: event
+        });
+      }
     }
   },
   
@@ -105,6 +107,7 @@ var SelectButton = React.createClass({
     
     var classes = {};
     classes["select-button-option"] = true;
+    classes["disabled"] = !!option.get("disabled");
     classes[option.get("className")] = !!option.get("className");
     
     return (

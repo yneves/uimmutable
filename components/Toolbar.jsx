@@ -20,6 +20,7 @@ var Button = require("./Button.jsx");
 var LinkButton = require("./LinkButton.jsx");
 var IconButton = require("./IconButton.jsx");
 var SelectButton = require("./SelectButton.jsx");
+var LinkGroup = require("./LinkGroup.jsx");
 var Renderer = require("./Renderer.jsx");
 
 // - -------------------------------------------------------------------- - //
@@ -62,7 +63,8 @@ var Toolbar = React.createClass({
         Button: Button,
         IconButton: IconButton,
         LinkButton: LinkButton,
-        SelectButton: SelectButton
+        SelectButton: SelectButton,
+        LinkGroup: LinkGroup
       })
     };
   },

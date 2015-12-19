@@ -9,6 +9,7 @@
 "use strict";
 
 var React = require("react-immutable");
+var Immutable = require("immutable");
 var classNames = require("classnames");
 
 // - -------------------------------------------------------------------- - //
@@ -31,15 +32,26 @@ var Link = React.createClass({
   
   propTypes: {
     name: React.PropTypes.string,
+    path: React.PropTypes.List.isRequired,
     href: React.PropTypes.string.isRequired,
     label: React.PropTypes.string,
     onClick: React.PropTypes.func,
     className: React.PropTypes.string
   },
   
+  getDefaultProps: function() {
+    return {
+      path: Immutable.List()
+    };
+  },
+  
   handleClick: function(event) {
     if (this.props.onClick) {
-      this.props.onClick(event);
+      this.props.onClick({
+        name: this.props.name,
+        path: this.props.path,
+        event: event
+      });
     }
     if (Link.globalClickHandler) {
       Link.globalClickHandler(event, this.props.href);

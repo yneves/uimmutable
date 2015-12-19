@@ -12,13 +12,12 @@ var React = require("react-immutable");
 var Immutable = require("immutable");
 var classNames = require("classnames");
 
+var Link = require("./Link.jsx");
 var Icon = require("./Icon.jsx");
-var LinkGroup = require("./LinkGroup.jsx");
-var IconButton = require("./IconButton.jsx");
 
 // - -------------------------------------------------------------------- - //
 
-var Menu = React.createClass({
+var LinkGroup = React.createClass({
   
   statics: {
     
@@ -27,9 +26,7 @@ var Menu = React.createClass({
       return {
         path: path,
         name: field.get("name"),
-        icon: field.get("icon"),
         links: field.get("links"),
-        button: field.get("button"),
         className: field.get("className")
       };
     }
@@ -38,58 +35,46 @@ var Menu = React.createClass({
   propTypes: {
     path: React.PropTypes.List.isRequired,
     name: React.PropTypes.string.isRequired,
-    icon: React.PropTypes.string.isRequired,
     links: React.PropTypes.List.isRequired,
-    button: React.PropTypes.bool.isRequired,
     className: React.PropTypes.string
   },
   
   getDefaultProps: function() {
     return {
-      path: Immutable.List(),
-      icon: "bars",
-      button: false
+      path: Immutable.List()
     };
   },
   
-  getInitialState: function() {
-    return {
-      showMenu: false
-    };
-  },
-  
-  handleClick: function() {
-    this.setState({ showMenu: !this.state.showMenu });
-  },
-  
-  renderIcon: function() {
-    if (this.props.button) {
-      return (
-        <IconButton
-          name={this.props.icon}
-          icon={this.props.icon}
-          onClick={this.handleClick} />
-      );
-    } else {
-      return (
-        <Icon name={this.props.icon} onClick={this.handleClick} />
+  renderIcon: function(link) {
+    var icon;
+    if (link.has("icon")) {
+      icon = (
+        <Icon key="icon" name={link.get("icon")} />
       );
     }
+    return icon;
+  },
+  
+  renderLink: function(link, index) {
+    
+    return (
+      <li key={index}>
+        <Link name={link.get("name")} href={link.get("href")}>
+          {this.renderIcon(link)}
+          {link.get("label")}
+        </Link>
+      </li>
+    );
   },
   
   render: function() {
-    var classes = { menu: true, show: this.state.showMenu };
+    var classes = { "link-group": true };
     classes[this.props.className] = !!this.props.className;
     
     return (
-      <div className={classNames(classes)}>
-        {this.renderIcon()}
-        <LinkGroup
-          name={this.props.name + "-links"}
-          path={this.props.path.push("links")}
-          links={this.props.links}
-          className="menu-links" />
-      </div>
+      <ul className={classNames(classes)}>
+        {this.props.links.map(this.renderLink)}
+      </ul>
     );
   },
   
@@ -97,6 +82,6 @@ var Menu = React.createClass({
 
 // - -------------------------------------------------------------------- - //
 
-module.exports = Menu;
+module.exports = LinkGroup;
 
 // - -------------------------------------------------------------------- - //

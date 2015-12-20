@@ -8,17 +8,9 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
+var {React, Immutable, classNames, getComponents} = require("../libs.js");
 
-var Icon = require("./Icon.jsx");
-var Link = require("./Link.jsx");
-var Menu = require("./Menu.jsx");
-var Button = require("./Button.jsx");
-var LinkButton = require("./LinkButton.jsx");
-var SelectButton = require("./SelectButton.jsx");
-var Checkbox = require("./Checkbox.jsx");
-var Value = require("./Value.jsx");
-var Renderer = require("./Renderer.jsx");
+var Toolbar = require("./Toolbar.jsx");
 var Paginator = require("./Paginator.jsx");
 
 // - -------------------------------------------------------------------- - //
@@ -44,17 +36,7 @@ var List = React.createClass({
       data: Immutable.Map(),
       path: Immutable.List(),
       columns: Immutable.List(),
-      header: true,
-      types: Immutable.Map({
-        Icon: Icon,
-        Menu: Menu,
-        Link: Link,
-        Value: Value,
-        Button: Button,
-        LinkButton: LinkButton,
-        SelectButton: SelectButton,
-        Checkbox: Checkbox
-      })
+      header: true
     };
   },
   
@@ -118,10 +100,17 @@ var List = React.createClass({
   
   renderCol: function(row, rowIndex, column, colIndex) {
     
-    var extraProps = {
-      onClick: this.handleClick.bind(this, row, column),
-      onChange: this.handleChange.bind(this, row, column)
-    };
+    var Component = getComponents()[column.get("type")];
+    
+    if (!Component) {
+      throw new Error("unknown component type (" + column.get("type") + ")");
+    }
+    
+    if (!Component.pickProps) {
+      throw new Error("invalid component type (" + column.get("type") + ")");
+    }
+    
+    var props = Component.pickProps(this.props.path, column, row);
     
     return (
       <div key={colIndex}
@@ -129,12 +118,10 @@ var List = React.createClass({
         data-row-index={rowIndex}
         data-column-index={colIndex}
         data-column-name={column.get("name")}>
-        <Renderer
-          path={this.props.path}
-          field={column}
-          values={row}
-          types={this.props.types}
-          extraProps={extraProps} />
+        <Component
+          {...props}
+          onClick={this.handleClick.bind(this, row, column)}
+          onChange={this.handleChange.bind(this, row, column)} />
       </div>
     );
   },
@@ -181,6 +168,19 @@ var List = React.createClass({
           </div>
         );
         
+      } else if (Immutable.List.isList(this.props.header)) {
+        content.push(
+          <div key="head" className="list-head list-row">
+            <Toolbar
+              name="header"
+              path={this.props.path.push("header")}
+              tools={this.props.header}
+              values={this.props.data}
+              onClick={this.props.onClick}
+              onChange={this.props.onChange} />
+          </div>
+        );
+      
       } else if (this.props.header) {
         content.push(
           <div key="head" className="list-head list-row">
@@ -191,7 +191,20 @@ var List = React.createClass({
       
       content.push(this.renderBody());
       
-      if (this.props.footer) {
+    if (Immutable.List.isList(this.props.footer)) {
+      content.push(
+        <div key="foot" className="list-foot list-row">
+          <Toolbar
+            name="footer"
+            path={this.props.path.push("footer")}
+            tools={this.props.footer}
+            values={this.props.data}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange} />
+        </div>
+      );
+    
+    } else if (this.props.footer) {
         content.push(
           <div key="foot" className="list-foot list-row">
             <div className="list-column">

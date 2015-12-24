@@ -28,7 +28,8 @@ var List = React.createClass({
     emptyText: React.PropTypes.any,
     onClick: React.PropTypes.func,
     onChange: React.PropTypes.func,
-    className: React.PropTypes.string
+    className: React.PropTypes.string,
+    transformColumnsWith: React.PropTypes.func
   },
   
   getDefaultProps: function() {
@@ -127,9 +128,16 @@ var List = React.createClass({
   },
   
   renderRow: function(row, rowIndex) {
+    
+    var columns = this.props.columns;
+    
+    if (this.props.transformColumnsWith) {
+      columns = this.props.transformColumnsWith(columns, row);
+    }
+    
     return (
       <div key={rowIndex} className="list-row" data-row-index={rowIndex}>
-        {this.props.columns.map(function(column, colIndex) {
+        {columns.map(function(column, colIndex) {
           return this.renderCol(row, rowIndex, column, colIndex);
         }, this)}
       </div>

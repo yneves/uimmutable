@@ -38,11 +38,11 @@ var FieldGroup = React.createClass({
     var Component = getComponents()[field.get("type")];
     
     if (!Component) {
-      throw new Error("unknown component type (" + field.get("type") + ")");
+      console.error(new Error("unknown component type (" + tool.get("type") + ")"));
     }
     
     if (!Component.pickProps) {
-      throw new Error("invalid component type (" + field.get("type") + ")");
+      console.error(new Error("invalid component type (" + tool.get("type") + ")"));
     }
     
     var props = Component.pickProps(this.props.path, field, this.props.values);

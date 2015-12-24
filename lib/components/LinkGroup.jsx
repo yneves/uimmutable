@@ -39,7 +39,8 @@ var LinkGroup = React.createClass({
   
   getDefaultProps: function() {
     return {
-      path: Immutable.List()
+      path: Immutable.List(),
+      links: Immutable.List()
     };
   },
   

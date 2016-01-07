@@ -86,7 +86,7 @@ var SelectButton = React.createClass({
         name: this.props.name,
         path: this.props.path,
         value: this.props.value,
-        event: event
+        event: event.event
       });
     }
   },

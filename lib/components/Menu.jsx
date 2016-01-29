@@ -28,6 +28,7 @@ var Menu = React.createClass({
         icon: field.get("icon"),
         links: field.get("links"),
         button: field.get("button"),
+        counter: field.get("counter"),
         className: field.get("className")
       };
     }
@@ -39,6 +40,7 @@ var Menu = React.createClass({
     icon: React.PropTypes.string.isRequired,
     links: React.PropTypes.List.isRequired,
     button: React.PropTypes.bool.isRequired,
+    counter: React.PropTypes.number,
     className: React.PropTypes.string
   },
   
@@ -75,12 +77,21 @@ var Menu = React.createClass({
     }
   },
   
+  renderCounter: function() {
+    if (this.props.counter) {
+      return (
+        <div className="menu-counter">{this.props.counter}</div>
+      );
+    }
+  },
+  
   render: function() {
     var classes = { menu: true, show: this.state.showMenu };
     classes[this.props.className] = !!this.props.className;
     
     return (
       <div className={classNames(classes)}>
+        {this.renderCounter()}
         {this.renderIcon()}
         <LinkGroup
           name={this.props.name + "-links"}

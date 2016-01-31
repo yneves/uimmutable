@@ -80,7 +80,9 @@ var Menu = React.createClass({
   renderCounter: function() {
     if (this.props.counter) {
       return (
-        <div className="menu-counter">{this.props.counter}</div>
+        <div className="menu-counter" onClick={this.handleClick}>
+          {this.props.counter}
+        </div>
       );
     }
   },

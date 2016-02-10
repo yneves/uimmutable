@@ -8,48 +8,44 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
+rey.component("uim.Success", [
+  "React", "Immutable", "classNames", "uim.Icon",
+  function(React, Immutable, classNames, Icon) {
 
-var Icon = require("./Icon.jsx");
-
-// - -------------------------------------------------------------------- - //
-
-var Success = React.createClass({
-  
-  propTypes: {
-    label: React.PropTypes.string.isRequired,
-    message: React.PropTypes.string,
-    buttonLabel: React.PropTypes.string.isRequired,
-    onClose: React.PropTypes.func.isRequired
-  },
-  
-  getDefaultProps: function() {
     return {
-      buttonLabel: "OK"
+  
+      propTypes: {
+        label: React.PropTypes.string.isRequired,
+        message: React.PropTypes.string,
+        buttonLabel: React.PropTypes.string.isRequired,
+        onClose: React.PropTypes.func.isRequired
+      },
+      
+      getDefaultProps: function() {
+        return {
+          buttonLabel: "OK"
+        };
+      },
+      
+      render: function() {
+        return (
+          <div className="dialog success">
+            <header>
+              <Icon name="check-circle-o" />
+              <h2>{this.props.label}</h2>
+            </header>
+            { this.props.message ? <p>{this.props.message}</p> : undefined }
+            <footer>
+              <button type="button" onClick={this.props.onClose}>
+                {this.props.buttonLabel}
+              </button>
+            </footer>
+          </div>
+        );
+      }
+      
     };
-  },
-  
-  render: function() {
-    return (
-      <div className="dialog success">
-        <header>
-          <Icon name="check-circle-o" />
-          <h2>{this.props.label}</h2>
-        </header>
-        { this.props.message ? <p>{this.props.message}</p> : undefined }
-        <footer>
-          <button type="button" onClick={this.props.onClose}>
-            {this.props.buttonLabel}
-          </button>
-        </footer>
-      </div>
-    );
   }
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = Success;
+]);
 
 // - -------------------------------------------------------------------- - //

@@ -8,99 +8,94 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
-
-var Link = require("./Link.jsx");
-var Icon = require("./Icon.jsx");
-
-// - -------------------------------------------------------------------- - //
-
-var Paginator = React.createClass({
-  
-  propTypes: {
-    page: React.PropTypes.number.isRequired,
-    pages: React.PropTypes.number.isRequired,
-    pageUrl: React.PropTypes.string.isRequired,
-    firstPage: React.PropTypes.number.isRequired,
-    lastPage: React.PropTypes.number.isRequired,
-    onClick: React.PropTypes.func,
-    className: React.PropTypes.string
-  },
-  
-  getDefaultProps: function() {
+rey.component("uim.Paginator", [
+  "React", "Immutable", "classNames", "uim.Icon", "uim.Link",
+  function(React, Immutable, classNames, Icon, Link) {
+    
     return {
-      firstPage: -5,
-      lastPage: 5,
-      page: 1,
-      pages: 1
+  
+      propTypes: {
+        page: React.PropTypes.number.isRequired,
+        pages: React.PropTypes.number.isRequired,
+        pageUrl: React.PropTypes.string.isRequired,
+        firstPage: React.PropTypes.number.isRequired,
+        lastPage: React.PropTypes.number.isRequired,
+        onClick: React.PropTypes.func,
+        className: React.PropTypes.string
+      },
+      
+      getDefaultProps: function() {
+        return {
+          firstPage: -5,
+          lastPage: 5,
+          page: 1,
+          pages: 1
+        };
+      },
+      
+      makeUrl: function(page) {
+        return this.props.pageUrl.replace(/\{page\}/,page);
+      },
+      
+      renderParts: function() {
+        
+        var parts = [];
+        
+        var pages = this.props.pages;
+        var current = this.props.page;
+        
+        var previous = current > 1;
+        var next = current < pages;
+        var first = Math.max(1, current + this.props.firstPage);
+        var last = Math.min(pages, current + this.props.lastPage);
+        
+        if (previous) {
+          parts.push(
+            <li key="previous">
+              <Link href={this.makeUrl(current - 1)}>
+                <Icon name="previous" icon="chevron-left" />
+              </Link>
+            </li>
+          );
+        }
+        
+        for (var i = first; i <= last; i++) {
+          parts.push(
+            <li key={i} className={classNames({ current: current === i })}>
+              <Link href={this.makeUrl(i)} label={i.toString()} />
+            </li>
+          )
+        }
+        
+        if (next) {
+          parts.push(
+            <li key="next">
+              <Link href={this.makeUrl(current + 1)}>
+                <Icon name="next" icon="chevron-right" />
+              </Link>
+            </li>
+          );
+        }
+        
+        return parts;
+      },
+      
+      render: function() {
+        
+        var classes = { paginator: true };
+        classes[this.props.className] = !!this.props.className;
+        
+        return (
+          <div className={classNames(classes)}>
+            <ul>
+              {this.renderParts()}
+            </ul>
+          </div>
+        );
+      }
+      
     };
-  },
-  
-  makeUrl: function(page) {
-    return this.props.pageUrl.replace(/\{page\}/,page);
-  },
-  
-  renderParts: function() {
-    
-    var parts = [];
-    
-    var pages = this.props.pages;
-    var current = this.props.page;
-    
-    var previous = current > 1;
-    var next = current < pages;
-    var first = Math.max(1, current + this.props.firstPage);
-    var last = Math.min(pages, current + this.props.lastPage);
-    
-    if (previous) {
-      parts.push(
-        <li key="previous">
-          <Link href={this.makeUrl(current - 1)}>
-            <Icon name="previous" icon="chevron-left" />
-          </Link>
-        </li>
-      );
-    }
-    
-    for (var i = first; i <= last; i++) {
-      parts.push(
-        <li key={i} className={classNames({ current: current === i })}>
-          <Link href={this.makeUrl(i)} label={i.toString()} />
-        </li>
-      )
-    }
-    
-    if (next) {
-      parts.push(
-        <li key="next">
-          <Link href={this.makeUrl(current + 1)}>
-            <Icon name="next" icon="chevron-right" />
-          </Link>
-        </li>
-      );
-    }
-    
-    return parts;
-  },
-  
-  render: function() {
-    
-    var classes = { paginator: true };
-    classes[this.props.className] = !!this.props.className;
-    
-    return (
-      <div className={classNames(classes)}>
-        <ul>
-          {this.renderParts()}
-        </ul>
-      </div>
-    );
   }
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = Paginator;
+]);
 
 // - -------------------------------------------------------------------- - //

@@ -8,24 +8,22 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
-
-// - -------------------------------------------------------------------- - //
-
-var Loading = React.createClass({
+rey.component("uim.Button", [
+  "React", "Immutable", "classNames",
+  function(React, Immutable, classNames) {
   
-  render: function() {
-    return (
-      <div className="loading">
-        <span className="fa fa-spinner fa-spin" />
-      </div>
-    );
+    return {
+  
+      render: function() {
+        return (
+          <div className="loading">
+            <span className="fa fa-spinner fa-spin" />
+          </div>
+        );
+      }
+      
+    };
   }
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = Loading;
+]);
 
 // - -------------------------------------------------------------------- - //

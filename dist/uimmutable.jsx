@@ -428,8 +428,6 @@ rey.component("uim.DateField", [
 
 "use strict";
 
-"use strict";
-
 rey.component("uim.Failure", [
   "React", "Immutable", "classNames", "uim.Icon",
   function(React, Immutable, classNames, Icon) {
@@ -550,7 +548,7 @@ rey.component("uim.FieldGroup", [
       
       renderField: function(field, index) {
         
-        var Component = rey.inject(field.get("type"));
+        var Component = rey.inject("uim." + field.get("type"));
         
         if (!Component) {
           console.error(new Error("unknown component type (" + tool.get("type") + ")"));
@@ -784,6 +782,8 @@ rey.component("uim.Formset", [
 */
 // - -------------------------------------------------------------------- - //
 
+"use strict";
+
 rey.component("uim.Icon", [
   "React", "Immutable", "classNames",
   function(React, Immutable, classNames) {
@@ -861,6 +861,8 @@ rey.component("uim.Icon", [
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
 // - -------------------------------------------------------------------- - //
+
+"use strict";
 
 rey.component("uim.IconButton", [
   "React", "Immutable", "classNames", "uim.Icon",
@@ -1266,7 +1268,7 @@ rey.component("uim.List", [
       
       renderCol: function(row, rowIndex, column, colIndex) {
         
-        var Component = rey.inject(column.get("type"));
+        var Component = rey.inject("uim." + column.get("type"));
         
         if (!Component) {
           throw new Error("unknown component type (" + column.get("type") + ")");
@@ -1424,12 +1426,11 @@ rey.component("uim.List", [
 */
 // - -------------------------------------------------------------------- - //
 
-
 "use strict";
 
-rey.component("uim.Button", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
+rey.component("uim.Loading", [
+  "React",
+  function(React) {
   
     return {
   
@@ -1440,7 +1441,6 @@ rey.component("uim.Button", [
           </div>
         );
       }
-      
     };
   }
 ]);
@@ -1872,10 +1872,6 @@ rey.component("uim.PasswordField", [
     };
   }
 ]);
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = PasswordField;
 
 // - -------------------------------------------------------------------- - //
 
@@ -2677,7 +2673,7 @@ rey.component("uim.Toolbar", [
       
       renderTool: function(tool, index) {
         
-        var Component = getComponents()[tool.get("type")];
+        var Component = rey.inject("uim." + tool.get("type"));
         
         if (!Component) {
           console.error(new Error("unknown component type (" + tool.get("type") + ")"));

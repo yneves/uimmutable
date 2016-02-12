@@ -8,9 +8,9 @@
 
 "use strict";
 
-rey.component("uim.Button", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
+rey.component("uim.Loading", [
+  "React",
+  function(React) {
   
     return {
   
@@ -21,7 +21,6 @@ rey.component("uim.Button", [
           </div>
         );
       }
-      
     };
   }
 ]);

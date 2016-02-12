@@ -98,7 +98,7 @@ rey.component("uim.List", [
       
       renderCol: function(row, rowIndex, column, colIndex) {
         
-        var Component = rey.inject(column.get("type"));
+        var Component = rey.inject("uim." + column.get("type"));
         
         if (!Component) {
           throw new Error("unknown component type (" + column.get("type") + ")");

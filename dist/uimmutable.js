@@ -409,8 +409,6 @@ rey.component("uim.DateField", ["React", "Immutable", "classNames", "uim.Value",
 
 "use strict";
 
-"use strict";
-
 rey.component("uim.Failure", ["React", "Immutable", "classNames", "uim.Icon", function (React, Immutable, classNames, Icon) {
 
   return {
@@ -541,7 +539,7 @@ rey.component("uim.FieldGroup", ["React", "Immutable", "classNames", function (R
 
     renderField: function (field, index) {
 
-      var Component = rey.inject(field.get("type"));
+      var Component = rey.inject("uim." + field.get("type"));
 
       if (!Component) {
         console.error(new Error("unknown component type (" + tool.get("type") + ")"));
@@ -774,6 +772,8 @@ rey.component("uim.Formset", ["React", "Immutable", "classNames", "uim.FieldGrou
 */
 // - -------------------------------------------------------------------- - //
 
+"use strict";
+
 rey.component("uim.Icon", ["React", "Immutable", "classNames", function (React, Immutable, classNames) {
 
   return {
@@ -845,6 +845,8 @@ rey.component("uim.Icon", ["React", "Immutable", "classNames", function (React, 
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
 // - -------------------------------------------------------------------- - //
+
+"use strict";
 
 rey.component("uim.IconButton", ["React", "Immutable", "classNames", "uim.Icon", function (React, Immutable, classNames, Icon) {
 
@@ -1232,7 +1234,7 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
 
     renderCol: function (row, rowIndex, column, colIndex) {
 
-      var Component = rey.inject(column.get("type"));
+      var Component = rey.inject("uim." + column.get("type"));
 
       if (!Component) {
         throw new Error("unknown component type (" + column.get("type") + ")");
@@ -1388,7 +1390,7 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
 
 "use strict";
 
-rey.component("uim.Button", ["React", "Immutable", "classNames", function (React, Immutable, classNames) {
+rey.component("uim.Loading", ["React", function (React) {
 
   return {
 
@@ -1399,7 +1401,6 @@ rey.component("uim.Button", ["React", "Immutable", "classNames", function (React
         React.createElement("span", { className: "fa fa-spinner fa-spin" })
       );
     }
-
   };
 }]);
 
@@ -1810,10 +1811,6 @@ rey.component("uim.PasswordField", ["React", "Immutable", "classNames", "uim.Fie
 
   };
 }]);
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = PasswordField;
 
 // - -------------------------------------------------------------------- - //
 
@@ -2582,7 +2579,7 @@ rey.component("uim.Toolbar", ["React", "Immutable", "classNames", function (Reac
 
     renderTool: function (tool, index) {
 
-      var Component = getComponents()[tool.get("type")];
+      var Component = rey.inject("uim." + tool.get("type"));
 
       if (!Component) {
         console.error(new Error("unknown component type (" + tool.get("type") + ")"));

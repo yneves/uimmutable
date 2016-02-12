@@ -35,7 +35,7 @@ rey.component("uim.FieldGroup", [
       
       renderField: function(field, index) {
         
-        var Component = rey.inject(field.get("type"));
+        var Component = rey.inject("uim." + field.get("type"));
         
         if (!Component) {
           console.error(new Error("unknown component type (" + tool.get("type") + ")"));

@@ -8,7 +8,7 @@
 
 "use strict";
 
-rey.component("uim.LinkButton", [
+rey.component("uim.LinkGroup", [
   "React", "Immutable", "classNames", "uim.Link", "uim.Icon",
   function(React, Immutable, classNames, Link, Icon) {
   

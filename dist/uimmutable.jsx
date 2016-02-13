@@ -788,12 +788,16 @@ rey.component("uim.Icon", [
   "React", "Immutable", "classNames",
   function(React, Immutable, classNames) {
   
+    var globals = {
+      className: "fa",
+      classNamePrefix: "fa-"
+    };
+  
     return {
       
       statics: {
         
-        className: "fa",
-        classNamePrefix: "fa-",
+        globals: globals,
         
         pickProps: function(path, field, values) {
           path = field.has("path") ? field.get("path") : path.push(field.get("name"));
@@ -833,14 +837,14 @@ rey.component("uim.Icon", [
       render: function() {
         
         var classes = { icon: true };
-        classes[Icon.className] = true;
+        classes[globals.className] = true;
         classes[this.props.className] = !!this.props.className;
         
         if (this.props.icon) {
-          classes[Icon.classNamePrefix + this.props.icon] = true;
+          classes[globals.classNamePrefix + this.props.icon] = true;
           
         } else if (this.props.name) {
-          classes[Icon.classNamePrefix + this.props.name] = true;
+          classes[globals.classNamePrefix + this.props.name] = true;
         }
         
         return (
@@ -946,9 +950,13 @@ rey.component("uim.Link", [
   "React", "Immutable", "classNames",
   function(React, Immutable, classNames) {
   
+    var globals = {};
+  
     return {
       
       statics: {
+        
+        globals: globals,
         
         pickProps: function(path, field, values) {
           path = field.has("path") ? field.get("path") : path.push(field.get("name"));
@@ -985,8 +993,8 @@ rey.component("uim.Link", [
             event: event
           });
         }
-        if (Link.globalClickHandler) {
-          Link.globalClickHandler(event, this.props.href);
+        if (globals.clickHandler) {
+          globals.clickHandler(event, this.props.href);
         }
       },
       
@@ -999,8 +1007,7 @@ rey.component("uim.Link", [
             {this.props.children ? this.props.children : undefined}
           </a>
         );
-      },
-      
+      }
     };
   }
 ]);
@@ -1096,7 +1103,7 @@ rey.component("uim.LinkButton", [
 
 "use strict";
 
-rey.component("uim.LinkButton", [
+rey.component("uim.LinkGroup", [
   "React", "Immutable", "classNames", "uim.Link", "uim.Icon",
   function(React, Immutable, classNames, Link, Icon) {
   

@@ -12,9 +12,13 @@ rey.component("uim.Link", [
   "React", "Immutable", "classNames",
   function(React, Immutable, classNames) {
   
+    var globals = {};
+  
     return {
       
       statics: {
+        
+        globals: globals,
         
         pickProps: function(path, field, values) {
           path = field.has("path") ? field.get("path") : path.push(field.get("name"));
@@ -51,8 +55,8 @@ rey.component("uim.Link", [
             event: event
           });
         }
-        if (Link.globalClickHandler) {
-          Link.globalClickHandler(event, this.props.href);
+        if (globals.clickHandler) {
+          globals.clickHandler(event, this.props.href);
         }
       },
       
@@ -65,8 +69,7 @@ rey.component("uim.Link", [
             {this.props.children ? this.props.children : undefined}
           </a>
         );
-      },
-      
+      }
     };
   }
 ]);

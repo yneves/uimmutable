@@ -8,91 +8,86 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
+rey.component("uim.DateField", [
+  "React", "Immutable", "classNames", "uim.Value", "uim.Field",
+  function(React, Immutable, classNames, Value, Field) {
 
-var Field = require("./Field.jsx");
-var Value = require("./Value.jsx");
-
-// - -------------------------------------------------------------------- - //
-
-var DateField = React.createClass({
-  
-  statics: {
-    
-    pickProps: function(path, field, values) {
-      path = field.has("path") ? field.get("path") : path.push(field.get("name"));
-      return {
-        path: path,
-        name: field.get("name"),
-        label: field.get("label"),
-        className: field.get("className"),
-        value: values.getIn(path)
-      };
-    }
-  },
-  propTypes: {
-    path: React.PropTypes.List.isRequired,
-    label: React.PropTypes.string.isRequired,
-    input: React.PropTypes.bool.isRequired,
-    value: React.PropTypes.any,
-    onChange: React.PropTypes.func,
-    className: React.PropTypes.string
-  },
-  
-  handleChange: function(event) {
-    if (this.props.onChange) {
-      this.props.onChange({
-        name: this.props.name,
-        path: this.props.path,
-        value: this.refs.input.value,
-        event: event
-      });
-    }
-  },
-  
-  render: function() {
-    
-    var classes = {};
-    classes["date-field"] = true;
-    classes[this.props.className] = !!this.props.className;
-  
-    var content;
-    
-    if (this.props.input) {
-      content = (
-        <input
-          ref="input"
-          type="date"
-          value={this.props.value}
-          onChange={this.handleChange} />
-      );
+    return {
       
-    } else {
-      content = (
-        <Value
-          className="date-value"
-          path={this.props.path}
-          name={this.props.name}
-          value={this.props.value}
-          format="date" />
-      );
-    }
-  
-    return (
-      <Field ref="field"
-        className={classNames(classes)}
-        name={this.props.name}
-        label={this.props.label}>
+      statics: {
         
-        {content}
-      </Field>
-    );
-  },
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = DateField;
+        pickProps: function(path, field, values) {
+          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+          return {
+            path: path,
+            name: field.get("name"),
+            label: field.get("label"),
+            className: field.get("className"),
+            value: values.getIn(path)
+          };
+        }
+      },
+      propTypes: {
+        path: React.PropTypes.List.isRequired,
+        label: React.PropTypes.string.isRequired,
+        input: React.PropTypes.bool.isRequired,
+        value: React.PropTypes.any,
+        onChange: React.PropTypes.func,
+        className: React.PropTypes.string
+      },
+      
+      handleChange: function(event) {
+        if (this.props.onChange) {
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path,
+            value: this.refs.input.value,
+            event: event
+          });
+        }
+      },
+      
+      render: function() {
+        
+        var classes = {};
+        classes["date-field"] = true;
+        classes[this.props.className] = !!this.props.className;
+      
+        var content;
+        
+        if (this.props.input) {
+          content = (
+            <input
+              ref="input"
+              type="date"
+              value={this.props.value}
+              onChange={this.handleChange} />
+          );
+          
+        } else {
+          content = (
+            <Value
+              className="date-value"
+              path={this.props.path}
+              name={this.props.name}
+              value={this.props.value}
+              format="date" />
+          );
+        }
+      
+        return (
+          <Field ref="field"
+            className={classNames(classes)}
+            name={this.props.name}
+            label={this.props.label}>
+            
+            {content}
+          </Field>
+        );
+      },
+      
+    };
+  }
+]);
 
 // - -------------------------------------------------------------------- - //

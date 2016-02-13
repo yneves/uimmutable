@@ -8,82 +8,82 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
-
-// - -------------------------------------------------------------------- - //
-
-var Value = React.createClass({
-  
-  statics: {
+rey.component("uim.Value", [
+  "React", "Immutable", "classNames",
+  function(React, Immutable, classNames) {
     
-    pickProps: function(path, field, values) {
-      path = field.has("path") ? field.get("path") : path.push(field.get("name"));
-      return {
-        path: path,
-        name: field.get("name"),
-        format: field.get("format"),
-        className: field.get("className"),
-        value: values.getIn(path)
-      };
-    },
+    var Formatters = {};
     
-    formatters: {}
-  },
-  
-  propTypes: {
-    path: React.PropTypes.List,
-    name: React.PropTypes.string,
-    value: React.PropTypes.any,
-    format: React.PropTypes.string,
-    className: React.PropTypes.string,
-    onClick: React.PropTypes.func
-  },
-  
-  handleClick: function(event) {
-    if (this.props.onClick) {
-      this.props.onClick({
-        name: this.props.name,
-        path: this.props.path,
-        value: this.props.value,
-        event: event
-      });
-    }
-  },
-  
-  render: function() {
-    
-    var classes = { value: true };
-    classes[this.props.className] = !!this.props.className;
-    
-    var value;
-    
-    if (this.props.value || this.props.value === 0) {
-      if (this.props.format) {
-        if (Value.formatters[this.props.format]) {
-          value = Value.formatters[this.props.format](this.props.value);
+    return {
+      
+      statics: {
+        
+        pickProps: function(path, field, values) {
+          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+          return {
+            path: path,
+            name: field.get("name"),
+            format: field.get("format"),
+            className: field.get("className"),
+            value: values.getIn(path)
+          };
+        },
+        
+        formatters: Formatters
+      },
+      
+      propTypes: {
+        path: React.PropTypes.List,
+        name: React.PropTypes.string,
+        value: React.PropTypes.any,
+        format: React.PropTypes.string,
+        className: React.PropTypes.string,
+        onClick: React.PropTypes.func
+      },
+      
+      handleClick: function(event) {
+        if (this.props.onClick) {
+          this.props.onClick({
+            name: this.props.name,
+            path: this.props.path,
+            value: this.props.value,
+            event: event
+          });
+        }
+      },
+      
+      render: function() {
+        
+        var classes = { value: true };
+        classes[this.props.className] = !!this.props.className;
+        
+        var value;
+        
+        if (this.props.value || this.props.value === 0) {
+          if (this.props.format) {
+            if (Formatters[this.props.format]) {
+              value = Formatters[this.props.format](this.props.value);
+            } else {
+              throw new Error("unknown format (" + this.props.format + ")");
+            }
+            
+          } else {
+            value = this.props.value;
+          }
+          
         } else {
-          throw new Error("unknown format (" + this.props.format + ")");
+          value = "-";
         }
         
-      } else {
-        value = this.props.value;
+        return (
+          <div className={classNames(classes)} onClick={this.handleClick}>
+            {value}
+          </div>
+        );
       }
       
-    } else {
-      value = "-";
-    }
-    
-    return (
-      <div className={classNames(classes)} onClick={this.handleClick}>
-        {value}
-      </div>
-    );
+    };
   }
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = Value;
+]);
 
 // - -------------------------------------------------------------------- - //

@@ -8,26 +8,24 @@
 
 "use strict";
 
-var {React, Immutable, classNames} = require("../libs.js");
+rey.component("uim.Overlay", [
+  "React", "Immutable", "classNames",
+  function(React, Immutable, classNames) {
+    
+    return {
 
-// - -------------------------------------------------------------------- - //
-
-var Overlay = React.createClass({
-  
-  render: function() {
-    return (
-      <div className="overlay">
-        <div className="overlay-container">
-          {this.props.children}
-        </div>
-      </div>
-    );
+      render: function() {
+        return (
+          <div className="overlay">
+            <div className="overlay-container">
+              {this.props.children}
+            </div>
+          </div>
+        );
+      }
+      
+    };
   }
-  
-});
-
-// - -------------------------------------------------------------------- - //
-
-module.exports = Overlay;
+]);
 
 // - -------------------------------------------------------------------- - //

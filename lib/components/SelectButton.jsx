@@ -20,6 +20,7 @@ rey.component("uim.SelectButton", [
           path = field.has("path") ? field.get("path") : path.push(field.get("name"));
           return {
             path: path,
+            label: field.get("label"),
             name: field.get("name"),
             options: field.get("options"),
             disabled: field.get("disabled"),

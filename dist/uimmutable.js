@@ -2001,6 +2001,7 @@ rey.component("uim.SelectButton", ["React", "Immutable", "classNames", "uim.Icon
         path = field.has("path") ? field.get("path") : path.push(field.get("name"));
         return {
           path: path,
+          label: field.get("label"),
           name: field.get("name"),
           options: field.get("options"),
           disabled: field.get("disabled"),
@@ -2162,6 +2163,65 @@ rey.component("uim.SelectButton", ["React", "Immutable", "classNames", "uim.Icon
         { "data-button-name": this.props.name, className: classNames(classes), type: "button" },
         this.renderSelectedOption(),
         this.renderOptions()
+      );
+    }
+
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+"use strict";
+
+rey.component("uim.SelectButtonField", ["React", "Immutable", "classNames", "uim.SelectButton", "uim.Field", function (React, Immutable, classNames, SelectButton, Field) {
+
+  return {
+
+    statics: {
+      pickProps: SelectButton.pickProps
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function () {
+      return {
+        path: Immutable.List(),
+        disabled: false
+      };
+    },
+
+    render: function () {
+
+      var classes = {};
+      classes["select-button-field"] = true;
+      classes[this.props.className] = !!this.props.className;
+
+      return React.createElement(
+        Field,
+        { ref: "field",
+          name: this.props.name,
+          label: this.props.label,
+          className: classNames(classes) },
+        React.createElement(SelectButton, this.props)
       );
     }
 

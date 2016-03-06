@@ -105,7 +105,7 @@ rey.component("uim.SelectField", [
             {content}
           </Field>
         );
-      },
+      }
       
     };
   }

@@ -542,11 +542,11 @@ rey.component("uim.FieldGroup", ["React", "Immutable", "classNames", function (R
       var Component = rey.inject("uim." + field.get("type"));
 
       if (!Component) {
-        console.error(new Error("unknown component type (" + tool.get("type") + ")"));
+        console.error(new Error("unknown component type (" + field.get("type") + ")"));
       }
 
       if (!Component.pickProps) {
-        console.error(new Error("invalid component type (" + tool.get("type") + ")"));
+        console.error(new Error("invalid component type (" + field.get("type") + ")"));
       }
 
       var props = Component.pickProps(this.props.path, field, this.props.values);
@@ -1157,6 +1157,24 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
 
   return {
 
+    statics: {
+
+      pickProps: function (path, field, values) {
+        path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+        return {
+          path: path,
+          name: field.get("name"),
+          label: field.get("label"),
+          data: field.get("data"),
+          columns: field.get("columns"),
+          header: field.get("header"),
+          footer: field.get("footer"),
+          empty: field.get("empty"),
+          className: field.get("className")
+        };
+      }
+    },
+
     propTypes: {
       path: React.PropTypes.List.isRequired,
       name: React.PropTypes.string.isRequired,
@@ -1165,7 +1183,7 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
       header: React.PropTypes.bool.isRequired,
       footer: React.PropTypes.any,
       pageUrl: React.PropTypes.string,
-      emptyText: React.PropTypes.any,
+      empty: React.PropTypes.any,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
@@ -1269,7 +1287,6 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
     renderRow: function (row, rowIndex) {
 
       var columns = this.props.columns;
-
       if (this.props.transformColumnsWith) {
         columns = this.props.transformColumnsWith(columns, row);
       }
@@ -1283,13 +1300,125 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
       );
     },
 
+    getRows: function () {
+      var rows = this.props.data.get("rows");
+      if (Immutable.List.isList(rows)) {
+        return rows;
+      } else {
+        return Immutable.List();
+      }
+    },
+
+    countRows: function () {
+      if (this.props.data.has("count")) {
+        return this.props.data.get("count");
+      } else {
+        var rows = this.props.data.get("rows");
+        if (Immutable.List.isList(rows)) {
+          return rows.size;
+        }
+      }
+      return 0;
+    },
+
     renderBody: function () {
       var classes = { "list-body": true, "no-foot": !this.props.footer };
       return React.createElement(
         "div",
         { key: "body", className: classNames(classes), onClick: this.handleClickBody },
-        this.props.data.get("rows").map(this.renderRow)
+        this.getRows().map(this.renderRow)
       );
+    },
+
+    renderHeader: function () {
+
+      var content;
+
+      if (this.props.header === true) {
+
+        content = React.createElement(
+          "div",
+          { key: "head", className: "list-head list-row" },
+          this.props.columns.map(this.renderHeadCol)
+        );
+      } else if (Immutable.List.isList(this.props.header)) {
+
+        content = React.createElement(
+          "div",
+          { key: "head", className: "list-head list-row" },
+          React.createElement(Toolbar, {
+            name: "header",
+            path: this.props.path.push("header"),
+            tools: this.props.header,
+            values: this.props.data,
+            onClick: this.props.onClick,
+            onChange: this.props.onChange })
+        );
+      } else if (this.props.header) {
+
+        content = React.createElement(
+          "div",
+          { key: "head", className: "list-head list-row" },
+          this.props.header
+        );
+      }
+
+      return content;
+    },
+
+    renderFooter: function () {
+
+      var content;
+
+      if (Immutable.List.isList(this.props.footer)) {
+
+        content = React.createElement(
+          "div",
+          { key: "foot", className: "list-foot list-row" },
+          React.createElement(Toolbar, {
+            name: "footer",
+            path: this.props.path.push("footer"),
+            tools: this.props.footer,
+            values: this.props.data,
+            onClick: this.props.onClick,
+            onChange: this.props.onChange })
+        );
+      } else if (this.props.footer) {
+
+        content = React.createElement(
+          "div",
+          { key: "foot", className: "list-foot list-row" },
+          React.createElement(
+            "div",
+            { className: "list-column" },
+            this.props.footer
+          )
+        );
+      }
+
+      return content;
+    },
+
+    renderPages: function () {
+
+      var content;
+
+      if (this.props.data.has("pages") && this.props.data.has("page")) {
+
+        var count = this.countRows();
+        var page = count > 0 ? Number(this.props.data.get("page")) || 1 : 0;
+        var pages = count > 0 ? Number(this.props.data.get("pages")) || 1 : 0;
+
+        if (pages > 1) {
+          content = React.createElement(Paginator, {
+            key: "pages",
+            page: page,
+            pages: pages,
+            pageUrl: this.props.pageUrl });
+        }
+      }
+
+      return content;
     },
 
     render: function () {
@@ -1299,79 +1428,14 @@ rey.component("uim.List", ["React", "Immutable", "classNames", "uim.Toolbar", "u
 
       var content;
 
-      var rows = this.props.data.get("rows");
-      var count = Number(this.props.data.get("count")) || rows.size;
-      var page = count > 0 ? Number(this.props.data.get("page")) || 1 : 0;
-      var pages = count > 0 ? Number(this.props.data.get("pages")) || 1 : 0;
+      if (this.countRows() > 0 || !this.props.empty) {
 
-      if (count > 0) {
-
-        content = [];
-
-        if (this.props.header === true) {
-          content.push(React.createElement(
-            "div",
-            { key: "head", className: "list-head list-row" },
-            this.props.columns.map(this.renderHeadCol)
-          ));
-        } else if (Immutable.List.isList(this.props.header)) {
-          content.push(React.createElement(
-            "div",
-            { key: "head", className: "list-head list-row" },
-            React.createElement(Toolbar, {
-              name: "header",
-              path: this.props.path.push("header"),
-              tools: this.props.header,
-              values: this.props.data,
-              onClick: this.props.onClick,
-              onChange: this.props.onChange })
-          ));
-        } else if (this.props.header) {
-          content.push(React.createElement(
-            "div",
-            { key: "head", className: "list-head list-row" },
-            this.props.header
-          ));
-        }
-
-        content.push(this.renderBody());
-
-        if (Immutable.List.isList(this.props.footer)) {
-          content.push(React.createElement(
-            "div",
-            { key: "foot", className: "list-foot list-row" },
-            React.createElement(Toolbar, {
-              name: "footer",
-              path: this.props.path.push("footer"),
-              tools: this.props.footer,
-              values: this.props.data,
-              onClick: this.props.onClick,
-              onChange: this.props.onChange })
-          ));
-        } else if (this.props.footer) {
-          content.push(React.createElement(
-            "div",
-            { key: "foot", className: "list-foot list-row" },
-            React.createElement(
-              "div",
-              { className: "list-column" },
-              this.props.footer
-            )
-          ));
-        }
-
-        if (pages > 1) {
-          content.push(React.createElement(Paginator, {
-            key: "pages",
-            page: page,
-            pages: pages,
-            pageUrl: this.props.pageUrl }));
-        }
+        content = [this.renderHeader(), this.renderBody(), this.renderFooter(), this.renderPages()];
       } else {
         content = React.createElement(
           "div",
           { className: "list-empty" },
-          this.props.emptyText
+          this.props.empty
         );
       }
 

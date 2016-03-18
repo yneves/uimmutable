@@ -38,11 +38,11 @@ rey.component("uim.FieldGroup", [
         var Component = rey.inject("uim." + field.get("type"));
         
         if (!Component) {
-          console.error(new Error("unknown component type (" + tool.get("type") + ")"));
+          console.error(new Error("unknown component type (" + field.get("type") + ")"));
         }
         
         if (!Component.pickProps) {
-          console.error(new Error("invalid component type (" + tool.get("type") + ")"));
+          console.error(new Error("invalid component type (" + field.get("type") + ")"));
         }
         
         var props = Component.pickProps(this.props.path, field, this.props.values);

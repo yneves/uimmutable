@@ -6,18 +6,18 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Loading", [
-  "React",
-  function(React) {
-  
+rey.component('uim.Loading', [
+  'React',
+  function (React) {
+
     return {
-  
-      render: function() {
+
+      render: function () {
         return (
-          <div className="loading">
-            <span className="fa fa-spinner fa-spin" />
+          <div className='loading'>
+            <span className='fa fa-spinner fa-spin' />
           </div>
         );
       }

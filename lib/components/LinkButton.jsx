@@ -6,29 +6,29 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.LinkButton", [
-  "React", "Immutable", "classNames", "uim.Link",
-  function(React, Immutable, classNames, Link) {
-  
+rey.component('uim.LinkButton', [
+  'React', 'Immutable', 'classNames', 'uim.Link',
+  function (React, Immutable, classNames, Link) {
+
     return {
-      
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            href: field.get("href"),
-            label: field.get("label"),
-            disabled: field.get("disabled"),
-            className: field.get("className")
+            name: field.get('name'),
+            href: field.get('href'),
+            label: field.get('label'),
+            disabled: field.get('disabled'),
+            className: field.get('className')
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -37,14 +37,14 @@ rey.component("uim.LinkButton", [
         onClick: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           disabled: false
         };
       },
-      
-      handleClick: function(event) {
+
+      handleClick: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -53,12 +53,12 @@ rey.component("uim.LinkButton", [
           });
         }
       },
-      
-      render: function() {
-        
-        var classes = { button: true, "link-button": true };
+
+      render: function () {
+
+        var classes = { button: true, 'link-button': true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <Link
             name={this.props.name}
@@ -70,7 +70,7 @@ rey.component("uim.LinkButton", [
             onClick={this.handleClick} />
         );
       }
-      
+
     };
   }
 ]);

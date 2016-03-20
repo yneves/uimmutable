@@ -6,28 +6,28 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.IconButton", [
-  "React", "Immutable", "classNames", "uim.Icon",
-  function(React, Immutable, classNames, Icon) {
-  
+rey.component('uim.IconButton', [
+  'React', 'Immutable', 'classNames', 'uim.Icon',
+  function (React, Immutable, classNames, Icon) {
+
     return {
-  
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            icon: field.get("icon"),
-            disabled: field.get("disabled"),
-            className: field.get("className")
+            name: field.get('name'),
+            icon: field.get('icon'),
+            disabled: field.get('disabled'),
+            className: field.get('className')
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -36,15 +36,15 @@ rey.component("uim.IconButton", [
         onClick: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           disabled: false
         };
       },
-      
-      handleClick: function(event) {
+
+      handleClick: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -53,12 +53,12 @@ rey.component("uim.IconButton", [
           });
         }
       },
-      
-      render: function() {
-        
-        var classes = { "icon-button": true };
+
+      render: function () {
+
+        var classes = { 'icon-button': true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <Icon
             name={this.props.name}
@@ -69,7 +69,7 @@ rey.component("uim.IconButton", [
             onClick={this.handleClick} />
         );
       }
-      
+
     };
   }
 ]);

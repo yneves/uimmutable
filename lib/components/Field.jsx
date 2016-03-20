@@ -6,25 +6,25 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Field", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-  
+rey.component('uim.Field', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     return {
-  
+
       propTypes: {
         name: React.PropTypes.string.isRequired,
         label: React.PropTypes.string.isRequired,
         className: React.PropTypes.string
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { field: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <div data-field-name={this.props.name} className={classNames(classes)}>
             <label>{this.props.label}</label>
@@ -32,7 +32,7 @@ rey.component("uim.Field", [
           </div>
         );
       }
-      
+
     };
   }
 ]);

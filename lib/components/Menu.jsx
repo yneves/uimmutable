@@ -6,30 +6,30 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Menu", [
-  "React", "Immutable", "classNames", "uim.Icon", "uim.LinkGroup", "uim.IconButton",
-  function(React, Immutable, classNames, Icon, LinkGroup, IconButton) {
-    
+rey.component('uim.Menu', [
+  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.LinkGroup', 'uim.IconButton',
+  function (React, Immutable, classNames, Icon, LinkGroup, IconButton) {
+
     return {
-  
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            icon: field.get("icon"),
-            links: field.get("links"),
-            button: field.get("button"),
-            counter: field.get("counter"),
-            className: field.get("className")
+            name: field.get('name'),
+            icon: field.get('icon'),
+            links: field.get('links'),
+            button: field.get('button'),
+            counter: field.get('counter'),
+            className: field.get('className')
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -39,67 +39,69 @@ rey.component("uim.Menu", [
         counter: React.PropTypes.number,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
-          icon: "bars",
+          icon: 'bars',
           button: false
         };
       },
-      
-      getInitialState: function() {
+
+      getInitialState: function () {
         return {
           showMenu: false
         };
       },
-      
-      handleClick: function() {
+
+      handleClick: function () {
         this.setState({ showMenu: !this.state.showMenu });
       },
-      
-      renderIcon: function() {
+
+      renderIcon: function () {
+        var icon;
         if (this.props.button) {
-          return (
+          icon = (
             <IconButton
               name={this.props.icon}
               icon={this.props.icon}
               onClick={this.handleClick} />
           );
         } else {
-          return (
+          icon = (
             <Icon name={this.props.icon} onClick={this.handleClick} />
           );
         }
+        return icon;
       },
-      
-      renderCounter: function() {
+
+      renderCounter: function () {
         if (this.props.counter) {
           return (
-            <div className="menu-counter" onClick={this.handleClick}>
+            <div className='menu-counter' onClick={this.handleClick}>
               {this.props.counter}
             </div>
           );
         }
       },
-      
-      render: function() {
+
+      render: function () {
         var classes = { menu: true, show: this.state.showMenu };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <div className={classNames(classes)}>
             {this.renderCounter()}
             {this.renderIcon()}
             <LinkGroup
-              name={this.props.name + "-links"}
-              path={this.props.path.push("links")}
+              name={this.props.name + '-links'}
+              path={this.props.path.push('links')}
               links={this.props.links}
-              className="menu-links" />
+              className='menu-links' />
           </div>
         );
-      },
-      
+      }
+
     };
   }
 ]);

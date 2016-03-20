@@ -6,32 +6,32 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.SelectButton", [
-  "React", "Immutable", "classNames", "uim.Icon", "uim.Value",
-  function(React, Immutable, classNames, Icon, Value) {
-  
+rey.component('uim.SelectButton', [
+  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Value',
+  function (React, Immutable, classNames, Icon, Value) {
+
     return {
-  
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            label: field.get("label"),
-            name: field.get("name"),
-            options: field.get("options"),
-            disabled: field.get("disabled"),
-            disabledValues: field.get("disabledValues"),
-            className: field.get("className"),
-            blankValue: field.get("blankValue"),
+            label: field.get('label'),
+            name: field.get('name'),
+            options: field.get('options'),
+            disabled: field.get('disabled'),
+            disabledValues: field.get('disabledValues'),
+            className: field.get('className'),
+            blankValue: field.get('blankValue'),
             value: values.getIn(path)
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -43,42 +43,42 @@ rey.component("uim.SelectButton", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getInitialState: function() {
+
+      getInitialState: function () {
         return {
           showOptions: false
         };
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           disabled: false
         };
       },
-      
-      handleClickCaret: function(event) {
+
+      handleClickCaret: function (event) {
         event.event.stopPropagation();
         this.setState({ showOptions: !this.state.showOptions });
       },
-      
-      handleClickOption: function(option, event) {
+
+      handleClickOption: function (option, event) {
         event.stopPropagation();
-        if (!option.get("disabled")) {
+        if (!option.get('disabled')) {
           this.setState({ showOptions: !this.state.showOptions });
           if (this.props.onChange) {
             this.props.onChange({
               name: this.props.name,
               path: this.props.path,
-              value: option.get("value"),
+              value: option.get('value'),
               option: option,
               event: event
             });
           }
         }
       },
-      
-      handleClickValue: function(event) {
+
+      handleClickValue: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -88,39 +88,41 @@ rey.component("uim.SelectButton", [
           });
         }
       },
-      
-      renderIcon: function(option) {
+
+      renderIcon: function (option) {
         var icon;
-        if (option.has("icon")) {
+        if (option.has('icon')) {
           icon = (
-            <Icon key="icon" name={option.get("icon")} />
+            <Icon key='icon' name={option.get('icon')} />
           );
         }
         return icon;
       },
-      
-      renderOption: function(option, index) {
-        
+
+      renderOption: function (option, index) {
+
         var classes = {};
-        classes["select-button-option"] = true;
-        classes["disabled"] = !!option.get("disabled");
-        classes[option.get("className")] = !!option.get("className");
-        
+        classes['select-button-option'] = true;
+        classes['disabled'] = !!option.get('disabled');
+        classes[option.get('className')] = !!option.get('className');
+
+        var onClick = this.handleClickOption.bind(this, option);
+
         return (
-          <li key={index} className={classNames(classes)} onClick={this.handleClickOption.bind(this, option)}>
+          <li key={index} className={classNames(classes)} onClick={onClick}>
             {this.renderIcon(option)}
-            {option.get("label")}
+            {option.get('label')}
           </li>
         );
       },
-      
-      isDisabled: function() {
-        return this.props.disabled || (this.props.disabledValues ? 
-          this.props.disabledValues.indexOf(this.props.value) !== -1 : 
+
+      isDisabled: function () {
+        return this.props.disabled || (this.props.disabledValues ?
+          this.props.disabledValues.indexOf(this.props.value) !== -1 :
           false);
       },
-      
-      getSelectedOption: function() {
+
+      getSelectedOption: function () {
         if (this.props.value || this.props.value === 0) {
           var size = this.props.options.size;
           var selected;
@@ -128,7 +130,7 @@ rey.component("uim.SelectButton", [
           var i;
           for (i = 0; i < size; i++) {
             option = this.props.options.get(i);
-            if (option.get("value") === this.props.value) {
+            if (option.get('value') === this.props.value) {
               selected = option;
               break;
             }
@@ -136,26 +138,26 @@ rey.component("uim.SelectButton", [
           return selected;
         }
       },
-      
-      renderSelectedOption: function() {
-        
+
+      renderSelectedOption: function () {
+
         var classes = {};
-        classes["select-button-value"] = true;
-        
+        classes['select-button-value'] = true;
+
         var selectedOption = this.getSelectedOption();
         var value;
         var icon;
-        
+
         if (selectedOption) {
-          classes[selectedOption.get("className")] = !!selectedOption.get("className");
-          value = selectedOption.get("selectedLabel") || selectedOption.get("label");
+          classes[selectedOption.get('className')] = !!selectedOption.get('className');
+          value = selectedOption.get('selectedLabel') || selectedOption.get('label');
           icon = this.renderIcon(selectedOption);
-          
+
         } else if (this.props.blankValue) {
-          classes["select-button-blank"] = true;
+          classes['select-button-blank'] = true;
           value = this.props.blankValue;
         }
-        
+
         return (
           <Value
             onClick={this.handleClickValue}
@@ -165,35 +167,35 @@ rey.component("uim.SelectButton", [
             value={[icon, value]} />
         );
       },
-      
-      renderOptions: function() {
+
+      renderOptions: function () {
         if (!this.isDisabled()) {
           return ([
-            <Icon key="icon" name="caret-down" onClick={this.handleClickCaret} />
+            <Icon key='icon' name='caret-down' onClick={this.handleClickCaret} />
             ,
-            <ul key="list">
+            <ul key='list'>
               {this.props.options.map(this.renderOption)}
             </ul>
           ]);
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = {};
-        classes["select-button"] = true;
-        classes["show-options"] = this.state.showOptions;
-        classes["disabled"] = this.isDisabled();
+        classes['select-button'] = true;
+        classes['show-options'] = this.state.showOptions;
+        classes['disabled'] = this.isDisabled();
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
-          <button data-button-name={this.props.name} className={classNames(classes)} type="button">
+          <button data-button-name={this.props.name} className={classNames(classes)} type='button'>
             {this.renderSelectedOption()}
             {this.renderOptions()}
           </button>
         );
-      },
-      
+      }
+
     };
   }
 ]);

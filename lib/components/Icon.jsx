@@ -6,34 +6,34 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Icon", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-  
+rey.component('uim.Icon', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     var globals = {
-      className: "fa",
-      classNamePrefix: "fa-"
+      className: 'fa',
+      classNamePrefix: 'fa-'
     };
-  
+
     return {
-      
+
       statics: {
-        
+
         globals: globals,
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            icon: field.get("icon"),
-            className: field.get("className")
+            name: field.get('name'),
+            icon: field.get('icon'),
+            className: field.get('className')
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -41,14 +41,14 @@ rey.component("uim.Icon", [
         className: React.PropTypes.string,
         onClick: React.PropTypes.func
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List()
         };
       },
-      
-      handleClick: function(event) {
+
+      handleClick: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -57,25 +57,25 @@ rey.component("uim.Icon", [
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { icon: true };
         classes[globals.className] = true;
         classes[this.props.className] = !!this.props.className;
-        
+
         if (this.props.icon) {
           classes[globals.classNamePrefix + this.props.icon] = true;
-          
+
         } else if (this.props.name) {
           classes[globals.classNamePrefix + this.props.name] = true;
         }
-        
+
         return (
           <span className={classNames(classes)} onClick={this.handleClick} />
         );
-      },
-      
+      }
+
     };
   }
 ]);

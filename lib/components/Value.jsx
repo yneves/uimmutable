@@ -6,32 +6,32 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Value", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-    
+rey.component('uim.Value', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     var Formatters = {};
-    
+
     return {
-      
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            format: field.get("format"),
-            className: field.get("className"),
+            name: field.get('name'),
+            format: field.get('format'),
+            className: field.get('className'),
             value: values.getIn(path)
           };
         },
-        
+
         formatters: Formatters
       },
-      
+
       propTypes: {
         path: React.PropTypes.List,
         name: React.PropTypes.string,
@@ -40,8 +40,8 @@ rey.component("uim.Value", [
         className: React.PropTypes.string,
         onClick: React.PropTypes.func
       },
-      
-      handleClick: function(event) {
+
+      handleClick: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -51,37 +51,37 @@ rey.component("uim.Value", [
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { value: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         var value;
-        
+
         if (this.props.value || this.props.value === 0) {
           if (this.props.format) {
             if (Formatters[this.props.format]) {
               value = Formatters[this.props.format](this.props.value);
             } else {
-              throw new Error("unknown format (" + this.props.format + ")");
+              throw new Error('unknown format (' + this.props.format + ')');
             }
-            
+
           } else {
             value = this.props.value;
           }
-          
+
         } else {
-          value = "-";
+          value = '-';
         }
-        
+
         return (
           <div className={classNames(classes)} onClick={this.handleClick}>
             {value}
           </div>
         );
       }
-      
+
     };
   }
 ]);

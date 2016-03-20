@@ -6,14 +6,14 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Paginator", [
-  "React", "Immutable", "classNames", "uim.Icon", "uim.Link",
-  function(React, Immutable, classNames, Icon, Link) {
-    
+rey.component('uim.Paginator', [
+  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Link',
+  function (React, Immutable, classNames, Icon, Link) {
+
     return {
-  
+
       propTypes: {
         page: React.PropTypes.number.isRequired,
         pages: React.PropTypes.number.isRequired,
@@ -23,8 +23,8 @@ rey.component("uim.Paginator", [
         onClick: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           firstPage: -5,
           lastPage: 5,
@@ -32,33 +32,33 @@ rey.component("uim.Paginator", [
           pages: 1
         };
       },
-      
-      makeUrl: function(page) {
-        return this.props.pageUrl.replace(/\{page\}/,page);
+
+      makeUrl: function (page) {
+        return this.props.pageUrl.replace(/\{page\}/, page);
       },
-      
-      renderParts: function() {
-        
+
+      renderParts: function () {
+
         var parts = [];
-        
+
         var pages = this.props.pages;
         var current = this.props.page;
-        
+
         var previous = current > 1;
         var next = current < pages;
         var first = Math.max(1, current + this.props.firstPage);
         var last = Math.min(pages, current + this.props.lastPage);
-        
+
         if (previous) {
           parts.push(
-            <li key="previous">
+            <li key='previous'>
               <Link href={this.makeUrl(current - 1)}>
-                <Icon name="previous" icon="chevron-left" />
+                <Icon name='previous' icon='chevron-left' />
               </Link>
             </li>
           );
         }
-        
+
         for (var i = first; i <= last; i++) {
           parts.push(
             <li key={i} className={classNames({ current: current === i })}>
@@ -66,25 +66,25 @@ rey.component("uim.Paginator", [
             </li>
           )
         }
-        
+
         if (next) {
           parts.push(
-            <li key="next">
+            <li key='next'>
               <Link href={this.makeUrl(current + 1)}>
-                <Icon name="next" icon="chevron-right" />
+                <Icon name='next' icon='chevron-right' />
               </Link>
             </li>
           );
         }
-        
+
         return parts;
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { paginator: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <div className={classNames(classes)}>
             <ul>
@@ -93,7 +93,7 @@ rey.component("uim.Paginator", [
           </div>
         );
       }
-      
+
     };
   }
 ]);

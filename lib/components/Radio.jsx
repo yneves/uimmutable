@@ -6,14 +6,14 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Radio", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-  
+rey.component('uim.Radio', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     return {
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -24,8 +24,8 @@ rey.component("uim.Radio", [
         disabled: React.PropTypes.bool,
         className: React.PropTypes.string
       },
-      
-      handleChange: function(event) {
+
+      handleChange: function (event) {
         if (this.props.onChange) {
           this.props.onChange({
             name: this.props.name,
@@ -35,16 +35,16 @@ rey.component("uim.Radio", [
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { radio: true, disabled: this.props.disabled };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <label className={classNames(classes)}>
-            <input ref="input"
-              type="radio"
+            <input ref='input'
+              type='radio'
               name={this.props.name}
               value={this.props.value}
               checked={this.props.checked}
@@ -54,7 +54,7 @@ rey.component("uim.Radio", [
           </label>
         );
       }
-      
+
     };
   }
 ]);

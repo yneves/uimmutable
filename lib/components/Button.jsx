@@ -6,29 +6,29 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Button", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-  
+rey.component('uim.Button', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     return {
-      
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            label: field.get("label"),
-            htmlType: field.get("htmlType"),
-            disabled: field.get("disabled"),
-            className: field.get("className")
+            name: field.get('name'),
+            label: field.get('label'),
+            htmlType: field.get('htmlType'),
+            disabled: field.get('disabled'),
+            className: field.get('className')
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -38,16 +38,16 @@ rey.component("uim.Button", [
         onClick: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
-          htmlType: "button",
+          htmlType: 'button',
           disabled: false
         };
       },
-      
-      handleClick: function(event) {
+
+      handleClick: function (event) {
         if (this.props.onClick) {
           this.props.onClick({
             name: this.props.name,
@@ -56,12 +56,12 @@ rey.component("uim.Button", [
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { button: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <button
             data-button-name={this.props.name}
@@ -73,7 +73,7 @@ rey.component("uim.Button", [
           </button>
         );
       }
-      
+
     };
   }
 ]);

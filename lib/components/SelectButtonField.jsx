@@ -6,18 +6,18 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.SelectButtonField", [
-  "React", "Immutable", "classNames", "uim.SelectButton", "uim.Field",
-  function(React, Immutable, classNames, SelectButton, Field) {
-  
+rey.component('uim.SelectButtonField', [
+  'React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field',
+  function (React, Immutable, classNames, SelectButton, Field) {
+
     return {
-  
+
       statics: {
         pickProps: SelectButton.pickProps
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -30,31 +30,30 @@ rey.component("uim.SelectButtonField", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           disabled: false
         };
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = {};
-        classes["select-button-field"] = true;
+        classes['select-button-field'] = true;
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
-          <Field ref="field"
+          <Field ref='field'
             name={this.props.name}
             label={this.props.label}
             className={classNames(classes)}>
-            
             <SelectButton {...this.props} />
           </Field>
         );
       }
-      
+
     };
   }
 ]);

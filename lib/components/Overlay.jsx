@@ -6,24 +6,24 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Overlay", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-    
+rey.component('uim.Overlay', [
+  'React', 'Immutable', 'classNames',
+  function (React, Immutable, classNames) {
+
     return {
 
-      render: function() {
+      render: function () {
         return (
-          <div className="overlay">
-            <div className="overlay-container">
+          <div className='overlay'>
+            <div className='overlay-container'>
               {this.props.children}
             </div>
           </div>
         );
       }
-      
+
     };
   }
 ]);

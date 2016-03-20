@@ -6,29 +6,29 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.CheckGroup", [
-  "React", "Immutable", "classNames", "uim.Button", "uim.Field",
-  function(React, Immutable, classNames, Button, Field) {
+rey.component('uim.CheckGroup', [
+  'React', 'Immutable', 'classNames', 'uim.Button', 'uim.Field',
+  function (React, Immutable, classNames, Button, Field) {
 
     return {
-      
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            label: field.get("label"),
-            checkboxes: field.get("checkboxes"),
-            className: field.get("className"),
+            name: field.get('name'),
+            label: field.get('label'),
+            checkboxes: field.get('checkboxes'),
+            className: field.get('className'),
             value: values.getIn(path)
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         label: React.PropTypes.string,
@@ -38,13 +38,13 @@ rey.component("uim.CheckGroup", [
         onChange: React.PropTypes.func.isRequired,
         className: React.PropTypes.string
       },
-      
-      renderCheckbox: function(option, index) {
-        
-        var name = option.get("name") || index;
-        var label = option.get("label") || name;
+
+      renderCheckbox: function (option, index) {
+
+        var name = option.get('name') || index;
+        var label = option.get('label') || name;
         var path = this.props.path.push(name);
-        
+
         return (
           <Checkbox ref={name}
             key={index}
@@ -52,19 +52,19 @@ rey.component("uim.CheckGroup", [
             name={name}
             label={label}
             checked={!!this.props.values.getIn(path)}
-            disabled={option.get("disabled")}
+            disabled={option.get('disabled')}
             onChange={this.props.onChange} />
         );
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = {};
-        classes["check-group"] = true;
+        classes['check-group'] = true;
         classes[this.props.className] = !!this.props.className;
-      
+
         return (
-          <Field ref="field"
+          <Field ref='field'
             name={this.props.name}
             label={this.props.label}
             className={classNames(classes)}>
@@ -72,7 +72,7 @@ rey.component("uim.CheckGroup", [
           </Field>
         );
       }
-      
+
     };
   }
 ]);

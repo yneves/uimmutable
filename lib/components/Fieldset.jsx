@@ -24,6 +24,7 @@ rey.component("uim.Fieldset", [
             label: field.get("label"),
             fields: field.get("fields"),
             className: field.get("className"),
+            multiple: field.get("multiple"),
             values: values
           };
         }
@@ -36,6 +37,8 @@ rey.component("uim.Fieldset", [
         fields: React.PropTypes.List.isRequired,
         values: React.PropTypes.Map.isRequired,
         collapsible: React.PropTypes.bool.isRequired,
+        collapsed: React.PropTypes.bool.isRequired,
+        multiple: React.PropTypes.bool.isRequired,
         input: React.PropTypes.bool.isRequired,
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
@@ -45,13 +48,15 @@ rey.component("uim.Fieldset", [
         return {
           path: Immutable.List(),
           input: true,
-          collapsible: false
+          collapsible: false,
+          collapsed: false,
+          multiple: false
         };
       },
       
       getInitialState: function() {
         return {
-          collapsed: false
+          collapsed: this.props.collapsed
         };
       },
       
@@ -80,6 +85,7 @@ rey.component("uim.Fieldset", [
                 values={this.props.values} 
                 input={this.props.input}
                 collapsed={this.state.collapsed}
+                multiple={this.props.multiple}
                 onClick={this.props.onClick}
                 onChange={this.props.onChange} />
             </fieldset>

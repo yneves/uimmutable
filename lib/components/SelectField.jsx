@@ -6,30 +6,30 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.SelectField", [
-  "React", "Immutable", "classNames", "uim.Value", "uim.Field",
-  function(React, Immutable, classNames, Value, Field) {
+rey.component('uim.SelectField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  function (React, Immutable, classNames, Value, Field) {
 
     return {
-      
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
-          
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+
           return {
             path: path,
-            name: field.get("name"),
-            label: field.get("label"),
-            options: field.get("options"),
-            className: field.get("className"),
+            name: field.get('name'),
+            label: field.get('label'),
+            options: field.get('options'),
+            className: field.get('className'),
             value: values.getIn(path)
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -40,8 +40,8 @@ rey.component("uim.SelectField", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      handleChange: function(event) {
+
+      handleChange: function (event) {
         if (this.props.onChange) {
           this.props.onChange({
             name: this.props.name,
@@ -51,62 +51,61 @@ rey.component("uim.SelectField", [
           });
         }
       },
-      
-      renderOption: function(option, index) {
-        
+
+      renderOption: function (option, index) {
+
         return (
-          <option key={index} value={option.get("value")}>
-            {option.get("label")}
+          <option key={index} value={option.get('value')}>
+            {option.get('label')}
           </option>
         );
       },
-      
-      getSelectedLabel: function() {
+
+      getSelectedLabel: function () {
         var value = this.props.value;
-        var selected = this.props.options.find(function(option) {
-          return option.get("value") === value;
+        var selected = this.props.options.find(function (option) {
+          return option.get('value') === value;
         });
         if (selected) {
-          return selected.get("label");
+          return selected.get('label');
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = {};
-        classes["select-field"] = true;
+        classes['select-field'] = true;
         classes[this.props.className] = !!this.props.className;
-        
+
         var content;
-        
+
         if (this.props.input) {
           content = (
-            <select ref="input" value={this.props.value} onChange={this.handleChange}>
+            <select ref='input' value={this.props.value} onChange={this.handleChange}>
               {this.props.options.map(this.renderOption)}
             </select>
           );
-          
+
         } else {
           content = (
             <Value
-              className="select-value"
+              className='select-value'
               path={this.props.path}
               name={this.props.name}
               value={this.getSelectedLabel()} />
           );
         }
-        
+
         return (
-          <Field ref="field"
+          <Field ref='field'
             name={this.props.name}
             label={this.props.label}
             className={classNames(classes)}>
-            
             {content}
           </Field>
         );
       }
-      
+
     };
   }
 ]);

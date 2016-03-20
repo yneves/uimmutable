@@ -6,13 +6,29 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.FieldGroup", [
-  "React", "Immutable", "classNames",
-  function(React, Immutable, classNames) {
-  
+rey.component('uim.FieldGroup', [
+  'React', 'Immutable', 'classNames', 'uim.IconButton',
+  function (React, Immutable, classNames, IconButton) {
+
     return {
+
+      statics: {
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+          return {
+            path: path,
+            name: field.get('name'),
+            label: field.get('label'),
+            fields: field.get('fields'),
+            className: field.get('className'),
+            multiple: field.get('multiple'),
+            values: values
+          };
+        }
+      },
 
       propTypes: {
         path: React.PropTypes.List.isRequired,
@@ -20,33 +36,59 @@ rey.component("uim.FieldGroup", [
         fields: React.PropTypes.List.isRequired,
         values: React.PropTypes.Map.isRequired,
         collapsed: React.PropTypes.bool.isRequired,
+        multiple: React.PropTypes.bool.isRequired,
         className: React.PropTypes.string,
         onClick: React.PropTypes.func,
         onChange: React.PropTypes.func
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           input: true,
-          collapsed: false
+          collapsed: false,
+          multiple: false
         };
       },
-      
-      renderField: function(field, index) {
-        
-        var Component = rey.inject("uim." + field.get("type"));
-        
+
+      onClickAddEntry: function (event) {
+        if (this.props.onChange) {
+          var entries = this.props.values.getIn(this.props.path);
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path.push(entries ? entries.size : 0),
+            value: Immutable.Map(),
+            event: event
+          });
+        }
+      },
+
+      onClickRemoveEntry: function (entryIndex, event) {
+        if (this.props.onChange) {
+          var entries = this.props.values.getIn(this.props.path);
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path.push(entryIndex),
+            value: null,
+            event: event
+          });
+        }
+      },
+
+      renderField: function (path, field, index) {
+
+        var Component = rey.inject('uim.' + field.get('type'));
+
         if (!Component) {
-          console.error(new Error("unknown component type (" + field.get("type") + ")"));
+          console.error(new Error('unknown component type (' + field.get('type') + ')'));
         }
-        
+
         if (!Component.pickProps) {
-          console.error(new Error("invalid component type (" + field.get("type") + ")"));
+          console.error(new Error('invalid component type (' + field.get('type') + ')'));
         }
-        
-        var props = Component.pickProps(this.props.path, field, this.props.values);
-        
+
+        var props = Component.pickProps(path, field, this.props.values);
+
         return (
           <Component
             key={index}
@@ -56,24 +98,91 @@ rey.component("uim.FieldGroup", [
             onChange={this.props.onChange} />
         );
       },
-      
-      render: function() {
-        
-        var classes = { "field-group": true };
-        classes[this.props.className] = !!this.props.className;
-        
-        var style = {};
-        if (this.props.collapsed) {
-          style.display = "none";
-        }
-        
+
+      renderEntry: function (entryIndex) {
         return (
-          <div className={classNames(classes)} style={style}>
-            {this.props.fields.map(this.renderField)}
+          <div key={entryIndex} className='field-group-entry'>
+            {this.props.input && (
+              <div className='field-group-entry-action'>
+                <IconButton
+                  name='removeFieldGroupEntry'
+                  icon='trash-o'
+                  onClick={this.onClickRemoveEntry.bind(this, entryIndex)}/>
+              </div>
+            )}
+            <div className='field-group-entry-fields'>
+              {this.props.fields.map(function (field, index) {
+                return this.renderField(this.props.path.push(entryIndex), field, index);
+              }, this)}
+            </div>
           </div>
         );
       },
-      
+
+      wrapEntries: function (children) {
+        return (
+          <div className='field-group-entries'>
+            {children}
+            <div className='field-group-entries-action'>
+              <IconButton
+                name='addFieldGroupEntry'
+                icon='plus'
+                onClick={this.onClickAddEntry}/>
+            </div>
+          </div>
+        );
+      },
+
+      renderFields: function () {
+
+        var content;
+
+        if (this.props.multiple) {
+
+          var children = [];
+
+          var entries = this.props.values.getIn(this.props.path);
+          if (Immutable.Map.isMap(entries)) {
+            entries.forEach(function (entry, entryIndex) {
+              if (Immutable.Map.isMap(entry)) {
+                children.push(this.renderEntry(entryIndex));
+              }
+            }, this);
+          }
+
+          if (!children.length) {
+            children = this.renderEntry(0);
+          }
+
+          content = this.wrapEntries(children);
+
+        } else {
+          content = this.props.fields.map(function (field, index) {
+            return this.renderField(this.props.path, field, index);
+          }, this);
+        }
+
+        return content;
+      },
+
+      render: function () {
+
+        var classes = { 'field-group': true };
+        classes['field-group-multiple'] = !!this.props.multiple;
+        classes[this.props.className] = !!this.props.className;
+
+        var style = {};
+        if (this.props.collapsed) {
+          style.display = 'none';
+        }
+
+        return (
+          <div className={classNames(classes)} style={style}>
+            {this.renderFields()}
+          </div>
+        );
+      }
+
     };
   }
 ]);

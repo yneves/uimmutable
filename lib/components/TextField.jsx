@@ -6,29 +6,29 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.TextField", [
-  "React", "Immutable", "classNames", "uim.Value", "uim.Field",
-  function(React, Immutable, classNames, Value, Field) {
+rey.component('uim.TextField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  function (React, Immutable, classNames, Value, Field) {
 
     return {
-  
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            label: field.get("label"),
-            className: field.get("className"),
-            options: field.get("options"),
+            name: field.get('name'),
+            label: field.get('label'),
+            className: field.get('className'),
+            options: field.get('options'),
             value: values.getIn(path)
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -39,8 +39,8 @@ rey.component("uim.TextField", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      handleChange: function(event) {
+
+      handleChange: function (event) {
         if (this.props.onChange) {
           this.props.onChange({
             name: this.props.name,
@@ -50,16 +50,16 @@ rey.component("uim.TextField", [
           });
         }
       },
-      
-      getId: function() {
-        return this.props.path.toJS().join("-");
+
+      getId: function () {
+        return this.props.path.toJS().join('-');
       },
-      
-      renderOptions: function() {
+
+      renderOptions: function () {
         if (this.props.input && this.props.options) {
           return (
-            <datalist id={this.getId() + "-options"}>
-              {this.props.options.map(function(option, index) {
+            <datalist id={this.getId() + '-options'}>
+              {this.props.options.map(function (option, index) {
                 return (
                   <option key={index} value={option}>{option}</option>
                 );
@@ -68,47 +68,46 @@ rey.component("uim.TextField", [
           )
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = {};
-        classes["text-field"] = true;
+        classes['text-field'] = true;
         classes[this.props.className] = !!this.props.className;
-      
+
         var content;
-        
+
         if (this.props.input) {
           content = (
             <input
-              ref="input"
-              type="text"
+              ref='input'
+              type='text'
               value={this.props.value}
-              list={this.getId() + "-options"}
+              list={this.getId() + '-options'}
               onChange={this.handleChange} />
           );
-          
+
         } else {
           content = (
             <Value
-              className="text-value"
+              className='text-value'
               path={this.props.path}
               name={this.props.name}
               value={this.props.value} />
           );
         }
-        
+
         return (
-          <Field ref="field"
+          <Field ref='field'
             name={this.props.name}
             label={this.props.label}
             className={classNames(classes)}>
-            
             {content}
             {this.renderOptions()}
           </Field>
         );
-      },
-      
+      }
+
     };
   }
 ]);

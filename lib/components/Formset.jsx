@@ -6,14 +6,14 @@
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Formset", [
-  "React", "Immutable", "classNames", "uim.FieldGroup",
-  function(React, Immutable, classNames, FieldGroup) {
-  
+rey.component('uim.Formset', [
+  'React', 'Immutable', 'classNames', 'uim.FieldGroup',
+  function (React, Immutable, classNames, FieldGroup) {
+
     return {
-  
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -26,43 +26,43 @@ rey.component("uim.Formset", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           input: true,
           collapsible: false
         };
       },
-      
-      getInitialState: function() {
+
+      getInitialState: function () {
         return {
           collapsed: false
         };
       },
-      
-      handleClickTitle: function() {
+
+      handleClickTitle: function () {
         if (this.props.collapsible) {
           this.setState({
             collapsed: !this.state.collapsed
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { formset: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         var title;
         if (this.props.label) {
           title = (
-            <h1 className="title" onClick={this.handleClickTitle}>
+            <h1 className='title' onClick={this.handleClickTitle}>
               <span>{this.props.label}</span>
             </h1>
           );
         }
-        
+
         return (
           <div data-form-name={this.props.name} className={classNames(classes)}>
             {title}
@@ -76,8 +76,8 @@ rey.component("uim.Formset", [
               onChange={this.props.onChange} />
           </div>
         );
-      },
-      
+      }
+
     };
   }
 ]);

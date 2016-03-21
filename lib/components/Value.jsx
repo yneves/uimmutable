@@ -25,7 +25,8 @@ rey.component('uim.Value', [
             name: field.get('name'),
             format: field.get('format'),
             className: field.get('className'),
-            value: values.getIn(path)
+            value: values.getIn(path),
+            texts: field.get('texts')
           };
         },
 
@@ -36,6 +37,7 @@ rey.component('uim.Value', [
         path: React.PropTypes.List,
         name: React.PropTypes.string,
         value: React.PropTypes.any,
+        texts: React.PropTypes.Map,
         format: React.PropTypes.string,
         className: React.PropTypes.string,
         onClick: React.PropTypes.func
@@ -73,6 +75,10 @@ rey.component('uim.Value', [
 
         } else {
           value = '-';
+        }
+
+        if (this.props.texts) {
+          value = this.props.texts.get(value);
         }
 
         return (

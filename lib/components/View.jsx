@@ -3,8 +3,12 @@
 'use strict';
 
 rey.component('uim.View', [
-  'React', 'Immutable', 'classNames', 'CSSTransitionGroup', 'uim.Loading', 'uim.Toolbar', 'uim.Overlay',
-  function (React, Immutable, classNames, CSSTransitionGroup, Loading, Toolbar, Overlay) {
+  'React', 'Immutable', 'classNames', 'CSSTransitionGroup',
+  'uim.Loading', 'uim.Toolbar', 'uim.Overlay',
+  function (
+    React, Immutable, classNames, CSSTransitionGroup,
+    Loading, Toolbar, Overlay
+  ) {
 
     return {
 
@@ -17,7 +21,9 @@ rey.component('uim.View', [
       },
 
       renderOverlay: function () {
-        if (this.props.overlay) {
+        var hasOverlay = Immutable.List.isList(this.props.overlay)
+          ? !!this.props.overlay.size : !!this.props.overlay;
+        if (hasOverlay) {
           return (
             <Overlay>
               {this.props.overlay}
@@ -102,7 +108,6 @@ rey.component('uim.View', [
           </div>
         );
       }
-
     };
   }
 ]);

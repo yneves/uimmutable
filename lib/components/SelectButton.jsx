@@ -27,6 +27,7 @@ rey.component('uim.SelectButton', [
             disabledValues: field.get('disabledValues'),
             className: field.get('className'),
             blankValue: field.get('blankValue'),
+            multiple: field.get('multiple'),
             value: values.getIn(path)
           };
         }
@@ -37,6 +38,7 @@ rey.component('uim.SelectButton', [
         name: React.PropTypes.string.isRequired,
         options: React.PropTypes.List.isRequired,
         disabled: React.PropTypes.bool.isRequired,
+        multiple: React.PropTypes.bool.isRequired,
         disabledValues: React.PropTypes.List,
         blankValue: React.PropTypes.string,
         value: React.PropTypes.any,
@@ -53,7 +55,8 @@ rey.component('uim.SelectButton', [
       getDefaultProps: function () {
         return {
           path: Immutable.List(),
-          disabled: false
+          disabled: false,
+          multiple: false
         };
       },
 
@@ -62,15 +65,33 @@ rey.component('uim.SelectButton', [
         this.setState({ showOptions: !this.state.showOptions });
       },
 
+      getChangedValue: function (option) {
+        var value;
+        if (this.props.multiple) {
+          var index = this.props.value.indexOf(option.get('value'));
+          if (index === -1) {
+            value = this.props.value.push(option.get('value'));
+          } else {
+            value = this.props.value.delete(index);
+          }
+        } else {
+          value = option.get('value');
+        }
+        return value;
+      },
+
       handleClickOption: function (option, event) {
         event.stopPropagation();
         if (!option.get('disabled')) {
-          this.setState({ showOptions: !this.state.showOptions });
+          if (!this.props.multiple) {
+            this.setState({ showOptions: !this.state.showOptions });
+          }
+
           if (this.props.onChange) {
             this.props.onChange({
               name: this.props.name,
               path: this.props.path,
-              value: option.get('value'),
+              value: this.getChangedValue(option),
               option: option,
               event: event
             });
@@ -99,6 +120,22 @@ rey.component('uim.SelectButton', [
         return icon;
       },
 
+      renderSelected: function (option) {
+        var selected;
+        if (this.props.multiple) {
+          if (this.props.value.indexOf(option.get('value')) !== -1) {
+            selected = (
+              <Icon name='check' className='icon-selected' />
+            );
+          } else {
+            selected = (
+              <Icon name='check' className='icon-unselected' />
+            );
+          }
+        }
+        return selected;
+      },
+
       renderOption: function (option, index) {
 
         var classes = {};
@@ -110,6 +147,7 @@ rey.component('uim.SelectButton', [
 
         return (
           <li key={index} className={classNames(classes)} onClick={onClick}>
+            {this.renderSelected(option)}
             {this.renderIcon(option)}
             {option.get('label')}
           </li>
@@ -122,21 +160,24 @@ rey.component('uim.SelectButton', [
           false);
       },
 
-      getSelectedOption: function () {
+      isSelected: function (option) {
+        var selected = false;
         if (this.props.value || this.props.value === 0) {
-          var size = this.props.options.size;
-          var selected;
-          var option;
-          var i;
-          for (i = 0; i < size; i++) {
-            option = this.props.options.get(i);
-            if (option.get('value') === this.props.value) {
-              selected = option;
-              break;
+          if (this.props.multiple) {
+            if (this.props.value.indexOf(option.get('value')) !== -1) {
+              selected = true;
             }
+          } else if (option.get('value') === this.props.value) {
+            selected = true;
           }
-          return selected;
         }
+        return selected;
+      },
+
+      getSelectedOptions: function () {
+        return this.props.options.filter(function (option) {
+          return this.isSelected(option);
+        }, this);
       },
 
       renderSelectedOption: function () {
@@ -144,14 +185,19 @@ rey.component('uim.SelectButton', [
         var classes = {};
         classes['select-button-value'] = true;
 
-        var selectedOption = this.getSelectedOption();
+        var selectedOptions = this.getSelectedOptions();
         var value;
         var icon;
 
-        if (selectedOption) {
-          classes[selectedOption.get('className')] = !!selectedOption.get('className');
-          value = selectedOption.get('selectedLabel') || selectedOption.get('label');
-          icon = this.renderIcon(selectedOption);
+        if (selectedOptions.size > 1) {
+          value = selectedOptions.map(function (option) {
+            return option.get('selectedLabel') || option.get('label');
+          }).join(', ');
+
+        } else if (selectedOptions.size > 0) {
+          classes[selectedOptions.getIn([0, 'className'])] = !!selectedOptions.getIn([0, 'className']);
+          value = selectedOptions.getIn([0, 'selectedLabel']) || selectedOptions.getIn([0, 'label']);
+          icon = this.renderIcon(selectedOptions.get(0));
 
         } else if (this.props.blankValue) {
           classes['select-button-blank'] = true;

@@ -36,6 +36,7 @@ rey.component('uim.List', [
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
         data: React.PropTypes.Map.isRequired,
+        rows: React.PropTypes.List,
         columns: React.PropTypes.List.isRequired,
         header: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.any,
@@ -87,8 +88,8 @@ rey.component('uim.List', [
           var rowIndex = Number(target.getAttribute('data-row-index'));
           var colIndex = Number(target.getAttribute('data-column-index'));
 
-          var row = this.props.data.getIn(['rows', rowIndex]);
-          var column = row.getIn(['columns', colIndex]);
+          var row = this.getRow(rowIndex);
+          var column = this.props.columns.get(colIndex);
 
           if (this.props.onClick) {
             this.props.onClick({
@@ -165,8 +166,21 @@ rey.component('uim.List', [
         );
       },
 
+      getRow: function (index) {
+        var row;
+        if (Immutable.List.isList(this.props.rows)) {
+          row = this.props.rows.get(index);
+        } else if (Immutable.List.isList(this.props.data.get('rows'))) {
+          row = this.props.data.getIn(['rows', index]);
+        }
+        return row;
+      },
+
       getRows: function () {
-        var rows = this.props.data.get('rows');
+        var rows = this.props.rows;
+        if (!Immutable.List.isList(rows)) {
+          rows = this.props.data.get('rows');
+        }
         if (!Immutable.List.isList(rows)) {
           rows = Immutable.List();
         }
@@ -178,10 +192,7 @@ rey.component('uim.List', [
         if (this.props.data.has('count')) {
           count = this.props.data.get('count');
         } else {
-          var rows = this.props.data.get('rows');
-          if (Immutable.List.isList(rows)) {
-            count = rows.size;
-          }
+          count = this.getRows().size;
         }
         return count;
       },

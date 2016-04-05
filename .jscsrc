@@ -9,7 +9,7 @@
     "disallowSpaceAfterPrefixUnaryOperators": true,
     "disallowTrailingWhitespace": true,
     "disallowTrailingComma": true,
-    "maximumLineLength": 100,
+    "maximumLineLength": 120,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
     "requireCapitalizedConstructors": true,
     "requireCurlyBraces": true,

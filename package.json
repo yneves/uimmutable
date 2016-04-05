@@ -26,11 +26,11 @@
   "homepage": "https://github.com/yneves/uimmutable#readme",
   "dependencies": {
     "babel-preset-react": "^6.3.13",
-    "grunt": "*",
+    "grunt": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-contrib-concat": "^1.0.0",
-    "grunt-contrib-uglify": "^1.0.0",
-    "jsdom": "^8.1.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "jsdom": "^8.3.0",
     "mocha-jsdom": "^1.1.0"
   },
   "devDependencies": {

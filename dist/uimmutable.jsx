@@ -1262,10 +1262,9 @@ rey.component('uim.LinkGroup', [
       },
 
       renderLink: function (link, index) {
-
         return (
-          <li key={index}>
-            <Link name={link.get('name')} href={link.get('href')}>
+          <li key={index} className={link.get('className')}>
+            <Link name={link.get('name')} href={link.get('href')} className={link.get('className')}>
               {this.renderIcon(link)}
               {link.get('label')}
             </Link>

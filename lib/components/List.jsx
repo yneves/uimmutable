@@ -212,9 +212,14 @@ rey.component('uim.List', [
 
         if (this.props.header === true) {
 
+          var columns = this.props.columns;
+          if (this.props.transformColumnsWith) {
+            columns = this.props.transformColumnsWith(columns);
+          }
+
           content = (
             <div key='head' className='list-head list-row'>
-              {this.props.columns.map(this.renderHeadCol)}
+              {columns.map(this.renderHeadCol)}
             </div>
           );
 

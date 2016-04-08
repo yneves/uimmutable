@@ -710,30 +710,31 @@ rey.component('uim.FieldGroup', [
 */
 // - -------------------------------------------------------------------- - //
 
-"use strict";
+'use strict';
 
-rey.component("uim.Fieldset", [
-  "React", "Immutable", "classNames", "uim.FieldGroup",
-  function(React, Immutable, classNames, FieldGroup) {
-  
+rey.component('uim.Fieldset', [
+  'React', 'Immutable', 'classNames', 'uim.FieldGroup',
+  function (React, Immutable, classNames, FieldGroup) {
+
     return {
-  
+
       statics: {
-        
-        pickProps: function(path, field, values) {
-          path = field.has("path") ? field.get("path") : path.push(field.get("name"));
+
+        pickProps: function (path, field, values) {
+          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
           return {
             path: path,
-            name: field.get("name"),
-            label: field.get("label"),
-            fields: field.get("fields"),
-            className: field.get("className"),
-            multiple: field.get("multiple"),
+            name: field.get('name'),
+            label: field.get('label'),
+            fields: field.get('fields'),
+            className: field.get('className'),
+            multiple: field.get('multiple'),
+            collapsible: field.get('collapsible'),
             values: values
           };
         }
       },
-      
+
       propTypes: {
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
@@ -747,8 +748,8 @@ rey.component("uim.Fieldset", [
         onChange: React.PropTypes.func,
         className: React.PropTypes.string
       },
-      
-      getDefaultProps: function() {
+
+      getDefaultProps: function () {
         return {
           path: Immutable.List(),
           input: true,
@@ -757,26 +758,26 @@ rey.component("uim.Fieldset", [
           multiple: false
         };
       },
-      
-      getInitialState: function() {
+
+      getInitialState: function () {
         return {
           collapsed: this.props.collapsed
         };
       },
-      
-      handleClickLegend: function() {
+
+      handleClickLegend: function () {
         if (this.props.collapsible) {
           this.setState({
             collapsed: !this.state.collapsed
           });
         }
       },
-      
-      render: function() {
-        
+
+      render: function () {
+
         var classes = { fieldset: true };
         classes[this.props.className] = !!this.props.className;
-        
+
         return (
           <div data-field-name={this.props.name} className={classNames(classes)}>
             <fieldset>
@@ -786,7 +787,7 @@ rey.component("uim.Fieldset", [
               <FieldGroup
                 path={this.props.path}
                 fields={this.props.fields}
-                values={this.props.values} 
+                values={this.props.values}
                 input={this.props.input}
                 collapsed={this.state.collapsed}
                 multiple={this.props.multiple}
@@ -796,7 +797,7 @@ rey.component("uim.Fieldset", [
           </div>
         );
       }
-      
+
     };
   }
 ]);
@@ -1503,9 +1504,14 @@ rey.component('uim.List', [
 
         if (this.props.header === true) {
 
+          var columns = this.props.columns;
+          if (this.props.transformColumnsWith) {
+            columns = this.props.transformColumnsWith(columns);
+          }
+
           content = (
             <div key='head' className='list-head list-row'>
-              {this.props.columns.map(this.renderHeadCol)}
+              {columns.map(this.renderHeadCol)}
             </div>
           );
 

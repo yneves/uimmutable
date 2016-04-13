@@ -206,6 +206,7 @@ rey.component('uim.SelectButton', [
 
         return (
           <Value
+            onClick={this.handleClickValue}
             className={classNames(classes)}
             path={this.props.path}
             name={this.props.name}
@@ -228,20 +229,17 @@ rey.component('uim.SelectButton', [
       render: function () {
 
         var classes = {};
+        classes['button'] = true;
         classes['select-button'] = true;
         classes['show-options'] = this.state.showOptions;
         classes['disabled'] = this.isDisabled();
         classes[this.props.className] = !!this.props.className;
 
         return (
-          <button
-            data-button-name={this.props.name}
-            className={classNames(classes)}
-            onClick={this.handleClickValue}
-            type='button'>
+          <a data-button-name={this.props.name} className={classNames(classes)} type='button'>
             {this.renderSelectedOption()}
             {this.renderOptions()}
-          </button>
+          </a>
         );
       }
 

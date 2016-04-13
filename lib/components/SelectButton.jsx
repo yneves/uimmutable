@@ -206,7 +206,6 @@ rey.component('uim.SelectButton', [
 
         return (
           <Value
-            onClick={this.handleClickValue}
             className={classNames(classes)}
             path={this.props.path}
             name={this.props.name}
@@ -235,7 +234,11 @@ rey.component('uim.SelectButton', [
         classes[this.props.className] = !!this.props.className;
 
         return (
-          <button data-button-name={this.props.name} className={classNames(classes)} type='button'>
+          <button
+            data-button-name={this.props.name}
+            className={classNames(classes)}
+            onClick={this.handleClickValue}
+            type='button'>
             {this.renderSelectedOption()}
             {this.renderOptions()}
           </button>

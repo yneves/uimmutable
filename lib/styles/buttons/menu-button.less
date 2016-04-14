@@ -1,0 +1,70 @@
+// - -------------------------------------------------------------------- - //
+
+.menu-button {
+  position: relative;
+  
+  > .icon:not(.icon-button) {
+    padding: 3px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 2;
+    line-height: 1.1;
+  }
+  
+  .menu-button-counter {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    padding: 3px 3px 2px 4px;
+    z-index: 1;
+    color: white;
+    background-color: @color-red;
+    cursor: pointer;
+    .font-size(11px);
+    .rounded(@border-radius);
+  }
+  
+  .menu-button-links {
+    display: none;
+  }
+  
+  &.show {
+    
+    .menu-button-links {
+      position: absolute;
+      display: block;
+      padding: @spacing 0;
+      background-color: @color-default;
+      .box-shadow(@shadow-float);
+      .rounded(@border-radius);
+      z-index: 1;
+      list-style-type: none;
+      
+      li {
+        
+        a {
+          display: block;
+          padding: @spacing (@spacing*2);
+          .ellipsis();
+          
+          .icon {
+            margin-right: @spacing;
+          }
+          
+          &, .icon, span {
+            cursor: pointer;
+          }
+        }
+        
+        &:hover {
+        
+          a {
+            background-color: @color-background;
+          }
+        }
+      }
+    }
+  }
+}
+
+// - -------------------------------------------------------------------- - //

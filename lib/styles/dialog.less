@@ -1,0 +1,49 @@
+// - -------------------------------------------------------------------- - //
+
+.dialog {
+  display: inline-block;
+  background-color: @color-grey-lighter;
+  .rounded(@border-radius);
+  
+  header {
+    padding: @spacing*2;
+    
+    h2 {
+      display: inline-block;
+      margin-left: @spacing*1.5;
+      .ellipsis();
+      .font-size(16px);
+    }
+    
+    .icon {
+      .font-size(22px);
+    }
+  }
+  
+  p {
+    padding: 0 @spacing*2;
+    .font-size(13px);
+  }
+  
+  footer {
+    padding: @spacing*2;
+    text-align: right;
+    
+    button {
+      
+      &:only-child {
+        width: 100%;
+      }
+    }
+  }
+  
+  &.success header .icon {
+    color: @color-success;
+  }
+  
+  &.failure header .icon {
+    color: @color-failure;
+  }
+}
+    
+// - -------------------------------------------------------------------- - //

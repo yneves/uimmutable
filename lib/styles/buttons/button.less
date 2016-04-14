@@ -1,0 +1,28 @@
+// - -------------------------------------------------------------------- - //
+
+button,
+.button {
+  display: inline-block;
+  padding: @spacing (@spacing*2);
+  border: none;
+  background-color: @color-grey-light;
+  cursor: pointer;
+  text-shadow: @text-shadow-grey-light;
+  .font();
+  .rounded(@border-radius);
+  .box-shadow(@shadow-grey-light);
+  
+  &.disabled {
+    cursor: default;
+  }
+  
+  &, a {
+    text-decoration: none;
+  }
+  
+  &.primary {
+    .button-primary();
+  }
+}
+
+// - -------------------------------------------------------------------- - //

@@ -1,0 +1,27 @@
+// - -------------------------------------------------------------------- - //
+
+* {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  cursor: default;
+  .font();
+  .user-select(none);
+  .box-sizing(border-box);
+}
+
+a {
+  text-decoration: none;
+  
+  &, * {
+    cursor: pointer;
+  }
+}
+
+p:empty:after {
+  content: ".";
+  visibility: hidden;
+  display: block;
+}
+
+// - -------------------------------------------------------------------- - //

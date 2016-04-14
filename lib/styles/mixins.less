@@ -1,0 +1,179 @@
+// - -------------------------------------------------------------------- - //
+
+.clearfix() {
+  clear: both;
+  
+  &:after, &:after {
+    content: "";
+    display: table;
+    clear: both;
+    visibility: hidden;
+  }
+}
+
+.ellipsis() {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font(@size: @font-size, @weight: inherit, @color: @color-grey-dark, @family: @font-family) {
+  font-family: @family;
+  font-weight: @weight;
+  color: @color;
+  .font-size(@size);
+}
+
+.font-size(@size: @font-size, @line: @size) {
+  font-size: @size;
+  line-height: @line;
+}
+
+.form(@name, @width, @rules: {}) {
+  [data-form-name=@{name}] {
+    &, > .fields { width: @width; }
+    @rules();
+  }
+}
+
+.fieldset(@name, @width, @rules: {}) {
+  [data-field-name=@{name}] {
+    &, > fieldset > .fields { width: @width; }
+    @rules();
+  }
+}
+
+.field(@name, @width, @rules: {}) {
+  [data-field-name=@{name}] {
+    width: @width;
+    @rules();
+  }
+}
+
+.list(@name, @width, @rules: {}) {
+  [data-list-name=@{name}] {
+    width: @width;
+    @rules();
+  }
+}
+
+.column(@name, @width, @rules: {}) {
+  [data-column-name=@{name}] {
+    width: @width;
+    min-width: @width;
+    max-width: @width;
+    .flex(0);
+    @rules();
+  }
+}
+
+.toolbar(@name, @width, @rules: {}) {
+  [data-toolbar-name=@{name}] {
+    width: @width;
+    @rules();
+  }
+}
+
+.tool(@name, @width, @rules: {}) {
+  [data-tool-name=@{name}] {
+    width: @width;
+    @rules();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) {
+  [data-button-name=@{name}] {
+    width: @width;
+    @rules();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = primary) {
+  [data-button-name=@{name}] {
+    .button-primary();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = orange) {
+  [data-button-name=@{name}] {
+    .button-orange();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = blue) {
+  [data-button-name=@{name}] {
+    .button-blue();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = yellow) {
+  [data-button-name=@{name}] {
+    .button-yellow();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = red) {
+  [data-button-name=@{name}] {
+    .button-red();
+  }
+}
+
+.button(@name, @width: auto, @style: default, @rules: {}) when (@style = green) {
+  [data-button-name=@{name}] {
+    .button-green();
+  }
+}
+
+.button(@name, @width: auto, @style: default) when (@style = cyan) {
+  [data-button-name=@{name}] {
+    .button-cyan();
+  }
+}
+
+.button-primary() {
+  .button-green();
+}
+
+.button-green() {
+  color: white;
+  text-shadow: @text-shadow-green;
+  background-color: @color-green;
+  .box-shadow(@shadow-green);
+}
+
+.button-orange() {
+  color: white;
+  text-shadow: @text-shadow-orange;
+  background-color: @color-orange;
+  .box-shadow(@shadow-orange);
+}
+
+.button-blue() {
+  color: white;
+  text-shadow: @text-shadow-blue;
+  background-color: @color-blue;
+  .box-shadow(@shadow-blue);
+}
+
+.button-yellow() {
+  color: white;
+  text-shadow: @text-shadow-yellow;
+  background-color: @color-yellow;
+  .box-shadow(@shadow-yellow);
+}
+
+.button-red() {
+  color: white;
+  text-shadow: @text-shadow-red;
+  background-color: @color-red;
+  .box-shadow(@shadow-red);
+}
+
+.button-cyan() {
+  color: white;
+  text-shadow: @text-shadow-cyan;
+  background-color: @color-cyan;
+  .box-shadow(@shadow-cyan);
+}
+
+// - -------------------------------------------------------------------- - //

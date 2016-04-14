@@ -1,0 +1,26 @@
+// - -------------------------------------------------------------------- - //
+
+.title {
+  padding: (@spacing*2) @spacing;
+  text-align: center;
+  .flex-display(flex);
+  .flex-direction(row);
+  .flex-wrap(nowrap);
+  
+  span {
+    padding: 0 @spacing 0 0;
+    background-color: white;
+    .font(@font-size * 1.4, @weight-semibold);
+  }
+  
+  &:after {
+    content: "";
+    display: block;
+    border-top: 1px solid @color-border;
+    position: relative;
+    top: 10px;
+    .flex(1);
+  }
+}
+
+// - -------------------------------------------------------------------- - //

@@ -1,0 +1,19 @@
+// - -------------------------------------------------------------------- - //
+
+.icon-button {
+  cursor: pointer;
+  display: inline-block;
+  padding: 4px @spacing 2px @spacing;
+  border: none;
+  background-color: @color-grey-light;
+  font-size: 19px;
+  text-shadow: @text-shadow-grey-light;
+  .rounded(@border-radius);
+  .box-shadow(@shadow-grey-light);
+
+  &.primary {
+    .button-primary();
+  }
+}
+
+// - -------------------------------------------------------------------- - //

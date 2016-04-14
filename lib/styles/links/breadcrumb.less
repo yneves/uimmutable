@@ -1,0 +1,42 @@
+// - -------------------------------------------------------------------- - //
+
+.breadcrumb {
+  padding: @spacing 0;
+  list-style-type: none;
+  
+  li {
+    display: inline-block;
+    padding: 0 @spacing;
+    
+    a {
+      
+      .icon {
+        margin-right: (@spacing/2);
+      }
+      
+      &, .icon, span {
+        cursor: pointer;
+      }
+    }
+    
+    &:after {
+      position: relative;
+      right: -@spacing;
+      .fa-icon();
+      content: @fa-var-angle-right;
+    }
+    
+    &:first-child {
+      padding-left: 0;
+    }
+    
+    &:last-child {
+      
+      &:after {
+        display: none;
+      }
+    }
+  }
+}
+
+// - -------------------------------------------------------------------- - //

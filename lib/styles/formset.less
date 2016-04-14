@@ -1,0 +1,95 @@
+// - -------------------------------------------------------------------- - //
+
+.formset {
+  display: inline-block;
+  padding: @spacing;
+  
+  .fieldset {
+    display: inline-block;
+    padding: @spacing;
+    
+    legend {
+      margin-left: (@spacing/2);
+      padding: 0 (@spacing/2);
+      text-align: left;
+      .font(@weight: @weight-semibold);
+    }
+    
+    fieldset {
+      display: inline-block;
+      width: 100%;
+      padding: 0 @spacing @spacing @spacing;
+      border: 1px solid @color-grey;
+      background-color: @color-grey-lighter;
+      .rounded(@border-radius);
+    }
+  }
+
+  .button-group {
+    display: inline-block;
+    padding: @spacing;
+    
+    button {
+      margin-left: (@spacing*2);
+      
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .field {
+    display: inline-block;
+    padding: @spacing;
+
+    label {
+      display: block;
+      padding: (@spacing/2) 0;
+      text-align: left;
+      .font(@weight: @weight-semibold);
+    }
+    
+    input[type=radio],
+    input[type=checkbox] {
+      margin-right: @spacing;
+    }
+
+    select,
+    textarea,
+    input[type=time],
+    input[type=date],
+    input[type=text],
+    input[type=password] {
+      width: 100%;
+    }
+  }
+  
+  .value {
+    white-space: pre-line;
+  }
+}
+
+input[type=radio],
+input[type=checkbox] {
+  cursor: pointer;
+}
+
+select,
+textarea,
+input[type=time],
+input[type=date],
+input[type=text],
+input[type=password] {
+  padding: 3px 0 4px 8px;
+  line-height: 18px;
+  background-color: white;
+  border: 1px solid @color-grey;
+  cursor: text;
+  .rounded(@border-radius);
+}
+
+select {
+  height: 27px;
+}
+
+// - -------------------------------------------------------------------- - //

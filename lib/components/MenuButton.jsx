@@ -8,7 +8,7 @@
 
 'use strict';
 
-rey.component('uim.Menu', [
+rey.component('uim.MenuButton', [
   'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.LinkGroup', 'uim.IconButton',
   function (React, Immutable, classNames, Icon, LinkGroup, IconButton) {
 
@@ -78,7 +78,7 @@ rey.component('uim.Menu', [
       renderCounter: function () {
         if (this.props.counter) {
           return (
-            <div className='menu-counter' onClick={this.handleClick}>
+            <div className='menu-button-counter' onClick={this.handleClick}>
               {this.props.counter}
             </div>
           );
@@ -86,7 +86,9 @@ rey.component('uim.Menu', [
       },
 
       render: function () {
-        var classes = { menu: true, show: this.state.showMenu };
+        var classes = {};
+        classes['menu-button'] = true;
+        classes['show'] = this.state.showMenu;
         classes[this.props.className] = !!this.props.className;
 
         return (
@@ -97,7 +99,7 @@ rey.component('uim.Menu', [
               name={this.props.name + '-links'}
               path={this.props.path.push('links')}
               links={this.props.links}
-              className='menu-links' />
+              className='menu-button-links' />
           </div>
         );
       }

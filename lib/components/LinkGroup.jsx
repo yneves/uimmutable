@@ -22,7 +22,8 @@ rey.component('uim.LinkGroup', [
             path: path,
             name: field.get('name'),
             links: field.get('links'),
-            className: field.get('className')
+            className: field.get('className'),
+            collapsed: field.get('collapsed')
           };
         }
       },
@@ -31,13 +32,15 @@ rey.component('uim.LinkGroup', [
         path: React.PropTypes.List.isRequired,
         name: React.PropTypes.string.isRequired,
         links: React.PropTypes.List.isRequired,
-        className: React.PropTypes.string
+        className: React.PropTypes.string,
+        collapsed: React.PropTypes.bool.isRequired
       },
 
       getDefaultProps: function () {
         return {
           path: Immutable.List(),
-          links: Immutable.List()
+          links: Immutable.List(),
+          collapsed: false
         };
       },
 
@@ -66,8 +69,13 @@ rey.component('uim.LinkGroup', [
         var classes = { 'link-group': true };
         classes[this.props.className] = !!this.props.className;
 
+        var style = {};
+        if (this.props.collapsed) {
+          style.display = 'none';
+        }
+
         return (
-          <ul className={classNames(classes)}>
+          <ul className={classNames(classes)} style={style}>
             {this.props.links.map(this.renderLink)}
           </ul>
         );

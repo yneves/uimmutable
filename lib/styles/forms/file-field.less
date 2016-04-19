@@ -1,0 +1,28 @@
+.formset {
+
+  .file-field-wrapper {
+    padding: @spacing;
+    
+    .file-field {
+      border: 2px dashed @color-grey;
+      position: relative;
+      
+      label {
+        text-align: center;
+        font-weight: normal;
+        padding: (@spacing*3) 0;
+      }
+      
+      input[type=file] {
+        .opacity(0);
+        z-index: 1;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        cursor: pointer;
+      }
+    }
+  }
+}

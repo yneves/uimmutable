@@ -1,6 +1,6 @@
 {
   "name": "uimmutable",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "React components with Immutable powers.",
   "main": "lib/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "grunt-babel": "^6.0.0",
     "grunt-contrib-concat": "^1.0.0",
     "grunt-contrib-uglify": "^1.0.1",
-    "jsdom": "^8.3.1",
+    "jsdom": "^8.4.0",
     "mocha-jsdom": "^1.1.0"
   },
   "devDependencies": {

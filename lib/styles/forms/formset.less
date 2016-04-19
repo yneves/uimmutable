@@ -1,0 +1,35 @@
+// - -------------------------------------------------------------------- - //
+
+.formset {
+  display: inline-block;
+  padding: @spacing;
+  
+  .value {
+    white-space: pre-line;
+  }
+}
+
+input[type=radio],
+input[type=checkbox] {
+  cursor: pointer;
+}
+
+select,
+textarea,
+input[type=time],
+input[type=date],
+input[type=text],
+input[type=password] {
+  padding: 3px 0 4px 8px;
+  line-height: 18px;
+  background-color: white;
+  border: 1px solid @color-grey;
+  cursor: text;
+  .rounded(@border-radius);
+}
+
+select {
+  height: 27px;
+}
+
+// - -------------------------------------------------------------------- - //

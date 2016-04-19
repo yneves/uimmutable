@@ -1,0 +1,28 @@
+.formset {
+
+  .field {
+    display: inline-block;
+    padding: @spacing;
+
+    label {
+      display: block;
+      padding: (@spacing/2) 0;
+      text-align: left;
+      .font(@weight: @weight-semibold);
+    }
+    
+    input[type=radio],
+    input[type=checkbox] {
+      margin-right: @spacing;
+    }
+
+    select,
+    textarea,
+    input[type=time],
+    input[type=date],
+    input[type=text],
+    input[type=password] {
+      width: 100%;
+    }
+  }
+}

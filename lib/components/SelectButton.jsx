@@ -214,15 +214,27 @@ rey.component('uim.SelectButton', [
         );
       },
 
+      renderIcon: function () {
+        return (
+          <Icon
+            key='icon'
+            name='caret-down'
+            className='select-button-icon'
+            onClick={this.handleClickCaret} />
+        );
+      },
+
+      renderList: function () {
+        return (
+          <ul key='list'>
+            {this.props.options.map(this.renderOption)}
+          </ul>
+        );
+      },
+
       renderOptions: function () {
         if (!this.isDisabled()) {
-          return ([
-            <Icon key='icon' name='caret-down' onClick={this.handleClickCaret} />
-            ,
-            <ul key='list'>
-              {this.props.options.map(this.renderOption)}
-            </ul>
-          ]);
+          return ([this.renderIcon(), this.renderList()]);
         }
       },
 

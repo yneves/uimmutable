@@ -1,17 +1,33 @@
 .formset {
 
-  .file-field-wrapper {
-    padding: @spacing;
+  .file-field {
+  
+    .file-field-content {
+      display: inline-block;
+      width: 100%;
+      border: none;
+      background-color: @color-grey-light;
+      cursor: pointer;
+      text-shadow: @text-shadow-grey-light;
+      .font();
+      .rounded(@border-radius);
+      .box-shadow(@shadow-grey-light);
+    }
     
-    .file-field {
-      border: 2px dashed @color-grey;
+    .file-field-input,
+    .file-field-file {
       position: relative;
-      
-      label {
-        text-align: center;
-        font-weight: normal;
-        padding: (@spacing*3) 0;
+      padding: @spacing (@spacing*2);
+      color: inherit;
+      text-align: left;
+      .ellipsis();
+
+      .icon {
+        margin-right: @spacing;
       }
+    }
+  
+    .file-field-input {
       
       input[type=file] {
         .opacity(0);
@@ -21,6 +37,18 @@
         left: 0;
         bottom: 0;
         width: 100%;
+        cursor: pointer;
+      }
+    }
+    
+    .file-field-file {
+      border-top: 1px solid @color-grey-lighter;
+      padding-right: 10 + (@spacing*3);
+      
+      .fa-trash-o {
+        margin: 0;
+        position: absolute;
+        right: (@spacing*2);
         cursor: pointer;
       }
     }

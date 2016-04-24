@@ -2690,7 +2690,7 @@ rey.component('uim.SelectButton', [
         }
       },
 
-      renderIcon: function (option) {
+      renderOptionIcon: function (option) {
         var icon;
         if (option.has('icon')) {
           icon = (
@@ -2728,7 +2728,7 @@ rey.component('uim.SelectButton', [
         return (
           <li key={index} className={classNames(classes)} onClick={onClick}>
             {this.renderSelected(option)}
-            {this.renderIcon(option)}
+            {this.renderOptionIcon(option)}
             {option.get('label')}
           </li>
         );
@@ -2777,7 +2777,7 @@ rey.component('uim.SelectButton', [
         } else if (selectedOptions.size > 0) {
           classes[selectedOptions.getIn([0, 'className'])] = !!selectedOptions.getIn([0, 'className']);
           value = selectedOptions.getIn([0, 'selectedLabel']) || selectedOptions.getIn([0, 'label']);
-          icon = this.renderIcon(selectedOptions.get(0));
+          icon = this.renderOptionIcon(selectedOptions.get(0));
 
         } else if (this.props.blankValue) {
           classes['select-button-blank'] = true;
@@ -2794,7 +2794,7 @@ rey.component('uim.SelectButton', [
         );
       },
 
-      renderIcon: function () {
+      renderCaretIcon: function () {
         return (
           <Icon
             key='icon'
@@ -2814,7 +2814,7 @@ rey.component('uim.SelectButton', [
 
       renderOptions: function () {
         if (!this.isDisabled()) {
-          return ([this.renderIcon(), this.renderList()]);
+          return ([this.renderCaretIcon(), this.renderList()]);
         }
       },
 

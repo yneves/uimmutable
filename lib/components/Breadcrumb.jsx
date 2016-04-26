@@ -10,30 +10,26 @@
 
 rey.component('uim.Breadcrumb', [
   'React', 'Immutable', 'classNames', 'uim.LinkGroup',
-  function (React, Immutable, classNames, LinkGroup) {
+  (React, Immutable, classNames, LinkGroup) => ({
 
-    return {
+    statics: {
+      pickProps: LinkGroup.pickProps
+    },
 
-      statics: {
-        pickProps: LinkGroup.pickProps
-      },
+    propTypes: {
+      className: React.PropTypes.string
+    },
 
-      propTypes: {
-        className: React.PropTypes.string
-      },
-
-      render: function () {
-        var classes = {};
-        classes['breadcrumb'] = true;
-        classes[this.props.className] = !!this.props.className;
-
-        return (
-          <LinkGroup {...this.props} className={classNames(classes)} />
-        );
-      }
-
-    };
-  }
+    render() {
+      const classes = {
+        breadcrumb: true,
+        [this.props.className]: this.props.className
+      };
+      return (
+        <LinkGroup {...this.props} className={classNames(classes)} />
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

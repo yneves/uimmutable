@@ -10,52 +10,47 @@
 
 rey.component('uim.SelectButtonField', [
   'React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field',
-  function (React, Immutable, classNames, SelectButton, Field) {
+  (React, Immutable, classNames, SelectButton, Field) => ({
 
-    return {
+    statics: {
+      pickProps: SelectButton.pickProps
+    },
 
-      statics: {
-        pickProps: SelectButton.pickProps
-      },
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
 
-      propTypes: {
-        path: React.PropTypes.List.isRequired,
-        name: React.PropTypes.string.isRequired,
-        label: React.PropTypes.string.isRequired,
-        options: React.PropTypes.List.isRequired,
-        disabled: React.PropTypes.bool.isRequired,
-        disabledValues: React.PropTypes.List,
-        blankValue: React.PropTypes.string,
-        value: React.PropTypes.any,
-        onChange: React.PropTypes.func,
-        className: React.PropTypes.string
-      },
+    getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false
+      };
+    },
 
-      getDefaultProps: function () {
-        return {
-          path: Immutable.List(),
-          disabled: false
-        };
-      },
-
-      render: function () {
-
-        var classes = {};
-        classes['select-button-field'] = true;
-        classes[this.props.className] = !!this.props.className;
-
-        return (
-          <Field ref='field'
-            name={this.props.name}
-            label={this.props.label}
-            className={classNames(classes)}>
-            <SelectButton {...this.props} />
-          </Field>
-        );
-      }
-
-    };
-  }
+    render() {
+      const classes = {
+        ['select-button-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          className={classNames(classes)}>
+          <SelectButton {...this.props} />
+        </Field>
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

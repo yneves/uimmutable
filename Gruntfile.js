@@ -6,10 +6,19 @@ module.exports = function (grunt) {
 
   grunt.initConfig({
 
+    jscs: {
+      src: './lib/components/*.jsx',
+      options: {
+        config: '.jscsrc',
+        esnext: true,
+        fix: true
+      }
+    },
+
     babel: {
       development: {
         options: {
-          presets: ['react']
+          presets: ['es2015', 'react']
         },
         files: [{
           src: ['./dist/uimmutable.jsx'],
@@ -47,6 +56,7 @@ module.exports = function (grunt) {
 
   });
 
+  grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');

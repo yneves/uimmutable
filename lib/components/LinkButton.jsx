@@ -10,69 +10,66 @@
 
 rey.component('uim.LinkButton', [
   'React', 'Immutable', 'classNames', 'uim.Link',
-  function (React, Immutable, classNames, Link) {
+  (React, Immutable, classNames, Link) => ({
 
-    return {
+    statics: {
 
-      statics: {
-
-        pickProps: function (path, field, values) {
-          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-          return {
-            path: path,
-            name: field.get('name'),
-            href: field.get('href'),
-            label: field.get('label'),
-            disabled: field.get('disabled'),
-            className: field.get('className')
-          };
-        }
-      },
-
-      propTypes: {
-        path: React.PropTypes.List.isRequired,
-        name: React.PropTypes.string.isRequired,
-        label: React.PropTypes.string.isRequired,
-        disabled: React.PropTypes.bool.isRequired,
-        onClick: React.PropTypes.func,
-        className: React.PropTypes.string
-      },
-
-      getDefaultProps: function () {
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
         return {
-          disabled: false
+          path: path,
+          name: field.get('name'),
+          href: field.get('href'),
+          label: field.get('label'),
+          disabled: field.get('disabled'),
+          className: field.get('className')
         };
-      },
-
-      handleClick: function (event) {
-        if (this.props.onClick) {
-          this.props.onClick({
-            name: this.props.name,
-            path: this.props.path,
-            event: event
-          });
-        }
-      },
-
-      render: function () {
-
-        var classes = { button: true, 'link-button': true };
-        classes[this.props.className] = !!this.props.className;
-
-        return (
-          <Link
-            name={this.props.name}
-            href={this.props.href}
-            label={this.props.label}
-            className={classNames(classes)}
-            data-button-name={this.props.name}
-            disabled={this.props.disabled}
-            onClick={this.handleClick} />
-        );
       }
+    },
 
-    };
-  }
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps() {
+      return {
+        disabled: false
+      };
+    },
+
+    handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+
+    render() {
+      const classes = {
+        button: true,
+        ['link-button']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Link
+          name={this.props.name}
+          href={this.props.href}
+          label={this.props.label}
+          className={classNames(classes)}
+          data-button-name={this.props.name}
+          disabled={this.props.disabled}
+          onClick={this.handleClick} />
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

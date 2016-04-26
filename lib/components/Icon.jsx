@@ -10,74 +10,60 @@
 
 rey.component('uim.Icon', [
   'React', 'Immutable', 'classNames',
-  function (React, Immutable, classNames) {
+  (React, Immutable, classNames, globals = {}) => ({
 
-    var globals = {
-      className: 'fa',
-      classNamePrefix: 'fa-'
-    };
+    statics: {
 
-    return {
+      globals: globals,
 
-      statics: {
-
-        globals: globals,
-
-        pickProps: function (path, field, values) {
-          path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-          return {
-            path: path,
-            name: field.get('name'),
-            icon: field.get('icon'),
-            className: field.get('className')
-          };
-        }
-      },
-
-      propTypes: {
-        path: React.PropTypes.List.isRequired,
-        name: React.PropTypes.string.isRequired,
-        icon: React.PropTypes.string,
-        className: React.PropTypes.string,
-        onClick: React.PropTypes.func
-      },
-
-      getDefaultProps: function () {
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
         return {
-          path: Immutable.List()
+          path: path,
+          name: field.get('name'),
+          icon: field.get('icon'),
+          className: field.get('className')
         };
-      },
-
-      handleClick: function (event) {
-        if (this.props.onClick) {
-          this.props.onClick({
-            name: this.props.name,
-            path: this.props.path,
-            event: event
-          });
-        }
-      },
-
-      render: function () {
-
-        var classes = { icon: true };
-        classes[globals.className] = true;
-        classes[this.props.className] = !!this.props.className;
-
-        if (this.props.icon) {
-          classes[globals.classNamePrefix + this.props.icon] = true;
-
-        } else if (this.props.name) {
-          classes[globals.classNamePrefix + this.props.name] = true;
-        }
-
-        return (
-          <span className={classNames(classes)} onClick={this.handleClick} />
-        );
       }
+    },
 
-    };
-  }
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      icon: React.PropTypes.string,
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func
+    },
+
+    getDefaultProps() {
+      return {
+        path: Immutable.List()
+      };
+    },
+
+    handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+
+    render() {
+      const icon = this.props.icon || this.props.name;
+      const classes = {
+        icon: true,
+        [globals.className || 'fa']: true,
+        [this.props.className]: !!this.props.className,
+        [(globals.classNamePrefix || 'fa-') + icon]: true
+      };
+      return (
+        <span className={classNames(classes)} onClick={this.handleClick} />
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

@@ -10,19 +10,16 @@
 
 rey.component('uim.Loading', [
   'React',
-  function (React) {
+  (React) => ({
 
-    return {
-
-      render: function () {
-        return (
-          <div className='loading'>
-            <span className='fa fa-spinner fa-spin' />
-          </div>
-        );
-      }
-    };
-  }
+    render() {
+      return (
+        <div className='loading'>
+          <span className='fa fa-spinner fa-spin' />
+        </div>
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

@@ -10,31 +10,27 @@
 
 rey.component('uim.Field', [
   'React', 'Immutable', 'classNames',
-  function (React, Immutable, classNames) {
+  (React, Immutable, classNames) => ({
 
-    return {
+    propTypes: {
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      className: React.PropTypes.string
+    },
 
-      propTypes: {
-        name: React.PropTypes.string.isRequired,
-        label: React.PropTypes.string.isRequired,
-        className: React.PropTypes.string
-      },
-
-      render: function () {
-
-        var classes = { field: true };
-        classes[this.props.className] = !!this.props.className;
-
-        return (
-          <div data-field-name={this.props.name} className={classNames(classes)}>
-            <label>{this.props.label}</label>
-            {this.props.children}
-          </div>
-        );
-      }
-
-    };
-  }
+    render() {
+      const classes = {
+        field: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <div data-field-name={this.props.name} className={classNames(classes)}>
+          <label>{this.props.label}</label>
+          {this.props.children}
+        </div>
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

@@ -10,22 +10,18 @@
 
 rey.component('uim.Overlay', [
   'React', 'Immutable', 'classNames',
-  function (React, Immutable, classNames) {
+  (React, Immutable, classNames) => ({
 
-    return {
-
-      render: function () {
-        return (
-          <div className='overlay'>
-            <div className='overlay-container'>
-              {this.props.children}
-            </div>
+    render() {
+      return (
+        <div className='overlay'>
+          <div className='overlay-container'>
+            {this.props.children}
           </div>
-        );
-      }
-
-    };
-  }
+        </div>
+      );
+    }
+  })
 ]);
 
 // - -------------------------------------------------------------------- - //

@@ -24,13 +24,13 @@
     .rounded(@border-radius);
   }
   
-  .menu-button-links {
+  .menu-button-dropdown {
     display: none;
   }
   
   &.show {
     
-    .menu-button-links {
+    .menu-button-dropdown {
       position: absolute;
       display: block;
       padding: @spacing 0;
@@ -38,7 +38,19 @@
       .box-shadow(@shadow-float);
       .rounded(@border-radius);
       z-index: 1;
-      list-style-type: none;
+      width: 200px;
+      
+      h2 {
+        border-top: 1px solid @color-white;
+        margin-top: @spacing;
+        padding: (@spacing*2) (@spacing*2) @spacing (@spacing*2);
+        .font(@weight: @weight-semibold);
+        white-space: nowrap;
+      }
+      
+      ul {
+        list-style-type: none;
+      }
       
       li {
         

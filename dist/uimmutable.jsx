@@ -1986,7 +1986,7 @@ rey.component('uim.MenuButton', [
 
     render() {
       const classes = {
-        show: true,
+        show: this.state.showMenu,
         ['menu-button']: true,
         [this.props.className]: !!this.props.className
       };

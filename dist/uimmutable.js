@@ -1881,7 +1881,7 @@ rey.component('uim.MenuButton', ['React', 'Immutable', 'classNames', 'uim.Icon',
       var _classes19;
 
       var classes = (_classes19 = {
-        show: true
+        show: this.state.showMenu
       }, _defineProperty(_classes19, 'menu-button', true), _defineProperty(_classes19, this.props.className, !!this.props.className), _classes19);
       return React.createElement(
         'div',

@@ -33,7 +33,7 @@
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jscs": "^2.8.0",
-    "jsdom": "^8.4.0",
+    "jsdom": "^8.5.0",
     "mocha-jsdom": "^1.1.0"
   },
   "devDependencies": {

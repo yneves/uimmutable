@@ -2941,10 +2941,14 @@ rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value',
       var _classes29;
 
       var classes = (_classes29 = {}, _defineProperty(_classes29, 'time-field', true), _defineProperty(_classes29, this.props.className, !!this.props.className), _classes29);
-      return React.createElement(Field, { ref: 'field',
-        name: this.props.name,
-        label: this.props.label,
-        className: classNames(classes) });
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          className: classNames(classes) },
+        this.renderContent()
+      );
     }
   };
 }]);

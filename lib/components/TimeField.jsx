@@ -79,6 +79,7 @@ rey.component('uim.TimeField', [
           name={this.props.name}
           label={this.props.label}
           className={classNames(classes)}>
+          {this.renderContent()}
         </Field>
       );
     }

@@ -9,12 +9,10 @@
 'use strict';
 
 rey.component('uim.Value', [
-  'React', 'Immutable', 'classNames',
-  (React, Immutable, classNames, Formatters = {}) => ({
+  'React', 'Immutable', 'classNames', 'uim.ValueFormat',
+  (React, Immutable, classNames, ValueFormat) => ({
 
     statics: {
-
-      formatters: Formatters,
 
       pickProps(path, field, values) {
         path = field.has('path') ? field.get('path') : path.push(field.get('name'));
@@ -54,8 +52,8 @@ rey.component('uim.Value', [
       let value;
       if (this.props.value || this.props.value === 0) {
         if (this.props.format) {
-          if (Formatters[this.props.format]) {
-            value = Formatters[this.props.format](this.props.value);
+          if (ValueFormat[this.props.format]) {
+            value = ValueFormat[this.props.format](this.props.value);
           } else {
             throw new Error('unknown format (' + this.props.format + ')');
           }

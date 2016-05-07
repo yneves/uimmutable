@@ -8,7 +8,7 @@
 
 'use strict';
 
-rey.component('uim.DateField', [
+rey.component('uim.DateRangeField', [
   'React', 'Immutable', 'classNames',
   'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat',
   (React, Immutable, classNames, Value, Field, DatePicker, DateFormat) => ({
@@ -32,44 +32,83 @@ rey.component('uim.DateField', [
       path: React.PropTypes.List.isRequired,
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
-      value: React.PropTypes.any,
+      value: React.PropTypes.List,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
-      placeholder: React.PropTypes.string
+      placeholder: React.PropTypes.any
     },
 
-    parseInput(date) {
-      return date ? moment(date, DateFormat.date.output) : undefined;
+    parseInput(value, index) {
+      if (Immutable.List.isList(value)) {
+        const date = value.get(index);
+        return date ? moment(date, DateFormat.date.output) : undefined;
+      }
     },
 
     parseOutput(date) {
-      return date.isValid() ? date.format(DateFormat.date.output) : undefined;
+      return date && date.isValid() ? date.format(DateFormat.date.output) : undefined;
     },
 
-    handleChange(value) {
+    handleChange(value, index) {
+      let newValue;
+      if (Immutable.List.isList(this.props.value)) {
+        newValue = this.props.value.set(index, this.parseOutput(value));
+      } else {
+        newValue = Immutable.List().set(index, this.parseOutput(value));
+      }
       if (this.props.onChange) {
         this.props.onChange({
           name: this.props.name,
           path: this.props.path,
-          value: this.parseOutput(value)
+          value: newValue
         });
       }
+    },
+
+    getPlaceholder(index) {
+      let placeholder;
+      if (rey.isString(this.props.placeholder)) {
+        placeholder = this.props.placeholder;
+      } else if (Immutable.List.isList(this.props.placeholder)) {
+        placeholder = this.props.placeholder.get(index);
+      }
+      return placeholder;
     },
 
     renderContent() {
       let content;
       if (this.props.input) {
-        content = (
+        const startDate = this.parseInput(this.props.value, 0);
+        const endDate = this.parseInput(this.props.value, 1);
+        content = [
           <DatePicker
+            key='startDate'
+            ref='startDate'
+            startDate={startDate}
+            endDate={endDate}
+            selected={startDate}
             dateFormat={DateFormat.date.input}
-            selected={this.parseInput(this.props.value)}
-            onChange={this.handleChange}
-            placeholderText={this.props.placeholder} />
-        );
+            isClearable={true}
+            onBlur={() => this.refs.startDate.setOpen(false)}
+            onChange={(date) => this.handleChange(date, 0)}
+            placeholderText={this.getPlaceholder(0)} />
+          ,
+          <DatePicker
+            key='endDate'
+            ref='endDate'
+            startDate={startDate}
+            endDate={endDate}
+            selected={endDate}
+            isClearable={true}
+            onBlur={() => this.refs.endDate.setOpen(false)}
+            dateFormat={DateFormat.date.input}
+            onChange={(date) => this.handleChange(date, 1)}
+            placeholderText={this.getPlaceholder(1)} />
+        ];
       } else {
         content = (
           <Value
-            className='date-value'
+            className='date-range-value'
             path={this.props.path}
             name={this.props.name}
             value={this.props.value}
@@ -81,7 +120,7 @@ rey.component('uim.DateField', [
 
     render() {
       const classes = {
-        ['date-field']: true,
+        ['date-range-field']: true,
         [this.props.className]: !!this.props.className
       };
       return (

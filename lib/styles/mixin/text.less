@@ -1,0 +1,21 @@
+// - -------------------------------------------------------------------- - //
+
+.ellipsis() {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font(@size: @font-size, @weight: inherit, @color: @color-grey-dark, @family: @font-family) {
+  font-family: @family;
+  font-weight: @weight;
+  color: @color;
+  .font-size(@size);
+}
+
+.font-size(@size: @font-size, @line: @size) {
+  font-size: @size;
+  line-height: @line;
+}
+
+// - -------------------------------------------------------------------- - //

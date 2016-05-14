@@ -8,9 +8,9 @@
 
 'use strict';
 
-rey.component('uim.Menuset', [
-  'React', 'Immutable', 'classNames', 'uim.LinkGroup',
-  (React, Immutable, classNames, LinkGroup) => ({
+rey.component('uim.Fieldset', [
+  'React', 'Immutable', 'classNames', 'uim.FieldGroup',
+  (React, Immutable, classNames, FieldGroup) => ({
 
     statics: {
 
@@ -20,10 +20,13 @@ rey.component('uim.Menuset', [
           path: path,
           name: field.get('name'),
           label: field.get('label'),
-          links: field.get('links'),
+          fields: field.get('fields'),
           className: field.get('className'),
+          multiple: field.get('multiple'),
           collapsible: field.get('collapsible'),
-          collapsed: field.get('collapsed')
+          collapsed: field.get('collapsed'),
+          width: field.get('width'),
+          values: values
         };
       }
     },
@@ -32,17 +35,27 @@ rey.component('uim.Menuset', [
       path: React.PropTypes.List.isRequired,
       name: React.PropTypes.string.isRequired,
       label: React.PropTypes.string.isRequired,
-      links: React.PropTypes.List.isRequired,
+      fields: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
       collapsible: React.PropTypes.bool.isRequired,
       collapsed: React.PropTypes.bool.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      onChange: React.PropTypes.func,
       className: React.PropTypes.string
     },
 
     getDefaultProps() {
       return {
         path: Immutable.List(),
+        input: true,
         collapsible: false,
-        collapsed: false
+        collapsed: false,
+        multiple: false
       };
     },
 
@@ -60,30 +73,30 @@ rey.component('uim.Menuset', [
       }
     },
 
-    renderLabel() {
-      if (this.props.label) {
-        return (
-          <legend onClick={this.handleClickLegend}>
-            {this.props.label}
-          </legend>
-        );
-      }
-    },
-
     render() {
       const classes = {
-        menuset: true,
+        fieldset: true,
         [this.props.className]: !!this.props.className
       };
+      const style = {};
+      if (this.props.width) {
+        style.width = this.props.width;
+      }
       return (
-        <div data-menu-name={this.props.name} className={classNames(classes)}>
+        <div data-fieldset-name={this.props.name} style={style} className={classNames(classes)}>
           <fieldset>
-            {this.renderLabel()}
-            <LinkGroup
-              name={this.props.name}
+            <legend onClick={this.handleClickLegend}>
+              {this.props.label}
+            </legend>
+            <FieldGroup
               path={this.props.path}
-              links={this.props.links}
-              collapsed={this.state.collapsed} />
+              fields={this.props.fields}
+              values={this.props.values}
+              input={this.props.input}
+              collapsed={this.state.collapsed}
+              multiple={this.props.multiple}
+              onClick={this.props.onClick}
+              onChange={this.props.onChange} />
           </fieldset>
         </div>
       );

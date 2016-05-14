@@ -135,6 +135,54 @@ rey.component('uim.Breadcrumb', [
 
 'use strict';
 
+rey.component('uim.Failure', [
+  'React', 'Immutable', 'classNames', 'uim.Icon',
+  (React, Immutable, classNames, Icon) => ({
+
+    propTypes: {
+      label: React.PropTypes.string.isRequired,
+      message: React.PropTypes.string,
+      buttonLabel: React.PropTypes.string.isRequired,
+      onClose: React.PropTypes.func.isRequired
+    },
+
+    getDefaultProps() {
+      return {
+        buttonLabel: 'OK'
+      };
+    },
+
+    render() {
+      return (
+        <div className='dialog failure'>
+          <header>
+            <Icon name='exclamation-circle' />
+            <h2>{this.props.label}</h2>
+          </header>
+          { this.props.message ? <p>{this.props.message}</p> : undefined }
+          <footer>
+            <button type='button' onClick={this.props.onClose}>
+              {this.props.buttonLabel}
+            </button>
+          </footer>
+        </div>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
 rey.component('uim.Button', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({
@@ -382,6 +430,7 @@ rey.component('uim.CheckGroup', [
           label: field.get('label'),
           checkboxes: field.get('checkboxes'),
           className: field.get('className'),
+          width: field.get('width'),
           value: values.getIn(path)
         };
       }
@@ -394,6 +443,10 @@ rey.component('uim.CheckGroup', [
       checkboxes: React.PropTypes.List.isRequired,
       values: React.PropTypes.Map.isRequired,
       onChange: React.PropTypes.func.isRequired,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
       className: React.PropTypes.string
     },
 
@@ -422,6 +475,7 @@ rey.component('uim.CheckGroup', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
+          width={this.props.width}
           className={classNames(classes)}>
           {this.props.checkboxes.map(this.renderCheckbox)}
         </Field>
@@ -457,6 +511,7 @@ rey.component('uim.DateField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
+          width: field.get('width'),
           placeholder: field.get('placeholder')
         };
       }
@@ -469,6 +524,10 @@ rey.component('uim.DateField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
       placeholder: React.PropTypes.string
     },
 
@@ -520,9 +579,10 @@ rey.component('uim.DateField', [
       };
       return (
         <Field ref='field'
-          className={classNames(classes)}
           name={this.props.name}
-          label={this.props.label}>
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
           {this.renderContent()}
         </Field>
       );
@@ -555,6 +615,7 @@ rey.component('uim.DateRangeField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
+          width: field.get('width'),
           placeholder: field.get('placeholder')
         };
       }
@@ -566,15 +627,22 @@ rey.component('uim.DateRangeField', [
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.List,
       onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
       className: React.PropTypes.string,
       placeholder: React.PropTypes.any
     },
 
     parseInput(value, index) {
+      let date;
       if (Immutable.List.isList(value)) {
-        const date = value.get(index);
-        return date ? moment(date, DateFormat.date.output) : undefined;
+        date = value.get(index);
+      } else if (index === 0 && rey.isString(value)) {
+        date = value;
       }
+      return date ? moment(date, DateFormat.date.output) : undefined;
     },
 
     parseOutput(date) {
@@ -657,9 +725,10 @@ rey.component('uim.DateRangeField', [
       };
       return (
         <Field ref='field'
-          className={classNames(classes)}
           name={this.props.name}
-          label={this.props.label}>
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
           {this.renderContent()}
         </Field>
       );
@@ -677,62 +746,18 @@ rey.component('uim.DateRangeField', [
 
 'use strict';
 
-rey.component('uim.Failure', [
-  'React', 'Immutable', 'classNames', 'uim.Icon',
-  (React, Immutable, classNames, Icon) => ({
-
-    propTypes: {
-      label: React.PropTypes.string.isRequired,
-      message: React.PropTypes.string,
-      buttonLabel: React.PropTypes.string.isRequired,
-      onClose: React.PropTypes.func.isRequired
-    },
-
-    getDefaultProps() {
-      return {
-        buttonLabel: 'OK'
-      };
-    },
-
-    render() {
-      return (
-        <div className='dialog failure'>
-          <header>
-            <Icon name='exclamation-circle' />
-            <h2>{this.props.label}</h2>
-          </header>
-          { this.props.message ? <p>{this.props.message}</p> : undefined }
-          <footer>
-            <button type='button' onClick={this.props.onClose}>
-              {this.props.buttonLabel}
-            </button>
-          </footer>
-        </div>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
 rey.component('uim.Field', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({
 
     propTypes: {
       name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      className: React.PropTypes.string
+      label: React.PropTypes.string,
+      className: React.PropTypes.string,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ])
     },
 
     render() {
@@ -740,8 +765,12 @@ rey.component('uim.Field', [
         field: true,
         [this.props.className]: !!this.props.className
       };
+      const style = {};
+      if (this.props.width) {
+        style.width = this.props.width;
+      }
       return (
-        <div data-field-name={this.props.name} className={classNames(classes)}>
+        <div data-field-name={this.props.name} style={style} className={classNames(classes)}>
           <label>{this.props.label}</label>
           {this.props.children}
         </div>
@@ -957,6 +986,7 @@ rey.component('uim.Fieldset', [
           multiple: field.get('multiple'),
           collapsible: field.get('collapsible'),
           collapsed: field.get('collapsed'),
+          width: field.get('width'),
           values: values
         };
       }
@@ -972,6 +1002,10 @@ rey.component('uim.Fieldset', [
       collapsed: React.PropTypes.bool.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       input: React.PropTypes.bool.isRequired,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
       onChange: React.PropTypes.func,
       className: React.PropTypes.string
     },
@@ -1005,8 +1039,12 @@ rey.component('uim.Fieldset', [
         fieldset: true,
         [this.props.className]: !!this.props.className
       };
+      const style = {};
+      if (this.props.width) {
+        style.width = this.props.width;
+      }
       return (
-        <div data-field-name={this.props.name} className={classNames(classes)}>
+        <div data-fieldset-name={this.props.name} style={style} className={classNames(classes)}>
           <fieldset>
             <legend onClick={this.handleClickLegend}>
               {this.props.label}
@@ -1055,6 +1093,7 @@ rey.component('uim.FileField', [
           className: field.get('className'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
+          width: field.get('width'),
           value: values.getIn(path)
         };
       }
@@ -1063,12 +1102,16 @@ rey.component('uim.FileField', [
     propTypes: {
       path: React.PropTypes.List.isRequired,
       name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
       input: React.PropTypes.bool.isRequired,
       placeholder: React.PropTypes.string.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
       className: React.PropTypes.string
     },
 
@@ -1185,6 +1228,7 @@ rey.component('uim.FileField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
+          width={this.props.width}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -1270,6 +1314,1092 @@ rey.component('uim.Formset', [
             collapsed={this.state.collapsed}
             onClick={this.props.onClick}
             onChange={this.props.onChange} />
+        </div>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.MemoField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  (React, Immutable, classNames, Value, Field) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          rows: field.get('rows'),
+          cols: field.get('cols'),
+          className: field.get('className'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      rows: React.PropTypes.number,
+      cols: React.PropTypes.number,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    renderContent() {
+      let content;
+      if (this.props.input) {
+        content = (
+          <textarea
+            ref='input'
+            rows={this.props.rows}
+            cols={this.props.cols}
+            value={this.props.value || ''}
+            onChange={this.handleChange} />
+        );
+      } else {
+        content = (
+          <Value
+            className='memo-value'
+            path={this.props.path}
+            name={this.props.name}
+            value={this.props.value} />
+        );
+      }
+      return content;
+    },
+
+    render() {
+      const classes = {
+        ['memo-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          {this.renderContent()}
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.PasswordField', [
+  'React', 'Immutable', 'classNames', 'uim.Field',
+  (React, Immutable, classNames, Field) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          width: field.get('width'),
+          empty: !values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      empty: React.PropTypes.bool,
+      onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    componentDidUpdate() {
+      if (this.props.empty) {
+        this.refs.input.value = '';
+      }
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    render() {
+      const classes = {
+        ['password-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          <input
+            ref='input'
+            type='password'
+            onChange={this.handleChange} />
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Radio', [
+  'React', 'Immutable', 'classNames',
+  (React, Immutable, classNames) => ({
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      value: React.PropTypes.any.isRequired,
+      checked: React.PropTypes.bool.isRequired,
+      onChange: React.PropTypes.func.isRequired,
+      disabled: React.PropTypes.bool,
+      className: React.PropTypes.string
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    render() {
+      const classes = {
+        radio: true,
+        disabled: this.props.disabled,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <label className={classNames(classes)}>
+          <input ref='input'
+            type='radio'
+            name={this.props.name}
+            value={this.props.value}
+            checked={this.props.checked}
+            disabled={this.props.disabled}
+            onChange={this.handleChange} />
+          <span>{this.props.label}</span>
+        </label>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.RadioGroup', [
+  'React', 'Immutable', 'classNames', 'uim.Field', 'uim.Value', 'uim.Radio',
+  (React, Immutable, classNames, Field, Value, Radio) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          options: field.get('options'),
+          className: field.get('className'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
+      input: React.PropTypes.bool.isRequired,
+      options: React.PropTypes.List.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func.isRequired,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    renderRadio(option, index) {
+      return (
+        <Radio ref={index}
+          key={index}
+          path={this.props.path}
+          name={this.props.name}
+          label={option.get('label')}
+          value={option.get('value')}
+          checked={this.props.value === option.get('value')}
+          disabled={option.get('disabled')}
+          onChange={this.props.onChange} />
+      );
+    },
+
+    getSelectedLabel() {
+      const value = this.props.value;
+      const selected = this.props.options.find((option) => {
+        return option.get('value') === value;
+      });
+      if (selected) {
+        return selected.get('label');
+      }
+    },
+
+    renderContent() {
+      let content;
+      if (this.props.input) {
+        content = this.props.options.map(this.renderRadio);
+      } else {
+        content = (
+          <Value
+            className='radio-value'
+            path={this.props.path}
+            name={this.props.name}
+            value={this.getSelectedLabel()} />
+        );
+      }
+      return content;
+    },
+
+    render() {
+      const classes = {
+        ['radio-group']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          {this.renderContent()}
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectButton', [
+  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Value',
+  (React, Immutable, classNames, Icon, Value) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          label: field.get('label'),
+          name: field.get('name'),
+          options: field.get('options'),
+          disabled: field.get('disabled'),
+          disabledValues: field.get('disabledValues'),
+          className: field.get('className'),
+          blankValue: field.get('blankValue'),
+          multiple: field.get('multiple'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    getInitialState() {
+      return {
+        showOptions: false
+      };
+    },
+
+    getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false,
+        multiple: false
+      };
+    },
+
+    handleClickCaret(event) {
+      event.event.stopPropagation();
+      this.setState({ showOptions: !this.state.showOptions });
+    },
+
+    getChangedValue(option) {
+      var value;
+      if (this.props.multiple) {
+        var index = this.props.value.indexOf(option.get('value'));
+        if (index === -1) {
+          value = this.props.value.push(option.get('value'));
+        } else {
+          value = this.props.value.delete(index);
+        }
+      } else {
+        value = option.get('value');
+      }
+      return value;
+    },
+
+    handleClickOption(option, event) {
+      event.stopPropagation();
+      if (!option.get('disabled')) {
+        if (!this.props.multiple) {
+          this.setState({ showOptions: !this.state.showOptions });
+        }
+
+        if (this.props.onChange) {
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path,
+            value: this.getChangedValue(option),
+            option: option,
+            event: event
+          });
+        }
+      }
+    },
+
+    handleClickValue(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.props.value,
+          event: event.event
+        });
+      }
+    },
+
+    renderOptionIcon(option) {
+      var icon;
+      if (option.has('icon')) {
+        icon = (
+          <Icon key='icon' name={option.get('icon')} />
+        );
+      }
+      return icon;
+    },
+
+    renderSelected(option) {
+      var selected;
+      if (this.props.multiple) {
+        if (this.props.value.indexOf(option.get('value')) !== -1) {
+          selected = (
+            <Icon name='check' className='icon-selected' />
+          );
+        } else {
+          selected = (
+            <Icon name='check' className='icon-unselected' />
+          );
+        }
+      }
+      return selected;
+    },
+
+    renderOption(option, index) {
+
+      var classes = {};
+      classes['select-button-option'] = true;
+      classes['disabled'] = !!option.get('disabled');
+      classes[option.get('className')] = !!option.get('className');
+
+      var onClick = this.handleClickOption.bind(this, option);
+
+      return (
+        <li key={index} className={classNames(classes)} onClick={onClick}>
+          {this.renderSelected(option)}
+          {this.renderOptionIcon(option)}
+          {option.get('label')}
+        </li>
+      );
+    },
+
+    isDisabled() {
+      return this.props.disabled || (this.props.disabledValues ?
+        this.props.disabledValues.indexOf(this.props.value) !== -1 :
+        false);
+    },
+
+    isSelected(option) {
+      var selected = false;
+      if (this.props.value || this.props.value === 0) {
+        if (this.props.multiple) {
+          if (this.props.value.indexOf(option.get('value')) !== -1) {
+            selected = true;
+          }
+        } else if (option.get('value') === this.props.value) {
+          selected = true;
+        }
+      }
+      return selected;
+    },
+
+    getSelectedOptions() {
+      return this.props.options.filter(function (option) {
+        return this.isSelected(option);
+      }, this);
+    },
+
+    renderSelectedOption() {
+
+      var classes = {};
+      classes['select-button-value'] = true;
+
+      var selectedOptions = this.getSelectedOptions();
+      var value;
+      var icon;
+
+      if (selectedOptions.size > 1) {
+        value = selectedOptions.map(function (option) {
+          return option.get('selectedLabel') || option.get('label');
+        }).join(', ');
+
+      } else if (selectedOptions.size > 0) {
+        classes[selectedOptions.getIn([0, 'className'])] = !!selectedOptions.getIn([0, 'className']);
+        value = selectedOptions.getIn([0, 'selectedLabel']) || selectedOptions.getIn([0, 'label']);
+        icon = this.renderOptionIcon(selectedOptions.get(0));
+
+      } else if (this.props.blankValue) {
+        classes['select-button-blank'] = true;
+        value = this.props.blankValue;
+      }
+
+      return (
+        <Value
+          onClick={this.handleClickValue}
+          className={classNames(classes)}
+          path={this.props.path}
+          name={this.props.name}
+          value={[icon, value]} />
+      );
+    },
+
+    renderCaretIcon() {
+      return (
+        <Icon
+          key='icon'
+          name='caret-down'
+          className='select-button-icon'
+          onClick={this.handleClickCaret} />
+      );
+    },
+
+    renderList() {
+      return (
+        <ul key='list'>
+          {this.props.options.map(this.renderOption)}
+        </ul>
+      );
+    },
+
+    renderOptions() {
+      if (!this.isDisabled()) {
+        return ([this.renderCaretIcon(), this.renderList()]);
+      }
+    },
+
+    render() {
+      const classes = {
+        button: true,
+        disabled: this.isDisabled(),
+        ['select-button']: true,
+        ['show-options']: this.state.showOptions,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <a data-button-name={this.props.name} className={classNames(classes)} type='button'>
+          {this.renderSelectedOption()}
+          {this.renderOptions()}
+        </a>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectButtonField', [
+  'React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field',
+  (React, Immutable, classNames, SelectButton, Field) => ({
+
+    statics: {
+      pickProps: SelectButton.pickProps
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false
+      };
+    },
+
+    render() {
+      const classes = {
+        ['select-button-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          <SelectButton {...this.props} />
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  (React, Immutable, classNames, Value, Field) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          options: field.get('options'),
+          className: field.get('className'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      options: React.PropTypes.List.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ]),
+      className: React.PropTypes.string
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    renderOption(option, index) {
+      return (
+        <option key={index} value={option.get('value')}>
+          {option.get('label')}
+        </option>
+      );
+    },
+
+    getSelectedLabel() {
+      const value = this.props.value;
+      const selected = this.props.options.find(function (option) {
+        return option.get('value') === value;
+      });
+      if (selected) {
+        return selected.get('label');
+      }
+    },
+
+    renderContent() {
+      let content;
+      if (this.props.input) {
+        content = (
+          <select ref='input' value={this.props.value || ''} onChange={this.handleChange}>
+            {this.props.options.map(this.renderOption)}
+          </select>
+        );
+      } else {
+        content = (
+          <Value
+            className='select-value'
+            path={this.props.path}
+            name={this.props.name}
+            value={this.getSelectedLabel()} />
+        );
+      }
+      return content;
+    },
+
+    render() {
+      const classes = {
+        ['select-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          {this.renderContent()}
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.TextField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  (React, Immutable, classNames, Value, Field)  => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          options: field.get('options'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      options: React.PropTypes.List,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ])
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    getId() {
+      return this.props.path.toJS().join('-');
+    },
+
+    renderOptions() {
+      if (this.props.input && this.props.options) {
+        return (
+          <datalist id={this.getId() + '-options'}>
+            {this.props.options.map(function (option, index) {
+              return (
+                <option key={index} value={option}>{option}</option>
+              );
+            })}
+          </datalist>
+        )
+      }
+    },
+
+    renderContent() {
+      let content;
+      if (this.props.input) {
+        content = (
+          <input
+            ref='input'
+            type='text'
+            value={this.props.value || ''}
+            list={this.getId() + '-options'}
+            onChange={this.handleChange} />
+        );
+      } else {
+        content = (
+          <Value
+            className='text-value'
+            path={this.props.path}
+            name={this.props.name}
+            value={this.props.value} />
+        );
+      }
+      return content;
+    },
+
+    render() {
+      const classes = {
+        ['text-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          {this.renderContent()}
+          {this.renderOptions()}
+        </Field>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.TimeField', [
+  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
+  (React, Immutable, classNames, Value, Field) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          width: field.get('width'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func.isRequired,
+      className: React.PropTypes.string,
+      width: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number
+      ])
+    },
+
+    handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+
+    renderContent() {
+      let content;
+      if (this.props.input) {
+        content = (
+          <input
+            ref='input'
+            type='time'
+            value={this.props.value}
+            onChange={this.handleChange} />
+        );
+      } else {
+        content = (
+          <Value
+            className='time-value'
+            path={this.props.path}
+            name={this.props.name}
+            value={this.props.value} />
+        );
+      }
+      return content;
+    },
+
+    render() {
+      const classes = {
+        ['time-field']: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <Field ref='field'
+          name={this.props.name}
+          label={this.props.label}
+          width={this.props.width}
+          className={classNames(classes)}>
+          {this.renderContent()}
+        </Field>
+      );
+    }
+  })
+]);
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Value', [
+  'React', 'Immutable', 'classNames', 'uim.ValueFormat',
+  (React, Immutable, classNames, ValueFormat) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          format: field.get('format'),
+          className: field.get('className'),
+          value: values.getIn(path),
+          texts: field.get('texts')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List,
+      name: React.PropTypes.string,
+      value: React.PropTypes.any,
+      texts: React.PropTypes.Map,
+      format: React.PropTypes.string,
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func
+    },
+
+    handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.props.value,
+          event: event
+        });
+      }
+    },
+
+    getValue() {
+      let value;
+      if (this.props.value || this.props.value === 0) {
+        if (this.props.format) {
+          if (ValueFormat[this.props.format]) {
+            value = ValueFormat[this.props.format](this.props.value);
+          } else {
+            throw new Error('unknown format (' + this.props.format + ')');
+          }
+        } else {
+          value = this.props.value;
+        }
+      } else {
+        value = '-';
+      }
+      if (this.props.texts) {
+        value = this.props.texts.get(value);
+      }
+      return value
+    },
+
+    render() {
+      const classes = {
+        value: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <div className={classNames(classes)} onClick={this.handleClick}>
+          {this.getValue()}
         </div>
       );
     }
@@ -1669,8 +2799,192 @@ rey.component('uim.LinkGroup', [
 'use strict';
 
 rey.component('uim.List', [
-  'React', 'Immutable', 'classNames', 'uim.Toolbar', 'uim.Paginator',
-  (React, Immutable, classNames, Toolbar, Paginator) => ({
+  'React', 'Immutable', 'classNames',
+  'uim.Table', 'uim.Formset', 'uim.Toolbar',
+  'uim.Pages', 'uim.SelectButton',
+  (React, Immutable, classNames, Table, Formset, Toolbar, Pages, SelectButton) => ({
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      filter: React.PropTypes.oneOfType([
+        React.PropTypes.List,
+        React.PropTypes.node,
+        React.PropTypes.bool
+      ]),
+      header: React.PropTypes.oneOfType([
+        React.PropTypes.List,
+        React.PropTypes.node,
+        React.PropTypes.bool
+      ]),
+      footer: React.PropTypes.oneOfType([
+        React.PropTypes.List,
+        React.PropTypes.node,
+        React.PropTypes.bool
+      ]),
+      rows: React.PropTypes.List.isRequired,
+      columns: React.PropTypes.List.isRequired,
+      tranformColumns: React.PropTypes.func,
+      empty: React.PropTypes.node,
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps() {
+      return {
+        rows: Immutable.List(),
+        path: Immutable.List(),
+        columns: Immutable.List(),
+        header: true,
+        footer: false
+      };
+    },
+
+    renderFilter() {
+      if (this.props.filter) {
+        let filter = this.props.filter;
+        if (Immutable.List.isList(this.props.filter)) {
+          filter = (
+            <Formset
+              name='filter'
+              path={this.props.path}
+              values={this.props.values}
+              fields={this.props.filter}
+              onClick={this.props.onClick}
+              onChange={this.props.onChange} />
+          );
+        }
+        return (
+          <div className='list-filter'>
+            {filter}
+          </div>
+        );
+      }
+    },
+
+    renderLimit() {
+      if (this.props.limits.size) {
+        return (
+          <SelectButton
+            name='limit'
+            path={this.props.path.push('limit')}
+            value={this.props.values.getIn(this.props.path.push('limit'))}
+            options={this.props.limits}
+            onChange={this.props.onChange}
+            className='select-limit'/>
+        );
+      }
+    },
+
+    renderPages() {
+      if (this.props.pages > 1) {
+        return (
+          <div className='list-pages'>
+            <Pages
+              name='page'
+              path={this.props.path.push('page')}
+              value={Number(this.props.values.getIn(this.props.path.push('page')))}
+              pages={this.props.pages}
+              onChange={this.props.onChange} />
+            {this.renderLimit()}
+          </div>
+        );
+      }
+    },
+
+    isEmpty() {
+      return this.props.rows.size === 0 && this.props.empty;
+    },
+
+    renderEmpty() {
+      return (
+        <div className='list-empty'>
+          <p>{this.props.empty}</p>
+        </div>
+      );
+    },
+
+    renderHeader() {
+      let header = this.props.header;
+      if (Immutable.List.isList(this.props.header)) {
+        header = (
+          <Toolbar
+            name='header'
+            path={this.props.path}
+            tools={this.props.header}
+            values={this.props.values}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange} />
+        );
+      }
+      return header;
+    },
+
+    renderFooter() {
+      let footer = this.props.footer;
+      if (Immutable.List.isList(this.props.footer)) {
+        footer = (
+          <Toolbar
+            name='footer'
+            path={this.props.path}
+            tools={this.props.footer}
+            values={this.props.values}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange} />
+        );
+      }
+      return footer;
+    },
+
+    renderTable() {
+      return (
+        <div className='list-table'>
+          <Table
+            name='table'
+            header={this.renderHeader()}
+            footer={this.renderFooter()}
+            rows={this.props.rows}
+            columns={this.props.columns}
+            tranformColumns={this.props.tranformColumns}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange} />
+        </div>
+      );
+    },
+
+    render() {
+      const classes = {
+        list: true,
+        [this.props.className]: !!this.props.className
+      };
+      return (
+        <div data-list-name={this.props.name} className={classNames(classes)}>
+          {this.renderFilter()}
+          {this.isEmpty() ? this.renderEmpty() : this.renderTable()}
+          {this.renderPages()}
+        </div>
+      );
+    }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Pages', [
+  'React', 'Immutable', 'classNames', 'uim.Icon',
+  (React, Immutable, classNames, Icon) => ({
 
     statics: {
 
@@ -1679,12 +2993,125 @@ rey.component('uim.List', [
         return {
           path: path,
           name: field.get('name'),
-          label: field.get('label'),
-          data: field.get('data'),
+          pages: field.get('pages'),
+          range: field.get('range'),
+          value: Number(values.getIn(path))
+        };
+      }
+    },
+
+    propTypes: {
+      name: React.PropTypes.string.isRequired,
+      path: React.PropTypes.List.isRequired,
+      value: React.PropTypes.number.isRequired,
+      pages: React.PropTypes.number.isRequired,
+      range: React.PropTypes.number.isRequired,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        value: 1,
+        pages: 1,
+        range: 5
+      };
+    },
+
+    handleClick(event, page) {
+      if (page && page !== this.props.value) {
+        if (this.props.onChange) {
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path,
+            value: page,
+            event: event
+          });
+        }
+      }
+    },
+
+    renderPages() {
+
+      const parts = [];
+      const pages = this.props.pages;
+      const current = this.props.value;
+      const previous = current > 1;
+      const next = current < pages;
+      const first = Math.max(1, current - this.props.range);
+      const last = Math.min(pages, current + this.props.range);
+
+      if (previous) {
+        parts.push(
+          <li key='previous' onClick={(e) => this.handleClick(e, current - 1)}>
+            <Icon name='previous' icon='chevron-left' />
+         </li>
+        );
+      }
+
+      for (let i = first; i <= last; i++) {
+        parts.push(
+          <li key={i}
+            onClick={(e) => this.handleClick(e, i)}
+            className={current === i ? 'current' : ''}>
+            {i.toString()}
+          </li>
+        );
+      }
+
+      if (next) {
+        parts.push(
+          <li key='next' onClick={(e) => this.handleClick(e, current + 1)}>
+            <Icon name='next' icon='chevron-right' />
+          </li>
+        );
+      }
+
+      return parts;
+    },
+
+    render() {
+       const classes = {
+         pages: true,
+         [this.props.className]: !!this.props.className
+       };
+       return (
+         <ul className={classNames(classes)}>
+           {this.renderPages()}
+         </ul>
+       );
+     }
+  })
+]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- React components with Immutable powers.
+**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Table', [
+  'React', 'Immutable', 'classNames',
+  (React, Immutable, classNames) => ({
+
+    statics: {
+
+      pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          rows: field.get('rows'),
           columns: field.get('columns'),
           header: field.get('header'),
           footer: field.get('footer'),
-          empty: field.get('empty'),
           className: field.get('className')
         };
       }
@@ -1693,25 +3120,29 @@ rey.component('uim.List', [
     propTypes: {
       path: React.PropTypes.List.isRequired,
       name: React.PropTypes.string.isRequired,
-      data: React.PropTypes.Map.isRequired,
-      rows: React.PropTypes.List,
+      header: React.PropTypes.oneOfType([
+        React.PropTypes.node,
+        React.PropTypes.bool
+      ]),
+      footer: React.PropTypes.oneOfType([
+        React.PropTypes.node,
+        React.PropTypes.bool
+      ]),
+      rows: React.PropTypes.List.isRequired,
       columns: React.PropTypes.List.isRequired,
-      header: React.PropTypes.bool.isRequired,
-      footer: React.PropTypes.any,
-      pageUrl: React.PropTypes.string,
-      empty: React.PropTypes.any,
+      tranformColumns: React.PropTypes.func,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string,
-      transformColumnsWith: React.PropTypes.func
+      className: React.PropTypes.string
     },
 
     getDefaultProps() {
       return {
-        data: Immutable.Map(),
         path: Immutable.List(),
+        rows: Immutable.List(),
         columns: Immutable.List(),
-        header: true
+        header: true,
+        footer: false
       };
     },
 
@@ -1730,8 +3161,7 @@ rey.component('uim.List', [
       );
     },
 
-    handleClickBody(event) {
-
+    findTarget(event) {
       let target = event.target;
       while (!this.isValidTarget(target)) {
         target = target.parentNode;
@@ -1739,13 +3169,18 @@ rey.component('uim.List', [
           break;
         }
       }
-
       if (this.isValidTarget(target)) {
+        return target;
+      }
+    },
+
+    handleClickBody(event) {
+      const target = this.findTarget(event);
+      if (target) {
 
         const rowIndex = Number(target.getAttribute('data-row-index'));
         const colIndex = Number(target.getAttribute('data-column-index'));
-
-        const row = this.getRow(rowIndex);
+        const row = this.props.rows.get(rowIndex);
         const column = this.props.columns.get(colIndex);
 
         if (this.props.onClick) {
@@ -1769,13 +3204,18 @@ rey.component('uim.List', [
     },
 
     renderHeadCol(column, index) {
+      const style = {};
+      if (column.get('width')) {
+        style.width = column.get('width');
+      }
       return (
-        <div key={index}
-          className='list-column'
+        <th key={index}
+          style={style}
+          className='table-column'
           data-column-index={index}
           data-column-name={column.get('name')}>
           {column.get('label')}
-        </div>
+        </th>
       );
     },
 
@@ -1793,9 +3233,15 @@ rey.component('uim.List', [
 
       const props = Component.pickProps(this.props.path, column, row);
 
+      const style = {};
+      if (column.get('width')) {
+        style.width = column.get('width');
+      }
+
       return (
-        <div key={colIndex}
-          className='list-column'
+        <td key={colIndex}
+          style={style}
+          className='table-column'
           data-row-index={rowIndex}
           data-column-index={colIndex}
           data-column-name={column.get('name')}>
@@ -1803,182 +3249,91 @@ rey.component('uim.List', [
             {...props}
             onClick={this.handleClick.bind(this, row, column)}
             onChange={this.handleChange.bind(this, row, column)} />
-        </div>
+        </td>
       );
     },
 
     renderRow(row, rowIndex) {
-
-      let columns = this.props.columns;
-      if (this.props.transformColumnsWith) {
-        columns = this.props.transformColumnsWith(columns, row);
-      }
-
       return (
-        <div key={rowIndex} className='list-row' data-row-index={rowIndex}>
-          {columns.map(function (column, colIndex) {
-            return this.renderCol(row, rowIndex, column, colIndex);
-          }, this)}
-        </div>
+        <tr key={rowIndex} className='table-row' data-row-index={rowIndex}>
+          {this.getColumns(row, rowIndex).map((column, colIndex) => (
+            this.renderCol(row, rowIndex, column, colIndex)
+          ))}
+        </tr>
       );
     },
 
-    getRow(index) {
-      let row;
-      if (Immutable.List.isList(this.props.rows)) {
-        row = this.props.rows.get(index);
-      } else if (Immutable.List.isList(this.props.data.get('rows'))) {
-        row = this.props.data.getIn(['rows', index]);
+    getColumns(row, rowIndex) {
+      let columns = this.props.columns;
+      if (this.props.tranformColumns) {
+        columns = this.props.tranformColumns(columns, row, rowIndex);
       }
-      return row;
-    },
-
-    getRows() {
-      let rows = this.props.rows;
-      if (!Immutable.List.isList(rows)) {
-        rows = this.props.data.get('rows');
-      }
-      if (!Immutable.List.isList(rows)) {
-        rows = Immutable.List();
-      }
-      return rows;
-    },
-
-    countRows() {
-      let count = 0;
-      if (this.props.data.has('count')) {
-        count = this.props.data.get('count');
-      } else {
-        count = this.getRows().size;
-      }
-      return count;
+      return columns;
     },
 
     renderBody() {
       const classes = {
-        'list-body': true,
+        'table-body': true,
         'no-foot': !this.props.footer
       };
       return (
-        <div key='body' className={classNames(classes)} onClick={this.handleClickBody}>
-          {this.getRows().map(this.renderRow)}
-        </div>
+        <tbody className={classNames(classes)} onClick={this.handleClickBody}>
+          {this.props.rows.map(this.renderRow)}
+        </tbody>
       );
     },
 
     renderHeader() {
-      let content;
-      if (this.props.header === true) {
-
-        let columns = this.props.columns;
-        if (this.props.transformColumnsWith) {
-          columns = this.props.transformColumnsWith(columns);
+      if (this.props.header) {
+        let content;
+        if (this.props.header === true) {
+          content = (
+            <tr className='table-head table-row'>
+              {this.getColumns().map(this.renderHeadCol)}
+            </tr>
+          );
+        } else {
+          content = (
+            <tr className='table-head table-custom-head table-row'>
+              <th className='table-column' colSpan={this.props.columns.size}>
+                {this.props.header}
+              </th>
+            </tr>
+          );
         }
-
-        content = (
-          <div key='head' className='list-head list-row'>
-            {columns.map(this.renderHeadCol)}
-          </div>
-        );
-
-      } else if (Immutable.List.isList(this.props.header)) {
-        content = (
-          <div key='head' className='list-head list-row'>
-            <Toolbar
-              name='header'
-              path={this.props.path.push('header')}
-              tools={this.props.header}
-              values={this.props.data}
-              onClick={this.props.onClick}
-              onChange={this.props.onChange} />
-          </div>
-        );
-
-      } else if (this.props.header) {
-        content = (
-          <div key='head' className='list-head list-row'>
-            {this.props.header}
-          </div>
+        return (
+          <thead>
+            {content}
+          </thead>
         );
       }
-      return content;
     },
 
     renderFooter() {
-      let content;
-      if (Immutable.List.isList(this.props.footer)) {
-
-        content = (
-          <div key='foot' className='list-foot list-row'>
-            <Toolbar
-              name='footer'
-              path={this.props.path.push('footer')}
-              tools={this.props.footer}
-              values={this.props.data}
-              onClick={this.props.onClick}
-              onChange={this.props.onChange} />
-          </div>
-        );
-
-      } else if (this.props.footer) {
-        content = (
-          <div key='foot' className='list-foot list-row'>
-            <div className='list-column'>
-              {this.props.footer}
-            </div>
-          </div>
+      if (this.props.footer) {
+        return (
+          <tfoot>
+            <tr className='table-foot table-custom-foot table-row'>
+              <td className='table-column' colSpan={this.props.columns.size}>
+                {this.props.footer}
+              </td>
+            </tr>
+          </tfoot>
         );
       }
-      return content;
-    },
-
-    renderPages() {
-      let content;
-      if (this.props.data.has('pages') && this.props.data.has('page')) {
-
-        const count = this.countRows();
-        const page = count > 0 ? Number(this.props.data.get('page')) || 1 : 0;
-        const pages = count > 0 ? Number(this.props.data.get('pages')) || 1 : 0;
-
-        if (pages > 1) {
-          content = (
-            <Paginator
-              key='pages'
-              page={page}
-              pages={pages}
-              pageUrl={this.props.pageUrl} />
-          );
-        }
-      }
-      return content;
-    },
-
-    renderContent() {
-      let content;
-      if (this.countRows() > 0 || !this.props.empty) {
-        content = [
-          this.renderHeader(),
-          this.renderBody(),
-          this.renderFooter(),
-          this.renderPages()
-        ];
-      } else {
-        content = (
-          <div className='list-empty'>{this.props.empty}</div>
-        )
-      }
-      return content;
     },
 
     render() {
       const classes = {
-        list: true,
+        table: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-list-name={this.props.name} className={classNames(classes)}>
-          {this.renderContent()}
-        </div>
+        <table data-table-name={this.props.name} className={classNames(classes)} cellSpacing={0}>
+          {this.renderHeader()}
+          {this.renderBody()}
+          {this.renderFooter()}
+        </table>
       );
     }
   })
@@ -2005,101 +3360,6 @@ rey.component('uim.Loading', [
         <div className='loading'>
           <span className='fa fa-spinner fa-spin' />
         </div>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.MemoField', [
-  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
-  (React, Immutable, classNames, Value, Field) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          rows: field.get('rows'),
-          cols: field.get('cols'),
-          className: field.get('className'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      input: React.PropTypes.bool.isRequired,
-      rows: React.PropTypes.number,
-      cols: React.PropTypes.number,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    renderContent() {
-      let content;
-      if (this.props.input) {
-        content = (
-          <textarea
-            ref='input'
-            rows={this.props.rows}
-            cols={this.props.cols}
-            value={this.props.value}
-            onChange={this.handleChange} />
-        );
-      } else {
-        content = (
-          <Value
-            className='memo-value'
-            path={this.props.path}
-            name={this.props.name}
-            value={this.props.value} />
-        );
-      }
-      return content;
-    },
-
-    render() {
-      const classes = {
-        ['memo-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          {this.renderContent()}
-        </Field>
       );
     }
   })
@@ -2324,6 +3584,7 @@ rey.component('uim.Menuset', [
           <fieldset>
             {this.renderLabel()}
             <LinkGroup
+              name={this.props.name}
               path={this.props.path}
               links={this.props.links}
               collapsed={this.state.collapsed} />
@@ -2357,762 +3618,6 @@ rey.component('uim.Overlay', [
             {this.props.children}
           </div>
         </div>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.Paginator', [
-  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Link',
-  (React, Immutable, classNames, Icon, Link) => ({
-
-    propTypes: {
-      page: React.PropTypes.number.isRequired,
-      pages: React.PropTypes.number.isRequired,
-      pageUrl: React.PropTypes.string.isRequired,
-      firstPage: React.PropTypes.number.isRequired,
-      lastPage: React.PropTypes.number.isRequired,
-      onClick: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    getDefaultProps() {
-      return {
-        firstPage: -5,
-        lastPage: 5,
-        page: 1,
-        pages: 1
-      };
-    },
-
-    makeUrl(page) {
-      return this.props.pageUrl.replace(/\{page\}/, page);
-    },
-
-    renderParts() {
-
-      const parts = [];
-
-      const pages = this.props.pages;
-      const current = this.props.page;
-
-      const previous = current > 1;
-      const next = current < pages;
-      const first = Math.max(1, current + this.props.firstPage);
-      const last = Math.min(pages, current + this.props.lastPage);
-
-      if (previous) {
-        parts.push(
-          <li key='previous'>
-            <Link href={this.makeUrl(current - 1)}>
-                <Icon name='previous' icon='chevron-left' />
-            </Link>
-         </li>
-        );
-      }
-
-      for (let i = first; i <= last; i++) {
-        parts.push(
-          <li key={i} className={classNames({ current: current === i })}>
-              <Link href={this.makeUrl(i)} label={i.toString()} />
-          </li>
-        );
-      }
-
-      if (next) {
-        parts.push(
-          <li key='next'>
-            <Link href={this.makeUrl(current + 1)}>
-              <Icon name='next' icon='chevron-right' />
-            </Link>
-          </li>
-        );
-      }
-
-      return parts;
-    },
-
-    render() {
-       const classes = {
-         paginator: true,
-         [this.props.className]: !!this.props.className
-       };
-       return (
-         <div className={classNames(classes)}>
-           <ul>
-             {this.renderParts()}
-           </ul>
-         </div>
-       );
-     }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.PasswordField', [
-  'React', 'Immutable', 'classNames', 'uim.Field',
-  (React, Immutable, classNames, Field) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          className: field.get('className'),
-          empty: !values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      empty: React.PropTypes.bool,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    componentDidUpdate() {
-      if (this.props.empty) {
-        this.refs.input.value = '';
-      }
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    render() {
-      const classes = {
-        ['password-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          <input
-            ref='input'
-            type='password'
-            onChange={this.handleChange} />
-        </Field>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.Radio', [
-  'React', 'Immutable', 'classNames',
-  (React, Immutable, classNames) => ({
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      value: React.PropTypes.any.isRequired,
-      checked: React.PropTypes.bool.isRequired,
-      onChange: React.PropTypes.func.isRequired,
-      disabled: React.PropTypes.bool,
-      className: React.PropTypes.string
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    render() {
-      const classes = {
-        radio: true,
-        disabled: this.props.disabled,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <label className={classNames(classes)}>
-          <input ref='input'
-            type='radio'
-            name={this.props.name}
-            value={this.props.value}
-            checked={this.props.checked}
-            disabled={this.props.disabled}
-            onChange={this.handleChange} />
-          <span>{this.props.label}</span>
-        </label>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.RadioGroup', [
-  'React', 'Immutable', 'classNames', 'uim.Field', 'uim.Value', 'uim.Radio',
-  (React, Immutable, classNames, Field, Value, Radio) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          options: field.get('options'),
-          className: field.get('className'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string,
-      input: React.PropTypes.bool.isRequired,
-      options: React.PropTypes.List.isRequired,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func.isRequired,
-      className: React.PropTypes.string
-    },
-
-    renderRadio(option, index) {
-      return (
-        <Radio ref={index}
-          key={index}
-          path={this.props.path}
-          name={this.props.name}
-          label={option.get('label')}
-          value={option.get('value')}
-          checked={this.props.value === option.get('value')}
-          disabled={option.get('disabled')}
-          onChange={this.props.onChange} />
-      );
-    },
-
-    getSelectedLabel() {
-      const value = this.props.value;
-      const selected = this.props.options.find((option) => {
-        return option.get('value') === value;
-      });
-      if (selected) {
-        return selected.get('label');
-      }
-    },
-
-    renderContent() {
-      let content;
-      if (this.props.input) {
-        content = this.props.options.map(this.renderRadio);
-      } else {
-        content = (
-          <Value
-            className='radio-value'
-            path={this.props.path}
-            name={this.props.name}
-            value={this.getSelectedLabel()} />
-        );
-      }
-      return content;
-    },
-
-    render() {
-      const classes = {
-        ['radio-group']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          {this.renderContent()}
-        </Field>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.SelectButton', [
-  'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Value',
-  (React, Immutable, classNames, Icon, Value) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          label: field.get('label'),
-          name: field.get('name'),
-          options: field.get('options'),
-          disabled: field.get('disabled'),
-          disabledValues: field.get('disabledValues'),
-          className: field.get('className'),
-          blankValue: field.get('blankValue'),
-          multiple: field.get('multiple'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      options: React.PropTypes.List.isRequired,
-      disabled: React.PropTypes.bool.isRequired,
-      multiple: React.PropTypes.bool.isRequired,
-      disabledValues: React.PropTypes.List,
-      blankValue: React.PropTypes.string,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    getInitialState() {
-      return {
-        showOptions: false
-      };
-    },
-
-    getDefaultProps() {
-      return {
-        path: Immutable.List(),
-        disabled: false,
-        multiple: false
-      };
-    },
-
-    handleClickCaret(event) {
-      event.event.stopPropagation();
-      this.setState({ showOptions: !this.state.showOptions });
-    },
-
-    getChangedValue(option) {
-      var value;
-      if (this.props.multiple) {
-        var index = this.props.value.indexOf(option.get('value'));
-        if (index === -1) {
-          value = this.props.value.push(option.get('value'));
-        } else {
-          value = this.props.value.delete(index);
-        }
-      } else {
-        value = option.get('value');
-      }
-      return value;
-    },
-
-    handleClickOption(option, event) {
-      event.stopPropagation();
-      if (!option.get('disabled')) {
-        if (!this.props.multiple) {
-          this.setState({ showOptions: !this.state.showOptions });
-        }
-
-        if (this.props.onChange) {
-          this.props.onChange({
-            name: this.props.name,
-            path: this.props.path,
-            value: this.getChangedValue(option),
-            option: option,
-            event: event
-          });
-        }
-      }
-    },
-
-    handleClickValue(event) {
-      if (this.props.onClick) {
-        this.props.onClick({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.props.value,
-          event: event.event
-        });
-      }
-    },
-
-    renderOptionIcon(option) {
-      var icon;
-      if (option.has('icon')) {
-        icon = (
-          <Icon key='icon' name={option.get('icon')} />
-        );
-      }
-      return icon;
-    },
-
-    renderSelected(option) {
-      var selected;
-      if (this.props.multiple) {
-        if (this.props.value.indexOf(option.get('value')) !== -1) {
-          selected = (
-            <Icon name='check' className='icon-selected' />
-          );
-        } else {
-          selected = (
-            <Icon name='check' className='icon-unselected' />
-          );
-        }
-      }
-      return selected;
-    },
-
-    renderOption(option, index) {
-
-      var classes = {};
-      classes['select-button-option'] = true;
-      classes['disabled'] = !!option.get('disabled');
-      classes[option.get('className')] = !!option.get('className');
-
-      var onClick = this.handleClickOption.bind(this, option);
-
-      return (
-        <li key={index} className={classNames(classes)} onClick={onClick}>
-          {this.renderSelected(option)}
-          {this.renderOptionIcon(option)}
-          {option.get('label')}
-        </li>
-      );
-    },
-
-    isDisabled() {
-      return this.props.disabled || (this.props.disabledValues ?
-        this.props.disabledValues.indexOf(this.props.value) !== -1 :
-        false);
-    },
-
-    isSelected(option) {
-      var selected = false;
-      if (this.props.value || this.props.value === 0) {
-        if (this.props.multiple) {
-          if (this.props.value.indexOf(option.get('value')) !== -1) {
-            selected = true;
-          }
-        } else if (option.get('value') === this.props.value) {
-          selected = true;
-        }
-      }
-      return selected;
-    },
-
-    getSelectedOptions() {
-      return this.props.options.filter(function (option) {
-        return this.isSelected(option);
-      }, this);
-    },
-
-    renderSelectedOption() {
-
-      var classes = {};
-      classes['select-button-value'] = true;
-
-      var selectedOptions = this.getSelectedOptions();
-      var value;
-      var icon;
-
-      if (selectedOptions.size > 1) {
-        value = selectedOptions.map(function (option) {
-          return option.get('selectedLabel') || option.get('label');
-        }).join(', ');
-
-      } else if (selectedOptions.size > 0) {
-        classes[selectedOptions.getIn([0, 'className'])] = !!selectedOptions.getIn([0, 'className']);
-        value = selectedOptions.getIn([0, 'selectedLabel']) || selectedOptions.getIn([0, 'label']);
-        icon = this.renderOptionIcon(selectedOptions.get(0));
-
-      } else if (this.props.blankValue) {
-        classes['select-button-blank'] = true;
-        value = this.props.blankValue;
-      }
-
-      return (
-        <Value
-          onClick={this.handleClickValue}
-          className={classNames(classes)}
-          path={this.props.path}
-          name={this.props.name}
-          value={[icon, value]} />
-      );
-    },
-
-    renderCaretIcon() {
-      return (
-        <Icon
-          key='icon'
-          name='caret-down'
-          className='select-button-icon'
-          onClick={this.handleClickCaret} />
-      );
-    },
-
-    renderList() {
-      return (
-        <ul key='list'>
-          {this.props.options.map(this.renderOption)}
-        </ul>
-      );
-    },
-
-    renderOptions() {
-      if (!this.isDisabled()) {
-        return ([this.renderCaretIcon(), this.renderList()]);
-      }
-    },
-
-    render() {
-      const classes = {
-        button: true,
-        disabled: this.isDisabled(),
-        ['select-button']: true,
-        ['show-options']: this.state.showOptions,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <a data-button-name={this.props.name} className={classNames(classes)} type='button'>
-          {this.renderSelectedOption()}
-          {this.renderOptions()}
-        </a>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.SelectButtonField', [
-  'React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field',
-  (React, Immutable, classNames, SelectButton, Field) => ({
-
-    statics: {
-      pickProps: SelectButton.pickProps
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      options: React.PropTypes.List.isRequired,
-      disabled: React.PropTypes.bool.isRequired,
-      disabledValues: React.PropTypes.List,
-      blankValue: React.PropTypes.string,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    getDefaultProps() {
-      return {
-        path: Immutable.List(),
-        disabled: false
-      };
-    },
-
-    render() {
-      const classes = {
-        ['select-button-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          <SelectButton {...this.props} />
-        </Field>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.SelectField', [
-  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
-  (React, Immutable, classNames, Value, Field) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          options: field.get('options'),
-          className: field.get('className'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      input: React.PropTypes.bool.isRequired,
-      options: React.PropTypes.List.isRequired,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    renderOption(option, index) {
-      return (
-        <option key={index} value={option.get('value')}>
-          {option.get('label')}
-        </option>
-      );
-    },
-
-    getSelectedLabel() {
-      const value = this.props.value;
-      const selected = this.props.options.find(function (option) {
-        return option.get('value') === value;
-      });
-      if (selected) {
-        return selected.get('label');
-      }
-    },
-
-    renderContent() {
-      let content;
-      if (this.props.input) {
-        content = (
-          <select ref='input' value={this.props.value} onChange={this.handleChange}>
-            {this.props.options.map(this.renderOption)}
-          </select>
-        );
-      } else {
-        content = (
-          <Value
-            className='select-value'
-            path={this.props.path}
-            name={this.props.name}
-            value={this.getSelectedLabel()} />
-        );
-      }
-      return content;
-    },
-
-    render() {
-      const classes = {
-        ['select-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          {this.renderContent()}
-        </Field>
       );
     }
   })
@@ -3167,206 +3672,6 @@ rey.component('uim.Success', [
 ]);
 
 // - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.TextField', [
-  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
-  (React, Immutable, classNames, Value, Field)  => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          className: field.get('className'),
-          options: field.get('options'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      input: React.PropTypes.bool.isRequired,
-      value: React.PropTypes.any,
-      options: React.PropTypes.List,
-      onChange: React.PropTypes.func,
-      className: React.PropTypes.string
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    getId() {
-      return this.props.path.toJS().join('-');
-    },
-
-    renderOptions() {
-      if (this.props.input && this.props.options) {
-        return (
-          <datalist id={this.getId() + '-options'}>
-            {this.props.options.map(function (option, index) {
-              return (
-                <option key={index} value={option}>{option}</option>
-              );
-            })}
-          </datalist>
-        )
-      }
-    },
-
-    renderContent() {
-      let content;
-      if (this.props.input) {
-        content = (
-          <input
-            ref='input'
-            type='text'
-            value={this.props.value}
-            list={this.getId() + '-options'}
-            onChange={this.handleChange} />
-        );
-      } else {
-        content = (
-          <Value
-            className='text-value'
-            path={this.props.path}
-            name={this.props.name}
-            value={this.props.value} />
-        );
-      }
-      return content;
-    },
-
-    render() {
-      const classes = {
-        ['text-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          {this.renderContent()}
-          {this.renderOptions()}
-        </Field>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.TimeField', [
-  'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
-  (React, Immutable, classNames, Value, Field) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          label: field.get('label'),
-          className: field.get('className'),
-          value: values.getIn(path)
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List.isRequired,
-      name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string.isRequired,
-      input: React.PropTypes.bool.isRequired,
-      value: React.PropTypes.any,
-      onChange: React.PropTypes.func.isRequired,
-      className: React.PropTypes.string
-    },
-
-    handleChange(event) {
-      if (this.props.onChange) {
-        this.props.onChange({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.refs.input.value,
-          event: event
-        });
-      }
-    },
-
-    renderContent() {
-      let content;
-      if (this.props.input) {
-        content = (
-          <input
-            ref='input'
-            type='time'
-            value={this.props.value}
-            onChange={this.handleChange} />
-        );
-      } else {
-        content = (
-          <Value
-            className='time-value'
-            path={this.props.path}
-            name={this.props.name}
-            value={this.props.value} />
-        );
-      }
-      return content;
-    },
-
-    render() {
-      const classes = {
-        ['time-field']: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <Field ref='field'
-          name={this.props.name}
-          label={this.props.label}
-          className={classNames(classes)}>
-          {this.renderContent()}
-        </Field>
-      );
-    }
-  })
-]);
 
 /*!
 **  uimmutable -- React components with Immutable powers.
@@ -3446,93 +3751,6 @@ rey.component('uim.Toolbar', [
       return (
         <div data-toolbar-name={this.props.name} className={classNames(classes)}>
           {this.props.tools.map(this.renderTool)}
-        </div>
-      );
-    }
-  })
-]);
-
-// - -------------------------------------------------------------------- - //
-
-/*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/
-// - -------------------------------------------------------------------- - //
-
-'use strict';
-
-rey.component('uim.Value', [
-  'React', 'Immutable', 'classNames', 'uim.ValueFormat',
-  (React, Immutable, classNames, ValueFormat) => ({
-
-    statics: {
-
-      pickProps(path, field, values) {
-        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
-        return {
-          path: path,
-          name: field.get('name'),
-          format: field.get('format'),
-          className: field.get('className'),
-          value: values.getIn(path),
-          texts: field.get('texts')
-        };
-      }
-    },
-
-    propTypes: {
-      path: React.PropTypes.List,
-      name: React.PropTypes.string,
-      value: React.PropTypes.any,
-      texts: React.PropTypes.Map,
-      format: React.PropTypes.string,
-      className: React.PropTypes.string,
-      onClick: React.PropTypes.func
-    },
-
-    handleClick(event) {
-      if (this.props.onClick) {
-        this.props.onClick({
-          name: this.props.name,
-          path: this.props.path,
-          value: this.props.value,
-          event: event
-        });
-      }
-    },
-
-    getValue() {
-      let value;
-      if (this.props.value || this.props.value === 0) {
-        if (this.props.format) {
-          if (ValueFormat[this.props.format]) {
-            value = ValueFormat[this.props.format](this.props.value);
-          } else {
-            throw new Error('unknown format (' + this.props.format + ')');
-          }
-        } else {
-          value = this.props.value;
-        }
-      } else {
-        value = '-';
-      }
-      if (this.props.texts) {
-        value = this.props.texts.get(value);
-      }
-      return value
-    },
-
-    render() {
-      const classes = {
-        value: true,
-        [this.props.className]: !!this.props.className
-      };
-      return (
-        <div className={classNames(classes)} onClick={this.handleClick}>
-          {this.getValue()}
         </div>
       );
     }

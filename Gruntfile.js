@@ -7,7 +7,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
 
     jscs: {
-      src: './lib/components/*.jsx',
+      src: './lib/components/**/*.jsx',
       options: {
         config: '.jscsrc',
         esnext: true,
@@ -29,7 +29,7 @@ module.exports = function (grunt) {
 
     concat: {
       components: {
-        src: ['./lib/utils/*.js', './lib/components/*.jsx'],
+        src: ['./lib/utils/*.js', './lib/components/**/*.jsx'],
         dest: './dist/components.jsx'
       },
       distribute: {

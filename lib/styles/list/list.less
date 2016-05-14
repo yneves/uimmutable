@@ -1,0 +1,36 @@
+// - -------------------------------------------------------------------- - //
+
+.list {
+  display: inline-block;
+  padding: @spacing;
+  
+  .list-empty {
+    padding: @spacing;
+    
+    p {
+      display: block;
+      padding: @spacing*2;
+      text-align: center;
+      border: 1px solid @color-grey;
+      background-color: @color-grey-lighter;
+      .rounded(@border-radius);
+      .font(@font-size * 1.4, @weight-semibold);
+    }
+  }
+  
+  .list-table {
+    padding: @spacing;
+  }
+  
+  .list-pages {
+    padding: @spacing;
+    
+    .select-limit {
+      float: right;
+    }
+  }
+  
+  
+}
+
+// - -------------------------------------------------------------------- - //

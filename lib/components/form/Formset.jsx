@@ -22,7 +22,11 @@ rey.component('uim.Formset', [
       collapsible: React.PropTypes.bool.isRequired,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -58,12 +62,14 @@ rey.component('uim.Formset', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         formset: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-form-name={this.props.name} className={classNames(classes)}>
+        <div data-form-name={this.props.name} style={style} className={classNames(classes)}>
           {this.renderTitle()}
           <FieldGroup
             path={this.props.path}

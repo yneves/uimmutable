@@ -23,7 +23,7 @@ rey.component('uim.DateRangeField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
-          width: field.get('width'),
+          style: field.get('style'),
           placeholder: field.get('placeholder')
         };
       }
@@ -35,12 +35,15 @@ rey.component('uim.DateRangeField', [
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.List,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
+      placeholder: React.PropTypes.oneOfType([
         React.PropTypes.string,
-        React.PropTypes.number
+        React.PropTypes.List
       ]),
       className: React.PropTypes.string,
-      placeholder: React.PropTypes.any
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     parseInput(value, index) {
@@ -133,9 +136,9 @@ rey.component('uim.DateRangeField', [
       };
       return (
         <Field ref='field'
+          style={this.props.style}
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>

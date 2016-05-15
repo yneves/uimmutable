@@ -23,7 +23,8 @@ rey.component('uim.Table', [
           columns: field.get('columns'),
           header: field.get('header'),
           footer: field.get('footer'),
-          className: field.get('className')
+          className: field.get('className'),
+          style: field.get('style')
         };
       }
     },
@@ -41,10 +42,14 @@ rey.component('uim.Table', [
       ]),
       rows: React.PropTypes.List.isRequired,
       columns: React.PropTypes.List.isRequired,
-      tranformColumns: React.PropTypes.func,
+      transformColumns: React.PropTypes.func,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -144,14 +149,8 @@ rey.component('uim.Table', [
 
       const props = Component.pickProps(this.props.path, column, row);
 
-      const style = {};
-      if (column.get('width')) {
-        style.width = column.get('width');
-      }
-
       return (
         <td key={colIndex}
-          style={style}
           className='table-column'
           data-row-index={rowIndex}
           data-column-index={colIndex}
@@ -176,8 +175,8 @@ rey.component('uim.Table', [
 
     getColumns(row, rowIndex) {
       let columns = this.props.columns;
-      if (this.props.tranformColumns) {
-        columns = this.props.tranformColumns(columns, row, rowIndex);
+      if (this.props.transformColumns) {
+        columns = this.props.transformColumns(columns, row, rowIndex);
       }
       return columns;
     },
@@ -235,12 +234,14 @@ rey.component('uim.Table', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         table: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <table data-table-name={this.props.name} className={classNames(classes)} cellSpacing={0}>
+        <table data-table-name={this.props.name} style={style} className={classNames(classes)} cellSpacing={0}>
           {this.renderHeader()}
           {this.renderBody()}
           {this.renderFooter()}

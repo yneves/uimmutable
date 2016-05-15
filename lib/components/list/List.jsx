@@ -35,11 +35,15 @@ rey.component('uim.List', [
       ]),
       rows: React.PropTypes.List.isRequired,
       columns: React.PropTypes.List.isRequired,
-      tranformColumns: React.PropTypes.func,
+      transformColumns: React.PropTypes.func,
       empty: React.PropTypes.node,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -157,7 +161,7 @@ rey.component('uim.List', [
             footer={this.renderFooter()}
             rows={this.props.rows}
             columns={this.props.columns}
-            tranformColumns={this.props.tranformColumns}
+            transformColumns={this.props.transformColumns}
             onClick={this.props.onClick}
             onChange={this.props.onChange} />
         </div>
@@ -165,12 +169,14 @@ rey.component('uim.List', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         list: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-list-name={this.props.name} className={classNames(classes)}>
+        <div data-list-name={this.props.name} style={style} className={classNames(classes)}>
           {this.renderFilter()}
           {this.isEmpty() ? this.renderEmpty() : this.renderTable()}
           {this.renderPages()}

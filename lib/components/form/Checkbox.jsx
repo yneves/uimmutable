@@ -21,6 +21,7 @@ rey.component('uim.Checkbox', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          style: field.get('style'),
           disabled: field.get('disabled'),
           value: field.get('value'),
           checked: !!values.getIn(path)
@@ -37,7 +38,11 @@ rey.component('uim.Checkbox', [
       onChange: React.PropTypes.func.isRequired,
       value: React.PropTypes.any,
       disabled: React.PropTypes.bool,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleClick(event) {
@@ -63,13 +68,15 @@ rey.component('uim.Checkbox', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         checkbox: true,
         disabled: this.props.disabled,
         [this.props.className]: !!this.props.className
       };
       return (
-        <label className={classNames(classes)}>
+        <label className={classNames(classes)} style={style}>
           <input ref='input'
             type='checkbox'
             name={this.props.name}

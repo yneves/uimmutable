@@ -22,7 +22,7 @@ rey.component('uim.CheckGroup', [
           label: field.get('label'),
           checkboxes: field.get('checkboxes'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -35,11 +35,11 @@ rey.component('uim.CheckGroup', [
       checkboxes: React.PropTypes.List.isRequired,
       values: React.PropTypes.Map.isRequired,
       onChange: React.PropTypes.func.isRequired,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     renderCheckbox(option, index) {
@@ -67,7 +67,7 @@ rey.component('uim.CheckGroup', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.props.checkboxes.map(this.renderCheckbox)}
         </Field>

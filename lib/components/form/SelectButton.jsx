@@ -26,7 +26,7 @@ rey.component('uim.SelectButton', [
           className: field.get('className'),
           blankValue: field.get('blankValue'),
           multiple: field.get('multiple'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -42,11 +42,12 @@ rey.component('uim.SelectButton', [
       blankValue: React.PropTypes.string,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getInitialState() {
@@ -242,6 +243,8 @@ rey.component('uim.SelectButton', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         button: true,
         disabled: this.isDisabled(),
@@ -250,7 +253,7 @@ rey.component('uim.SelectButton', [
         [this.props.className]: !!this.props.className
       };
       return (
-        <a data-button-name={this.props.name} className={classNames(classes)} type='button'>
+        <a data-button-name={this.props.name} className={classNames(classes)} style={style}>
           {this.renderSelectedOption()}
           {this.renderOptions()}
         </a>

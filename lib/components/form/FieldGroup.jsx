@@ -22,6 +22,7 @@ rey.component('uim.FieldGroup', [
           label: field.get('label'),
           fields: field.get('fields'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           values: values
         };
@@ -36,6 +37,10 @@ rey.component('uim.FieldGroup', [
       collapsed: React.PropTypes.bool.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ]),
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func
     },
@@ -156,12 +161,13 @@ rey.component('uim.FieldGroup', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         ['field-group']: true,
         ['field-group-multiple']: !!this.props.multiple,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
       if (this.props.collapsed) {
         style.display = 'none';
       }

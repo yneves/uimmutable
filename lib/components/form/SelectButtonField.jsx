@@ -26,11 +26,12 @@ rey.component('uim.SelectButtonField', [
       blankValue: React.PropTypes.string,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -49,9 +50,18 @@ rey.component('uim.SelectButtonField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
-          <SelectButton {...this.props} />
+          <SelectButton
+            path={this.props.path}
+            name={this.props.name}
+            options={this.props.options}
+            value={this.props.value}
+            disabled={this.props.disabled}
+            disabledValues={this.props.disabledValues}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange}
+            className={this.props.className} />
         </Field>
       );
     }

@@ -16,21 +16,19 @@ rey.component('uim.Field', [
       name: React.PropTypes.string.isRequired,
       label: React.PropTypes.string,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         field: true,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
-      if (this.props.width) {
-        style.width = this.props.width;
-      }
       return (
         <div data-field-name={this.props.name} style={style} className={classNames(classes)}>
           <label>{this.props.label}</label>

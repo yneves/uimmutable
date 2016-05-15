@@ -22,7 +22,7 @@ rey.component('uim.TextField', [
           label: field.get('label'),
           className: field.get('className'),
           options: field.get('options'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -37,9 +37,9 @@ rey.component('uim.TextField', [
       options: React.PropTypes.List,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
@@ -104,7 +104,7 @@ rey.component('uim.TextField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
           {this.renderOptions()}

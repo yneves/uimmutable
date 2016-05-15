@@ -23,7 +23,7 @@ rey.component('uim.DateField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
-          width: field.get('width'),
+          style: field.get('style'),
           placeholder: field.get('placeholder')
         };
       }
@@ -36,11 +36,11 @@ rey.component('uim.DateField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      placeholder: React.PropTypes.string
+      placeholder: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     parseInput(date) {
@@ -93,7 +93,7 @@ rey.component('uim.DateField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>

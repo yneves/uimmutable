@@ -20,7 +20,11 @@ rey.component('uim.Radio', [
       checked: React.PropTypes.bool.isRequired,
       onChange: React.PropTypes.func.isRequired,
       disabled: React.PropTypes.bool,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleChange(event) {
@@ -35,13 +39,15 @@ rey.component('uim.Radio', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         radio: true,
         disabled: this.props.disabled,
         [this.props.className]: !!this.props.className
       };
       return (
-        <label className={classNames(classes)}>
+        <label style={style} className={classNames(classes)}>
           <input ref='input'
             type='radio'
             name={this.props.name}

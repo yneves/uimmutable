@@ -21,7 +21,7 @@ rey.component('uim.PasswordField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           empty: !values.getIn(path)
         };
       }
@@ -33,11 +33,11 @@ rey.component('uim.PasswordField', [
       label: React.PropTypes.string.isRequired,
       empty: React.PropTypes.bool,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     componentDidUpdate() {
@@ -66,7 +66,7 @@ rey.component('uim.PasswordField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           <input
             ref='input'

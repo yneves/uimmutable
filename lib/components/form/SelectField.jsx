@@ -22,7 +22,7 @@ rey.component('uim.SelectField', [
           label: field.get('label'),
           options: field.get('options'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -36,11 +36,11 @@ rey.component('uim.SelectField', [
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleChange(event) {
@@ -101,7 +101,7 @@ rey.component('uim.SelectField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>

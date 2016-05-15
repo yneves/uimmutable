@@ -21,6 +21,7 @@ rey.component('uim.Value', [
           name: field.get('name'),
           format: field.get('format'),
           className: field.get('className'),
+          style: field.get('style'),
           value: values.getIn(path),
           texts: field.get('texts')
         };
@@ -34,6 +35,10 @@ rey.component('uim.Value', [
       texts: React.PropTypes.Map,
       format: React.PropTypes.string,
       className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ]),
       onClick: React.PropTypes.func
     },
 
@@ -70,12 +75,14 @@ rey.component('uim.Value', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         value: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div className={classNames(classes)} onClick={this.handleClick}>
+        <div className={classNames(classes)} style={this.props.style} onClick={this.handleClick}>
           {this.getValue()}
         </div>
       );

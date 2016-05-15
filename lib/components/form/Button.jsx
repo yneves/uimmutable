@@ -22,6 +22,7 @@ rey.component('uim.Button', [
           label: field.get('label'),
           htmlType: field.get('htmlType'),
           disabled: field.get('disabled'),
+          style: field.get('style'),
           className: field.get('className')
         };
       }
@@ -34,7 +35,11 @@ rey.component('uim.Button', [
       disabled: React.PropTypes.bool.isRequired,
       htmlType: React.PropTypes.string.isRequired,
       onClick: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -56,12 +61,15 @@ rey.component('uim.Button', [
     },
 
     render: function () {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         button: true,
         [this.props.className]: !!this.props.className
       };
       return (
         <button
+          style={style}
           data-button-name={this.props.name}
           type={this.props.htmlType}
           disabled={this.props.disabled}

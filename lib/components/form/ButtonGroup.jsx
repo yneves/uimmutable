@@ -22,6 +22,7 @@ rey.component('uim.ButtonGroup', [
           label: field.get('label'),
           buttons: field.get('buttons'),
           className: field.get('className'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -31,7 +32,11 @@ rey.component('uim.ButtonGroup', [
       path: React.PropTypes.List.isRequired,
       buttons: React.PropTypes.List.isRequired,
       onClick: React.PropTypes.func.isRequired,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleClick(button, event) {
@@ -49,12 +54,14 @@ rey.component('uim.ButtonGroup', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         ['button-group']: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-field-name={this.props.name} className={classNames(classes)}>
+        <div data-field-name={this.props.name} style={style} className={classNames(classes)}>
           {this.props.buttons.map(this.renderButton)}
         </div>
       );

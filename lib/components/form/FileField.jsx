@@ -22,9 +22,9 @@ rey.component('uim.FileField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
-          width: field.get('width'),
           value: values.getIn(path)
         };
       }
@@ -39,9 +39,9 @@ rey.component('uim.FileField', [
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ]),
       className: React.PropTypes.string
     },
@@ -159,7 +159,7 @@ rey.component('uim.FileField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>

@@ -197,6 +197,7 @@ rey.component('uim.Button', [
           label: field.get('label'),
           htmlType: field.get('htmlType'),
           disabled: field.get('disabled'),
+          style: field.get('style'),
           className: field.get('className')
         };
       }
@@ -209,7 +210,11 @@ rey.component('uim.Button', [
       disabled: React.PropTypes.bool.isRequired,
       htmlType: React.PropTypes.string.isRequired,
       onClick: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -231,12 +236,15 @@ rey.component('uim.Button', [
     },
 
     render: function () {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         button: true,
         [this.props.className]: !!this.props.className
       };
       return (
         <button
+          style={style}
           data-button-name={this.props.name}
           type={this.props.htmlType}
           disabled={this.props.disabled}
@@ -275,6 +283,7 @@ rey.component('uim.ButtonGroup', [
           label: field.get('label'),
           buttons: field.get('buttons'),
           className: field.get('className'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -284,7 +293,11 @@ rey.component('uim.ButtonGroup', [
       path: React.PropTypes.List.isRequired,
       buttons: React.PropTypes.List.isRequired,
       onClick: React.PropTypes.func.isRequired,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleClick(button, event) {
@@ -302,12 +315,14 @@ rey.component('uim.ButtonGroup', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         ['button-group']: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-field-name={this.props.name} className={classNames(classes)}>
+        <div data-field-name={this.props.name} style={style} className={classNames(classes)}>
           {this.props.buttons.map(this.renderButton)}
         </div>
       );
@@ -340,6 +355,7 @@ rey.component('uim.Checkbox', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          style: field.get('style'),
           disabled: field.get('disabled'),
           value: field.get('value'),
           checked: !!values.getIn(path)
@@ -356,7 +372,11 @@ rey.component('uim.Checkbox', [
       onChange: React.PropTypes.func.isRequired,
       value: React.PropTypes.any,
       disabled: React.PropTypes.bool,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleClick(event) {
@@ -382,13 +402,15 @@ rey.component('uim.Checkbox', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         checkbox: true,
         disabled: this.props.disabled,
         [this.props.className]: !!this.props.className
       };
       return (
-        <label className={classNames(classes)}>
+        <label className={classNames(classes)} style={style}>
           <input ref='input'
             type='checkbox'
             name={this.props.name}
@@ -430,7 +452,7 @@ rey.component('uim.CheckGroup', [
           label: field.get('label'),
           checkboxes: field.get('checkboxes'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -443,11 +465,11 @@ rey.component('uim.CheckGroup', [
       checkboxes: React.PropTypes.List.isRequired,
       values: React.PropTypes.Map.isRequired,
       onChange: React.PropTypes.func.isRequired,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     renderCheckbox(option, index) {
@@ -475,7 +497,7 @@ rey.component('uim.CheckGroup', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.props.checkboxes.map(this.renderCheckbox)}
         </Field>
@@ -511,7 +533,7 @@ rey.component('uim.DateField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
-          width: field.get('width'),
+          style: field.get('style'),
           placeholder: field.get('placeholder')
         };
       }
@@ -524,11 +546,11 @@ rey.component('uim.DateField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      placeholder: React.PropTypes.string
+      placeholder: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     parseInput(date) {
@@ -581,7 +603,7 @@ rey.component('uim.DateField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -615,7 +637,7 @@ rey.component('uim.DateRangeField', [
           label: field.get('label'),
           className: field.get('className'),
           value: values.getIn(path),
-          width: field.get('width'),
+          style: field.get('style'),
           placeholder: field.get('placeholder')
         };
       }
@@ -627,12 +649,15 @@ rey.component('uim.DateRangeField', [
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.List,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
+      placeholder: React.PropTypes.oneOfType([
         React.PropTypes.string,
-        React.PropTypes.number
+        React.PropTypes.List
       ]),
       className: React.PropTypes.string,
-      placeholder: React.PropTypes.any
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     parseInput(value, index) {
@@ -725,9 +750,9 @@ rey.component('uim.DateRangeField', [
       };
       return (
         <Field ref='field'
+          style={this.props.style}
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -754,21 +779,19 @@ rey.component('uim.Field', [
       name: React.PropTypes.string.isRequired,
       label: React.PropTypes.string,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         field: true,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
-      if (this.props.width) {
-        style.width = this.props.width;
-      }
       return (
         <div data-field-name={this.props.name} style={style} className={classNames(classes)}>
           <label>{this.props.label}</label>
@@ -805,6 +828,7 @@ rey.component('uim.FieldGroup', [
           label: field.get('label'),
           fields: field.get('fields'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           values: values
         };
@@ -819,6 +843,10 @@ rey.component('uim.FieldGroup', [
       collapsed: React.PropTypes.bool.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ]),
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func
     },
@@ -939,12 +967,13 @@ rey.component('uim.FieldGroup', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         ['field-group']: true,
         ['field-group-multiple']: !!this.props.multiple,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
       if (this.props.collapsed) {
         style.display = 'none';
       }
@@ -983,10 +1012,10 @@ rey.component('uim.Fieldset', [
           label: field.get('label'),
           fields: field.get('fields'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           collapsible: field.get('collapsible'),
           collapsed: field.get('collapsed'),
-          width: field.get('width'),
           values: values
         };
       }
@@ -1002,9 +1031,9 @@ rey.component('uim.Fieldset', [
       collapsed: React.PropTypes.bool.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       input: React.PropTypes.bool.isRequired,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ]),
       onChange: React.PropTypes.func,
       className: React.PropTypes.string
@@ -1039,10 +1068,8 @@ rey.component('uim.Fieldset', [
         fieldset: true,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
-      if (this.props.width) {
-        style.width = this.props.width;
-      }
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       return (
         <div data-fieldset-name={this.props.name} style={style} className={classNames(classes)}>
           <fieldset>
@@ -1091,9 +1118,9 @@ rey.component('uim.FileField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
-          width: field.get('width'),
           value: values.getIn(path)
         };
       }
@@ -1108,9 +1135,9 @@ rey.component('uim.FileField', [
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ]),
       className: React.PropTypes.string
     },
@@ -1228,7 +1255,7 @@ rey.component('uim.FileField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -1263,7 +1290,11 @@ rey.component('uim.Formset', [
       collapsible: React.PropTypes.bool.isRequired,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -1299,12 +1330,14 @@ rey.component('uim.Formset', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         formset: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-form-name={this.props.name} className={classNames(classes)}>
+        <div data-form-name={this.props.name} style={style} className={classNames(classes)}>
           {this.renderTitle()}
           <FieldGroup
             path={this.props.path}
@@ -1347,7 +1380,7 @@ rey.component('uim.MemoField', [
           rows: field.get('rows'),
           cols: field.get('cols'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -1362,11 +1395,11 @@ rey.component('uim.MemoField', [
       cols: React.PropTypes.number,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleChange(event) {
@@ -1412,7 +1445,7 @@ rey.component('uim.MemoField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -1446,7 +1479,7 @@ rey.component('uim.PasswordField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           empty: !values.getIn(path)
         };
       }
@@ -1458,11 +1491,11 @@ rey.component('uim.PasswordField', [
       label: React.PropTypes.string.isRequired,
       empty: React.PropTypes.bool,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     componentDidUpdate() {
@@ -1491,7 +1524,7 @@ rey.component('uim.PasswordField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           <input
             ref='input'
@@ -1527,7 +1560,11 @@ rey.component('uim.Radio', [
       checked: React.PropTypes.bool.isRequired,
       onChange: React.PropTypes.func.isRequired,
       disabled: React.PropTypes.bool,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleChange(event) {
@@ -1542,13 +1579,15 @@ rey.component('uim.Radio', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         radio: true,
         disabled: this.props.disabled,
         [this.props.className]: !!this.props.className
       };
       return (
-        <label className={classNames(classes)}>
+        <label style={style} className={classNames(classes)}>
           <input ref='input'
             type='radio'
             name={this.props.name}
@@ -1589,7 +1628,7 @@ rey.component('uim.RadioGroup', [
           label: field.get('label'),
           options: field.get('options'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -1603,11 +1642,11 @@ rey.component('uim.RadioGroup', [
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func.isRequired,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     renderRadio(option, index) {
@@ -1659,7 +1698,7 @@ rey.component('uim.RadioGroup', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -1698,7 +1737,7 @@ rey.component('uim.SelectButton', [
           className: field.get('className'),
           blankValue: field.get('blankValue'),
           multiple: field.get('multiple'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -1714,11 +1753,12 @@ rey.component('uim.SelectButton', [
       blankValue: React.PropTypes.string,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getInitialState() {
@@ -1914,6 +1954,8 @@ rey.component('uim.SelectButton', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         button: true,
         disabled: this.isDisabled(),
@@ -1922,7 +1964,7 @@ rey.component('uim.SelectButton', [
         [this.props.className]: !!this.props.className
       };
       return (
-        <a data-button-name={this.props.name} className={classNames(classes)} type='button'>
+        <a data-button-name={this.props.name} className={classNames(classes)} style={style}>
           {this.renderSelectedOption()}
           {this.renderOptions()}
         </a>
@@ -1961,11 +2003,12 @@ rey.component('uim.SelectButtonField', [
       blankValue: React.PropTypes.string,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -1984,9 +2027,18 @@ rey.component('uim.SelectButtonField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
-          <SelectButton {...this.props} />
+          <SelectButton
+            path={this.props.path}
+            name={this.props.name}
+            options={this.props.options}
+            value={this.props.value}
+            disabled={this.props.disabled}
+            disabledValues={this.props.disabledValues}
+            onClick={this.props.onClick}
+            onChange={this.props.onChange}
+            className={this.props.className} />
         </Field>
       );
     }
@@ -2019,7 +2071,7 @@ rey.component('uim.SelectField', [
           label: field.get('label'),
           options: field.get('options'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -2033,11 +2085,11 @@ rey.component('uim.SelectField', [
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
-      ]),
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     handleChange(event) {
@@ -2098,7 +2150,7 @@ rey.component('uim.SelectField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -2133,7 +2185,7 @@ rey.component('uim.TextField', [
           label: field.get('label'),
           className: field.get('className'),
           options: field.get('options'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -2148,9 +2200,9 @@ rey.component('uim.TextField', [
       options: React.PropTypes.List,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
@@ -2215,7 +2267,7 @@ rey.component('uim.TextField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
           {this.renderOptions()}
@@ -2250,7 +2302,7 @@ rey.component('uim.TimeField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -2264,9 +2316,9 @@ rey.component('uim.TimeField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func.isRequired,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
@@ -2312,7 +2364,7 @@ rey.component('uim.TimeField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>
@@ -2344,6 +2396,7 @@ rey.component('uim.Value', [
           name: field.get('name'),
           format: field.get('format'),
           className: field.get('className'),
+          style: field.get('style'),
           value: values.getIn(path),
           texts: field.get('texts')
         };
@@ -2357,6 +2410,10 @@ rey.component('uim.Value', [
       texts: React.PropTypes.Map,
       format: React.PropTypes.string,
       className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ]),
       onClick: React.PropTypes.func
     },
 
@@ -2393,12 +2450,14 @@ rey.component('uim.Value', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         value: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div className={classNames(classes)} onClick={this.handleClick}>
+        <div className={classNames(classes)} style={this.props.style} onClick={this.handleClick}>
           {this.getValue()}
         </div>
       );
@@ -2825,11 +2884,15 @@ rey.component('uim.List', [
       ]),
       rows: React.PropTypes.List.isRequired,
       columns: React.PropTypes.List.isRequired,
-      tranformColumns: React.PropTypes.func,
+      transformColumns: React.PropTypes.func,
       empty: React.PropTypes.node,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -2947,7 +3010,7 @@ rey.component('uim.List', [
             footer={this.renderFooter()}
             rows={this.props.rows}
             columns={this.props.columns}
-            tranformColumns={this.props.tranformColumns}
+            transformColumns={this.props.transformColumns}
             onClick={this.props.onClick}
             onChange={this.props.onChange} />
         </div>
@@ -2955,12 +3018,14 @@ rey.component('uim.List', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         list: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <div data-list-name={this.props.name} className={classNames(classes)}>
+        <div data-list-name={this.props.name} style={style} className={classNames(classes)}>
           {this.renderFilter()}
           {this.isEmpty() ? this.renderEmpty() : this.renderTable()}
           {this.renderPages()}
@@ -2995,7 +3060,9 @@ rey.component('uim.Pages', [
           name: field.get('name'),
           pages: field.get('pages'),
           range: field.get('range'),
-          value: Number(values.getIn(path))
+          value: Number(values.getIn(path)),
+          className: field.get('className'),
+          style: field.get('style')
         };
       }
     },
@@ -3007,7 +3074,11 @@ rey.component('uim.Pages', [
       pages: React.PropTypes.number.isRequired,
       range: React.PropTypes.number.isRequired,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -3072,16 +3143,18 @@ rey.component('uim.Pages', [
     },
 
     render() {
-       const classes = {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
+      const classes = {
          pages: true,
          [this.props.className]: !!this.props.className
        };
-       return (
-         <ul className={classNames(classes)}>
+      return (
+        <ul style={style} className={classNames(classes)}>
            {this.renderPages()}
          </ul>
-       );
-     }
+      );
+    }
   })
 ]);
 
@@ -3112,7 +3185,8 @@ rey.component('uim.Table', [
           columns: field.get('columns'),
           header: field.get('header'),
           footer: field.get('footer'),
-          className: field.get('className')
+          className: field.get('className'),
+          style: field.get('style')
         };
       }
     },
@@ -3130,10 +3204,14 @@ rey.component('uim.Table', [
       ]),
       rows: React.PropTypes.List.isRequired,
       columns: React.PropTypes.List.isRequired,
-      tranformColumns: React.PropTypes.func,
+      transformColumns: React.PropTypes.func,
       onClick: React.PropTypes.func,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -3233,14 +3311,8 @@ rey.component('uim.Table', [
 
       const props = Component.pickProps(this.props.path, column, row);
 
-      const style = {};
-      if (column.get('width')) {
-        style.width = column.get('width');
-      }
-
       return (
         <td key={colIndex}
-          style={style}
           className='table-column'
           data-row-index={rowIndex}
           data-column-index={colIndex}
@@ -3265,8 +3337,8 @@ rey.component('uim.Table', [
 
     getColumns(row, rowIndex) {
       let columns = this.props.columns;
-      if (this.props.tranformColumns) {
-        columns = this.props.tranformColumns(columns, row, rowIndex);
+      if (this.props.transformColumns) {
+        columns = this.props.transformColumns(columns, row, rowIndex);
       }
       return columns;
     },
@@ -3324,12 +3396,14 @@ rey.component('uim.Table', [
     },
 
     render() {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       const classes = {
         table: true,
         [this.props.className]: !!this.props.className
       };
       return (
-        <table data-table-name={this.props.name} className={classNames(classes)} cellSpacing={0}>
+        <table data-table-name={this.props.name} style={style} className={classNames(classes)} cellSpacing={0}>
           {this.renderHeader()}
           {this.renderBody()}
           {this.renderFooter()}

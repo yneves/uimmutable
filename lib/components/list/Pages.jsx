@@ -21,7 +21,9 @@ rey.component('uim.Pages', [
           name: field.get('name'),
           pages: field.get('pages'),
           range: field.get('range'),
-          value: Number(values.getIn(path))
+          value: Number(values.getIn(path)),
+          className: field.get('className'),
+          style: field.get('style')
         };
       }
     },
@@ -33,7 +35,11 @@ rey.component('uim.Pages', [
       pages: React.PropTypes.number.isRequired,
       range: React.PropTypes.number.isRequired,
       onChange: React.PropTypes.func,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
+      ])
     },
 
     getDefaultProps() {
@@ -98,16 +104,18 @@ rey.component('uim.Pages', [
     },
 
     render() {
-       const classes = {
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
+      const classes = {
          pages: true,
          [this.props.className]: !!this.props.className
        };
-       return (
-         <ul className={classNames(classes)}>
+      return (
+        <ul style={style} className={classNames(classes)}>
            {this.renderPages()}
          </ul>
-       );
-     }
+      );
+    }
   })
 ]);
 

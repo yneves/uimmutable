@@ -22,10 +22,10 @@ rey.component('uim.Fieldset', [
           label: field.get('label'),
           fields: field.get('fields'),
           className: field.get('className'),
+          style: field.get('style'),
           multiple: field.get('multiple'),
           collapsible: field.get('collapsible'),
           collapsed: field.get('collapsed'),
-          width: field.get('width'),
           values: values
         };
       }
@@ -41,9 +41,9 @@ rey.component('uim.Fieldset', [
       collapsed: React.PropTypes.bool.isRequired,
       multiple: React.PropTypes.bool.isRequired,
       input: React.PropTypes.bool.isRequired,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ]),
       onChange: React.PropTypes.func,
       className: React.PropTypes.string
@@ -78,10 +78,8 @@ rey.component('uim.Fieldset', [
         fieldset: true,
         [this.props.className]: !!this.props.className
       };
-      const style = {};
-      if (this.props.width) {
-        style.width = this.props.width;
-      }
+      const style = Immutable.Map.isMap(this.props.style)
+        ? this.props.style.toJS() : this.props.style;
       return (
         <div data-fieldset-name={this.props.name} style={style} className={classNames(classes)}>
           <fieldset>

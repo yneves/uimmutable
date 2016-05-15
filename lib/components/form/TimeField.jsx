@@ -21,7 +21,7 @@ rey.component('uim.TimeField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
-          width: field.get('width'),
+          style: field.get('style'),
           value: values.getIn(path)
         };
       }
@@ -35,9 +35,9 @@ rey.component('uim.TimeField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func.isRequired,
       className: React.PropTypes.string,
-      width: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number
+      style: React.PropTypes.oneOfType([
+        React.PropTypes.Map,
+        React.PropTypes.object
       ])
     },
 
@@ -83,7 +83,7 @@ rey.component('uim.TimeField', [
         <Field ref='field'
           name={this.props.name}
           label={this.props.label}
-          width={this.props.width}
+          style={this.props.style}
           className={classNames(classes)}>
           {this.renderContent()}
         </Field>

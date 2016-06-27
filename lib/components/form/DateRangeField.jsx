@@ -24,6 +24,8 @@ rey.component('uim.DateRangeField', [
           className: field.get('className'),
           value: values.getIn(path),
           style: field.get('style'),
+          inputFormat: field.get('inputFormat'),
+          outputFormat: field.get('outputFormat'),
           placeholder: field.get('placeholder')
         };
       }
@@ -40,10 +42,19 @@ rey.component('uim.DateRangeField', [
         React.PropTypes.List
       ]),
       className: React.PropTypes.string,
+      inputFormat: React.PropTypes.string.isRequired,
+      outputFormat: React.PropTypes.string.isRequired,
       style: React.PropTypes.oneOfType([
         React.PropTypes.Map,
         React.PropTypes.object
       ])
+    },
+
+    getDefaultProps() {
+      return {
+        inputFormat: DateFormat.date.input,
+        outputFormat: DateFormat.date.output
+      };
     },
 
     parseInput(value, index) {
@@ -53,11 +64,14 @@ rey.component('uim.DateRangeField', [
       } else if (index === 0 && rey.isString(value)) {
         date = value;
       }
-      return date ? moment(date, DateFormat.date.output) : undefined;
+      if (typeof date === 'string') {
+        date = date.substr(0, this.props.outputFormat.length);
+      }
+      return date ? moment(date, this.props.outputFormat) : undefined;
     },
 
     parseOutput(date) {
-      return date && date.isValid() ? date.format(DateFormat.date.output) : undefined;
+      return date && date.isValid() ? date.format(this.props.outputFormat) : undefined;
     },
 
     handleChange(value, index) {
@@ -98,7 +112,7 @@ rey.component('uim.DateRangeField', [
             startDate={startDate}
             endDate={endDate}
             selected={startDate}
-            dateFormat={DateFormat.date.input}
+            dateFormat={this.props.inputFormat}
             isClearable={true}
             onBlur={() => this.refs.startDate.setOpen(false)}
             onChange={(date) => this.handleChange(date, 0)}
@@ -112,7 +126,7 @@ rey.component('uim.DateRangeField', [
             selected={endDate}
             isClearable={true}
             onBlur={() => this.refs.endDate.setOpen(false)}
-            dateFormat={DateFormat.date.input}
+            dateFormat={this.props.inputFormat}
             onChange={(date) => this.handleChange(date, 1)}
             placeholderText={this.getPlaceholder(1)} />
         ];

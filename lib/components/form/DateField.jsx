@@ -24,6 +24,8 @@ rey.component('uim.DateField', [
           className: field.get('className'),
           value: values.getIn(path),
           style: field.get('style'),
+          inputFormat: field.get('inputFormat'),
+          outputFormat: field.get('outputFormat'),
           placeholder: field.get('placeholder')
         };
       }
@@ -36,6 +38,8 @@ rey.component('uim.DateField', [
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
+      inputFormat: React.PropTypes.string.isRequired,
+      outputFormat: React.PropTypes.string.isRequired,
       placeholder: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
         React.PropTypes.Map,
@@ -43,12 +47,22 @@ rey.component('uim.DateField', [
       ])
     },
 
+    getDefaultProps() {
+      return {
+        inputFormat: DateFormat.date.input,
+        outputFormat: DateFormat.date.output
+      };
+    },
+
     parseInput(date) {
-      return date ? moment(date, DateFormat.date.output) : undefined;
+      if (typeof date === 'string') {
+        date = date.substr(0, this.props.outputFormat.length);
+      }
+      return date ? moment(date, this.props.outputFormat) : undefined;
     },
 
     parseOutput(date) {
-      return date.isValid() ? date.format(DateFormat.date.output) : undefined;
+      return date.isValid() ? date.format(this.props.outputFormat) : undefined;
     },
 
     handleChange(value) {
@@ -66,7 +80,7 @@ rey.component('uim.DateField', [
       if (this.props.input) {
         content = (
           <DatePicker
-            dateFormat={DateFormat.date.input}
+            dateFormat={this.props.inputFormat}
             selected={this.parseInput(this.props.value)}
             onChange={this.handleChange}
             placeholderText={this.props.placeholder} />

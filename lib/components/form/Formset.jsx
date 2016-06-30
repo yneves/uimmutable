@@ -15,7 +15,7 @@ rey.component('uim.Formset', [
     propTypes: {
       path: React.PropTypes.List.isRequired,
       name: React.PropTypes.string.isRequired,
-      label: React.PropTypes.string,
+      label: React.PropTypes.node,
       fields: React.PropTypes.List.isRequired,
       values: React.PropTypes.Map.isRequired,
       input: React.PropTypes.bool.isRequired,

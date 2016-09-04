@@ -2,13 +2,13 @@
 
 'use strict';
 
-var assert = require('assert');
+const assert = require('assert');
+const jsdom = require('mocha-jsdom');
 
-describe('uimmutable', function () {
+describe('uimmutable', () => {
 
-  it('should load without errors', function () {
-    // var ui = require("../");
-    // assert.ok(ui);
+  it('should load without errors', () => {
+
   });
 
 });

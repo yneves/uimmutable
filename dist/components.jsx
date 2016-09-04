@@ -1,6 +1,6 @@
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -28,8 +28,8 @@ rey.factory('uim.DateFormat', [() => ({
 })]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -40,8 +40,8 @@ rey.factory('uim.DateFormat', [() => ({
 rey.factory('uim.DatePicker', [() => (DatePicker)]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -52,8 +52,8 @@ rey.factory('uim.DatePicker', [() => (DatePicker)]);
 rey.factory('moment', [() => (moment)]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -90,8 +90,8 @@ rey.factory('uim.ValueFormat', [
 ]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -126,8 +126,8 @@ rey.component('uim.Breadcrumb', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -174,8 +174,8 @@ rey.component('uim.Failure', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -260,8 +260,8 @@ rey.component('uim.Button', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -333,8 +333,8 @@ rey.component('uim.ButtonGroup', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -429,8 +429,8 @@ rey.component('uim.Checkbox', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -509,8 +509,8 @@ rey.component('uim.CheckGroup', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -627,8 +627,8 @@ rey.component('uim.DateField', [
 ]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -790,8 +790,8 @@ rey.component('uim.DateRangeField', [
 ]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -833,8 +833,8 @@ rey.component('uim.Field', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1017,8 +1017,8 @@ rey.component('uim.FieldGroup', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1123,8 +1123,8 @@ rey.component('uim.Fieldset', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1295,8 +1295,8 @@ rey.component('uim.FileField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1384,8 +1384,8 @@ rey.component('uim.Formset', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1485,8 +1485,8 @@ rey.component('uim.MemoField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1567,8 +1567,8 @@ rey.component('uim.PasswordField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1633,8 +1633,8 @@ rey.component('uim.Radio', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -1738,8 +1738,8 @@ rey.component('uim.RadioGroup', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2004,8 +2004,8 @@ rey.component('uim.SelectButton', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2076,8 +2076,8 @@ rey.component('uim.SelectButtonField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2190,8 +2190,8 @@ rey.component('uim.SelectField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2308,8 +2308,8 @@ rey.component('uim.TextField', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2402,8 +2402,8 @@ rey.component('uim.TimeField', [
 ]);
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2496,8 +2496,8 @@ rey.component('uim.Value', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2566,8 +2566,8 @@ rey.component('uim.Icon', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2640,8 +2640,8 @@ rey.component('uim.IconButton', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2717,8 +2717,8 @@ rey.component('uim.Link', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2793,8 +2793,8 @@ rey.component('uim.LinkButton', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -2876,8 +2876,8 @@ rey.component('uim.LinkGroup', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3066,8 +3066,8 @@ rey.component('uim.List', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3189,8 +3189,8 @@ rey.component('uim.Pages', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3444,8 +3444,8 @@ rey.component('uim.Table', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3470,8 +3470,8 @@ rey.component('uim.Loading', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3605,8 +3605,8 @@ rey.component('uim.MenuButton', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3700,8 +3700,8 @@ rey.component('uim.Menuset', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3728,8 +3728,8 @@ rey.component('uim.Overlay', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */
@@ -3776,8 +3776,8 @@ rey.component('uim.Success', [
 // - -------------------------------------------------------------------- - //
 
 /*!
-**  uimmutable -- React components with Immutable powers.
-**  Copyright (c) 2015 Yuri Neves Silveira <http://yneves.com>
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
 **  Licensed under The MIT License <http://opensource.org/licenses/MIT>
 **  Distributed on <http://github.com/yneves/uimmutable>
 */

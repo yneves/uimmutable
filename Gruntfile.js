@@ -36,6 +36,7 @@ module.exports = function (grunt) {
         src: [
           './node_modules/moment/moment.js',
           './node_modules/moment/locale/pt-br.js',
+          './node_modules/classnames/index.js',
           './node_modules/react-onclickoutside/index.js',
           './node_modules/react-datepicker/dist/react-datepicker.js',
           './dist/components.js'

@@ -1,5 +1,5 @@
 //! moment.js
-//! version : 2.13.0
+//! version : 2.14.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -24,6 +24,19 @@
 
     function isArray(input) {
         return input instanceof Array || Object.prototype.toString.call(input) === '[object Array]';
+    }
+
+    function isObject(input) {
+        return Object.prototype.toString.call(input) === '[object Object]';
+    }
+
+    function isObjectEmpty(obj) {
+        var k;
+        for (k in obj) {
+            // even if its not own property I'd still call it non-empty
+            return false;
+        }
+        return true;
     }
 
     function isDate(input) {
@@ -221,7 +234,8 @@
 
     function absFloor (number) {
         if (number < 0) {
-            return Math.ceil(number);
+            // -0 -> 0
+            return Math.ceil(number) || 0;
         } else {
             return Math.floor(number);
         }
@@ -294,10 +308,6 @@
         return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
     }
 
-    function isObject(input) {
-        return Object.prototype.toString.call(input) === '[object Object]';
-    }
-
     function locale_set__set (config) {
         var prop, i;
         for (i in config) {
@@ -329,6 +339,14 @@
                 }
             }
         }
+        for (prop in parentConfig) {
+            if (hasOwnProp(parentConfig, prop) &&
+                    !hasOwnProp(childConfig, prop) &&
+                    isObject(parentConfig[prop])) {
+                // make sure changes to properties don't modify parent config
+                res[prop] = extend({}, res[prop]);
+            }
+        }
         return res;
     }
 
@@ -354,161 +372,83 @@
         };
     }
 
-    // internal storage for locale config files
-    var locales = {};
-    var globalLocale;
+    var defaultCalendar = {
+        sameDay : '[Today at] LT',
+        nextDay : '[Tomorrow at] LT',
+        nextWeek : 'dddd [at] LT',
+        lastDay : '[Yesterday at] LT',
+        lastWeek : '[Last] dddd [at] LT',
+        sameElse : 'L'
+    };
 
-    function normalizeLocale(key) {
-        return key ? key.toLowerCase().replace('_', '-') : key;
+    function locale_calendar__calendar (key, mom, now) {
+        var output = this._calendar[key] || this._calendar['sameElse'];
+        return isFunction(output) ? output.call(mom, now) : output;
     }
 
-    // pick the locale from the array
-    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
-    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
-    function chooseLocale(names) {
-        var i = 0, j, next, locale, split;
+    var defaultLongDateFormat = {
+        LTS  : 'h:mm:ss A',
+        LT   : 'h:mm A',
+        L    : 'MM/DD/YYYY',
+        LL   : 'MMMM D, YYYY',
+        LLL  : 'MMMM D, YYYY h:mm A',
+        LLLL : 'dddd, MMMM D, YYYY h:mm A'
+    };
 
-        while (i < names.length) {
-            split = normalizeLocale(names[i]).split('-');
-            j = split.length;
-            next = normalizeLocale(names[i + 1]);
-            next = next ? next.split('-') : null;
-            while (j > 0) {
-                locale = loadLocale(split.slice(0, j).join('-'));
-                if (locale) {
-                    return locale;
-                }
-                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
-                    //the next array item is better than a shallower substring of this one
-                    break;
-                }
-                j--;
-            }
-            i++;
+    function longDateFormat (key) {
+        var format = this._longDateFormat[key],
+            formatUpper = this._longDateFormat[key.toUpperCase()];
+
+        if (format || !formatUpper) {
+            return format;
         }
-        return null;
+
+        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
+            return val.slice(1);
+        });
+
+        return this._longDateFormat[key];
     }
 
-    function loadLocale(name) {
-        var oldLocale = null;
-        // TODO: Find a better way to register and load all the locales in Node
-        if (!locales[name] && (typeof module !== 'undefined') &&
-                module && module.exports) {
-            try {
-                oldLocale = globalLocale._abbr;
-                require('./locale/' + name);
-                // because defineLocale currently also sets the global locale, we
-                // want to undo that for lazy loaded locales
-                locale_locales__getSetGlobalLocale(oldLocale);
-            } catch (e) { }
-        }
-        return locales[name];
+    var defaultInvalidDate = 'Invalid date';
+
+    function invalidDate () {
+        return this._invalidDate;
     }
 
-    // This function will load locale and then set the global locale.  If
-    // no arguments are passed in, it will simply return the current global
-    // locale key.
-    function locale_locales__getSetGlobalLocale (key, values) {
-        var data;
-        if (key) {
-            if (isUndefined(values)) {
-                data = locale_locales__getLocale(key);
-            }
-            else {
-                data = defineLocale(key, values);
-            }
+    var defaultOrdinal = '%d';
+    var defaultOrdinalParse = /\d{1,2}/;
 
-            if (data) {
-                // moment.duration._locale = moment._locale = data;
-                globalLocale = data;
-            }
-        }
-
-        return globalLocale._abbr;
+    function ordinal (number) {
+        return this._ordinal.replace('%d', number);
     }
 
-    function defineLocale (name, config) {
-        if (config !== null) {
-            config.abbr = name;
-            if (locales[name] != null) {
-                deprecateSimple('defineLocaleOverride',
-                        'use moment.updateLocale(localeName, config) to change ' +
-                        'an existing locale. moment.defineLocale(localeName, ' +
-                        'config) should only be used for creating a new locale');
-                config = mergeConfigs(locales[name]._config, config);
-            } else if (config.parentLocale != null) {
-                if (locales[config.parentLocale] != null) {
-                    config = mergeConfigs(locales[config.parentLocale]._config, config);
-                } else {
-                    // treat as if there is no base config
-                    deprecateSimple('parentLocaleUndefined',
-                            'specified parentLocale is not defined yet');
-                }
-            }
-            locales[name] = new Locale(config);
+    var defaultRelativeTime = {
+        future : 'in %s',
+        past   : '%s ago',
+        s  : 'a few seconds',
+        m  : 'a minute',
+        mm : '%d minutes',
+        h  : 'an hour',
+        hh : '%d hours',
+        d  : 'a day',
+        dd : '%d days',
+        M  : 'a month',
+        MM : '%d months',
+        y  : 'a year',
+        yy : '%d years'
+    };
 
-            // backwards compat for now: also set the locale
-            locale_locales__getSetGlobalLocale(name);
-
-            return locales[name];
-        } else {
-            // useful for testing
-            delete locales[name];
-            return null;
-        }
+    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
+        var output = this._relativeTime[string];
+        return (isFunction(output)) ?
+            output(number, withoutSuffix, string, isFuture) :
+            output.replace(/%d/i, number);
     }
 
-    function updateLocale(name, config) {
-        if (config != null) {
-            var locale;
-            if (locales[name] != null) {
-                config = mergeConfigs(locales[name]._config, config);
-            }
-            locale = new Locale(config);
-            locale.parentLocale = locales[name];
-            locales[name] = locale;
-
-            // backwards compat for now: also set the locale
-            locale_locales__getSetGlobalLocale(name);
-        } else {
-            // pass null for config to unupdate, useful for tests
-            if (locales[name] != null) {
-                if (locales[name].parentLocale != null) {
-                    locales[name] = locales[name].parentLocale;
-                } else if (locales[name] != null) {
-                    delete locales[name];
-                }
-            }
-        }
-        return locales[name];
-    }
-
-    // returns locale data
-    function locale_locales__getLocale (key) {
-        var locale;
-
-        if (key && key._locale && key._locale._abbr) {
-            key = key._locale._abbr;
-        }
-
-        if (!key) {
-            return globalLocale;
-        }
-
-        if (!isArray(key)) {
-            //short-circuit everything else
-            locale = loadLocale(key);
-            if (locale) {
-                return locale;
-            }
-            key = [key];
-        }
-
-        return chooseLocale(key);
-    }
-
-    function locale_locales__listLocales() {
-        return keys(locales);
+    function pastFuture (diff, output) {
+        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
+        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
     }
 
     var aliases = {};
@@ -539,6 +479,23 @@
         return normalizedInput;
     }
 
+    var priorities = {};
+
+    function addUnitPriority(unit, priority) {
+        priorities[unit] = priority;
+    }
+
+    function getPrioritizedUnits(unitsObj) {
+        var units = [];
+        for (var u in unitsObj) {
+            units.push({unit: u, priority: priorities[u]});
+        }
+        units.sort(function (a, b) {
+            return a.priority - b.priority;
+        });
+        return units;
+    }
+
     function makeGetSet (unit, keepTime) {
         return function (value) {
             if (value != null) {
@@ -564,11 +521,21 @@
 
     // MOMENTS
 
-    function getSet (units, value) {
-        var unit;
+    function stringGet (units) {
+        units = normalizeUnits(units);
+        if (isFunction(this[units])) {
+            return this[units]();
+        }
+        return this;
+    }
+
+
+    function stringSet (units, value) {
         if (typeof units === 'object') {
-            for (unit in units) {
-                this.set(unit, units[unit]);
+            units = normalizeObjectUnits(units);
+            var prioritized = getPrioritizedUnits(units);
+            for (var i = 0; i < prioritized.length; i++) {
+                this[prioritized[i].unit](units[prioritized[i].unit]);
             }
         } else {
             units = normalizeUnits(units);
@@ -808,6 +775,10 @@
 
     addUnitAlias('month', 'M');
 
+    // PRIORITY
+
+    addUnitPriority('month', 8);
+
     // PARSING
 
     addRegexToken('M',    match1to2);
@@ -839,7 +810,7 @@
     var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
     function localeMonths (m, format) {
         return isArray(this._months) ? this._months[m.month()] :
-            this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
+            this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? 'format' : 'standalone'][m.month()];
     }
 
     var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
@@ -980,6 +951,9 @@
                 return this._monthsShortRegex;
             }
         } else {
+            if (!hasOwnProp(this, '_monthsShortRegex')) {
+                this._monthsShortRegex = defaultMonthsShortRegex;
+            }
             return this._monthsShortStrictRegex && isStrict ?
                 this._monthsShortStrictRegex : this._monthsShortRegex;
         }
@@ -997,6 +971,9 @@
                 return this._monthsRegex;
             }
         } else {
+            if (!hasOwnProp(this, '_monthsRegex')) {
+                this._monthsRegex = defaultMonthsRegex;
+            }
             return this._monthsStrictRegex && isStrict ?
                 this._monthsStrictRegex : this._monthsRegex;
         }
@@ -1025,6 +1002,8 @@
         for (i = 0; i < 12; i++) {
             shortPieces[i] = regexEscape(shortPieces[i]);
             longPieces[i] = regexEscape(longPieces[i]);
+        }
+        for (i = 0; i < 24; i++) {
             mixedPieces[i] = regexEscape(mixedPieces[i]);
         }
 
@@ -1032,6 +1011,873 @@
         this._monthsShortRegex = this._monthsRegex;
         this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
         this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+    }
+
+    // FORMATTING
+
+    addFormatToken('Y', 0, 0, function () {
+        var y = this.year();
+        return y <= 9999 ? '' + y : '+' + y;
+    });
+
+    addFormatToken(0, ['YY', 2], 0, function () {
+        return this.year() % 100;
+    });
+
+    addFormatToken(0, ['YYYY',   4],       0, 'year');
+    addFormatToken(0, ['YYYYY',  5],       0, 'year');
+    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
+
+    // ALIASES
+
+    addUnitAlias('year', 'y');
+
+    // PRIORITIES
+
+    addUnitPriority('year', 1);
+
+    // PARSING
+
+    addRegexToken('Y',      matchSigned);
+    addRegexToken('YY',     match1to2, match2);
+    addRegexToken('YYYY',   match1to4, match4);
+    addRegexToken('YYYYY',  match1to6, match6);
+    addRegexToken('YYYYYY', match1to6, match6);
+
+    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
+    addParseToken('YYYY', function (input, array) {
+        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
+    });
+    addParseToken('YY', function (input, array) {
+        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
+    });
+    addParseToken('Y', function (input, array) {
+        array[YEAR] = parseInt(input, 10);
+    });
+
+    // HELPERS
+
+    function daysInYear(year) {
+        return isLeapYear(year) ? 366 : 365;
+    }
+
+    function isLeapYear(year) {
+        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    }
+
+    // HOOKS
+
+    utils_hooks__hooks.parseTwoDigitYear = function (input) {
+        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
+    };
+
+    // MOMENTS
+
+    var getSetYear = makeGetSet('FullYear', true);
+
+    function getIsLeapYear () {
+        return isLeapYear(this.year());
+    }
+
+    function createDate (y, m, d, h, M, s, ms) {
+        //can't just apply() to create a date:
+        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
+        var date = new Date(y, m, d, h, M, s, ms);
+
+        //the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
+            date.setFullYear(y);
+        }
+        return date;
+    }
+
+    function createUTCDate (y) {
+        var date = new Date(Date.UTC.apply(null, arguments));
+
+        //the Date.UTC function remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
+            date.setUTCFullYear(y);
+        }
+        return date;
+    }
+
+    // start-of-first-week - start-of-year
+    function firstWeekOffset(year, dow, doy) {
+        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
+            fwd = 7 + dow - doy,
+            // first-week day local weekday -- which local weekday is fwd
+            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+
+        return -fwdlw + fwd - 1;
+    }
+
+    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7,
+            weekOffset = firstWeekOffset(year, dow, doy),
+            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+            resYear, resDayOfYear;
+
+        if (dayOfYear <= 0) {
+            resYear = year - 1;
+            resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+            resYear = year + 1;
+            resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+            resYear = year;
+            resDayOfYear = dayOfYear;
+        }
+
+        return {
+            year: resYear,
+            dayOfYear: resDayOfYear
+        };
+    }
+
+    function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+            resWeek, resYear;
+
+        if (week < 1) {
+            resYear = mom.year() - 1;
+            resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+            resWeek = week - weeksInYear(mom.year(), dow, doy);
+            resYear = mom.year() + 1;
+        } else {
+            resYear = mom.year();
+            resWeek = week;
+        }
+
+        return {
+            week: resWeek,
+            year: resYear
+        };
+    }
+
+    function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy),
+            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
+    }
+
+    // FORMATTING
+
+    addFormatToken('w', ['ww', 2], 'wo', 'week');
+    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+
+    // ALIASES
+
+    addUnitAlias('week', 'w');
+    addUnitAlias('isoWeek', 'W');
+
+    // PRIORITIES
+
+    addUnitPriority('week', 5);
+    addUnitPriority('isoWeek', 5);
+
+    // PARSING
+
+    addRegexToken('w',  match1to2);
+    addRegexToken('ww', match1to2, match2);
+    addRegexToken('W',  match1to2);
+    addRegexToken('WW', match1to2, match2);
+
+    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
+        week[token.substr(0, 1)] = toInt(input);
+    });
+
+    // HELPERS
+
+    // LOCALES
+
+    function localeWeek (mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+
+    var defaultLocaleWeek = {
+        dow : 0, // Sunday is the first day of the week.
+        doy : 6  // The week that contains Jan 1st is the first week of the year.
+    };
+
+    function localeFirstDayOfWeek () {
+        return this._week.dow;
+    }
+
+    function localeFirstDayOfYear () {
+        return this._week.doy;
+    }
+
+    // MOMENTS
+
+    function getSetWeek (input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    function getSetISOWeek (input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    // FORMATTING
+
+    addFormatToken('d', 0, 'do', 'day');
+
+    addFormatToken('dd', 0, 0, function (format) {
+        return this.localeData().weekdaysMin(this, format);
+    });
+
+    addFormatToken('ddd', 0, 0, function (format) {
+        return this.localeData().weekdaysShort(this, format);
+    });
+
+    addFormatToken('dddd', 0, 0, function (format) {
+        return this.localeData().weekdays(this, format);
+    });
+
+    addFormatToken('e', 0, 0, 'weekday');
+    addFormatToken('E', 0, 0, 'isoWeekday');
+
+    // ALIASES
+
+    addUnitAlias('day', 'd');
+    addUnitAlias('weekday', 'e');
+    addUnitAlias('isoWeekday', 'E');
+
+    // PRIORITY
+    addUnitPriority('day', 11);
+    addUnitPriority('weekday', 11);
+    addUnitPriority('isoWeekday', 11);
+
+    // PARSING
+
+    addRegexToken('d',    match1to2);
+    addRegexToken('e',    match1to2);
+    addRegexToken('E',    match1to2);
+    addRegexToken('dd',   function (isStrict, locale) {
+        return locale.weekdaysMinRegex(isStrict);
+    });
+    addRegexToken('ddd',   function (isStrict, locale) {
+        return locale.weekdaysShortRegex(isStrict);
+    });
+    addRegexToken('dddd',   function (isStrict, locale) {
+        return locale.weekdaysRegex(isStrict);
+    });
+
+    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
+        var weekday = config._locale.weekdaysParse(input, token, config._strict);
+        // if we didn't get a weekday name, mark the date as invalid
+        if (weekday != null) {
+            week.d = weekday;
+        } else {
+            getParsingFlags(config).invalidWeekday = input;
+        }
+    });
+
+    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
+        week[token] = toInt(input);
+    });
+
+    // HELPERS
+
+    function parseWeekday(input, locale) {
+        if (typeof input !== 'string') {
+            return input;
+        }
+
+        if (!isNaN(input)) {
+            return parseInt(input, 10);
+        }
+
+        input = locale.weekdaysParse(input);
+        if (typeof input === 'number') {
+            return input;
+        }
+
+        return null;
+    }
+
+    function parseIsoWeekday(input, locale) {
+        if (typeof input === 'string') {
+            return locale.weekdaysParse(input) % 7 || 7;
+        }
+        return isNaN(input) ? null : input;
+    }
+
+    // LOCALES
+
+    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
+    function localeWeekdays (m, format) {
+        return isArray(this._weekdays) ? this._weekdays[m.day()] :
+            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
+    }
+
+    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
+    function localeWeekdaysShort (m) {
+        return this._weekdaysShort[m.day()];
+    }
+
+    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
+    function localeWeekdaysMin (m) {
+        return this._weekdaysMin[m.day()];
+    }
+
+    function day_of_week__handleStrictParse(weekdayName, format, strict) {
+        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._minWeekdaysParse = [];
+
+            for (i = 0; i < 7; ++i) {
+                mom = create_utc__createUTC([2000, 1]).day(i);
+                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
+                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
+                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
+            }
+        }
+
+        if (strict) {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        }
+    }
+
+    function localeWeekdaysParse (weekdayName, format, strict) {
+        var i, mom, regex;
+
+        if (this._weekdaysParseExact) {
+            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
+        }
+
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._minWeekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._fullWeekdaysParse = [];
+        }
+
+        for (i = 0; i < 7; i++) {
+            // make the regex if we don't have it already
+
+            mom = create_utc__createUTC([2000, 1]).day(i);
+            if (strict && !this._fullWeekdaysParse[i]) {
+                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
+                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
+                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+            }
+            if (!this._weekdaysParse[i]) {
+                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
+                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
+            }
+            // test the regex
+            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
+                return i;
+            }
+        }
+    }
+
+    // MOMENTS
+
+    function getSetDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
+        if (input != null) {
+            input = parseWeekday(input, this.localeData());
+            return this.add(input - day, 'd');
+        } else {
+            return day;
+        }
+    }
+
+    function getSetLocaleDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
+        return input == null ? weekday : this.add(input - weekday, 'd');
+    }
+
+    function getSetISODayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
+
+        // behaves the same as moment#day except
+        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
+        // as a setter, sunday should belong to the previous week.
+
+        if (input != null) {
+            var weekday = parseIsoWeekday(input, this.localeData());
+            return this.day(this.day() % 7 ? weekday : weekday - 7);
+        } else {
+            return this.day() || 7;
+        }
+    }
+
+    var defaultWeekdaysRegex = matchWord;
+    function weekdaysRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysStrictRegex;
+            } else {
+                return this._weekdaysRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                this._weekdaysRegex = defaultWeekdaysRegex;
+            }
+            return this._weekdaysStrictRegex && isStrict ?
+                this._weekdaysStrictRegex : this._weekdaysRegex;
+        }
+    }
+
+    var defaultWeekdaysShortRegex = matchWord;
+    function weekdaysShortRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysShortStrictRegex;
+            } else {
+                return this._weekdaysShortRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysShortRegex')) {
+                this._weekdaysShortRegex = defaultWeekdaysShortRegex;
+            }
+            return this._weekdaysShortStrictRegex && isStrict ?
+                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+        }
+    }
+
+    var defaultWeekdaysMinRegex = matchWord;
+    function weekdaysMinRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysMinStrictRegex;
+            } else {
+                return this._weekdaysMinRegex;
+            }
+        } else {
+            if (!hasOwnProp(this, '_weekdaysMinRegex')) {
+                this._weekdaysMinRegex = defaultWeekdaysMinRegex;
+            }
+            return this._weekdaysMinStrictRegex && isStrict ?
+                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+        }
+    }
+
+
+    function computeWeekdaysParse () {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+
+        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
+            i, mom, minp, shortp, longp;
+        for (i = 0; i < 7; i++) {
+            // make the regex if we don't have it already
+            mom = create_utc__createUTC([2000, 1]).day(i);
+            minp = this.weekdaysMin(mom, '');
+            shortp = this.weekdaysShort(mom, '');
+            longp = this.weekdays(mom, '');
+            minPieces.push(minp);
+            shortPieces.push(shortp);
+            longPieces.push(longp);
+            mixedPieces.push(minp);
+            mixedPieces.push(shortp);
+            mixedPieces.push(longp);
+        }
+        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+        // will match the longer piece.
+        minPieces.sort(cmpLenRev);
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        for (i = 0; i < 7; i++) {
+            shortPieces[i] = regexEscape(shortPieces[i]);
+            longPieces[i] = regexEscape(longPieces[i]);
+            mixedPieces[i] = regexEscape(mixedPieces[i]);
+        }
+
+        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+        this._weekdaysShortRegex = this._weekdaysRegex;
+        this._weekdaysMinRegex = this._weekdaysRegex;
+
+        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
+    }
+
+    // FORMATTING
+
+    function hFormat() {
+        return this.hours() % 12 || 12;
+    }
+
+    function kFormat() {
+        return this.hours() || 24;
+    }
+
+    addFormatToken('H', ['HH', 2], 0, 'hour');
+    addFormatToken('h', ['hh', 2], 0, hFormat);
+    addFormatToken('k', ['kk', 2], 0, kFormat);
+
+    addFormatToken('hmm', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('hmmss', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    addFormatToken('Hmm', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('Hmmss', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    function meridiem (token, lowercase) {
+        addFormatToken(token, 0, 0, function () {
+            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
+        });
+    }
+
+    meridiem('a', true);
+    meridiem('A', false);
+
+    // ALIASES
+
+    addUnitAlias('hour', 'h');
+
+    // PRIORITY
+    addUnitPriority('hour', 13);
+
+    // PARSING
+
+    function matchMeridiem (isStrict, locale) {
+        return locale._meridiemParse;
+    }
+
+    addRegexToken('a',  matchMeridiem);
+    addRegexToken('A',  matchMeridiem);
+    addRegexToken('H',  match1to2);
+    addRegexToken('h',  match1to2);
+    addRegexToken('HH', match1to2, match2);
+    addRegexToken('hh', match1to2, match2);
+
+    addRegexToken('hmm', match3to4);
+    addRegexToken('hmmss', match5to6);
+    addRegexToken('Hmm', match3to4);
+    addRegexToken('Hmmss', match5to6);
+
+    addParseToken(['H', 'HH'], HOUR);
+    addParseToken(['a', 'A'], function (input, array, config) {
+        config._isPm = config._locale.isPM(input);
+        config._meridiem = input;
+    });
+    addParseToken(['h', 'hh'], function (input, array, config) {
+        array[HOUR] = toInt(input);
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('Hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken('Hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+    });
+
+    // LOCALES
+
+    function localeIsPM (input) {
+        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
+        // Using charAt should be more compatible.
+        return ((input + '').toLowerCase().charAt(0) === 'p');
+    }
+
+    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
+    function localeMeridiem (hours, minutes, isLower) {
+        if (hours > 11) {
+            return isLower ? 'pm' : 'PM';
+        } else {
+            return isLower ? 'am' : 'AM';
+        }
+    }
+
+
+    // MOMENTS
+
+    // Setting the hour should keep the time, because the user explicitly
+    // specified which hour he wants. So trying to maintain the same hour (in
+    // a new timezone) makes sense. Adding/subtracting hours does not follow
+    // this rule.
+    var getSetHour = makeGetSet('Hours', true);
+
+    var baseConfig = {
+        calendar: defaultCalendar,
+        longDateFormat: defaultLongDateFormat,
+        invalidDate: defaultInvalidDate,
+        ordinal: defaultOrdinal,
+        ordinalParse: defaultOrdinalParse,
+        relativeTime: defaultRelativeTime,
+
+        months: defaultLocaleMonths,
+        monthsShort: defaultLocaleMonthsShort,
+
+        week: defaultLocaleWeek,
+
+        weekdays: defaultLocaleWeekdays,
+        weekdaysMin: defaultLocaleWeekdaysMin,
+        weekdaysShort: defaultLocaleWeekdaysShort,
+
+        meridiemParse: defaultLocaleMeridiemParse
+    };
+
+    // internal storage for locale config files
+    var locales = {};
+    var globalLocale;
+
+    function normalizeLocale(key) {
+        return key ? key.toLowerCase().replace('_', '-') : key;
+    }
+
+    // pick the locale from the array
+    // try ['en-au', 'en-gb'] as 'en-au', 'en-gb', 'en', as in move through the list trying each
+    // substring from most specific to least, but move to the next array item if it's a more specific variant than the current root
+    function chooseLocale(names) {
+        var i = 0, j, next, locale, split;
+
+        while (i < names.length) {
+            split = normalizeLocale(names[i]).split('-');
+            j = split.length;
+            next = normalizeLocale(names[i + 1]);
+            next = next ? next.split('-') : null;
+            while (j > 0) {
+                locale = loadLocale(split.slice(0, j).join('-'));
+                if (locale) {
+                    return locale;
+                }
+                if (next && next.length >= j && compareArrays(split, next, true) >= j - 1) {
+                    //the next array item is better than a shallower substring of this one
+                    break;
+                }
+                j--;
+            }
+            i++;
+        }
+        return null;
+    }
+
+    function loadLocale(name) {
+        var oldLocale = null;
+        // TODO: Find a better way to register and load all the locales in Node
+        if (!locales[name] && (typeof module !== 'undefined') &&
+                module && module.exports) {
+            try {
+                oldLocale = globalLocale._abbr;
+                require('./locale/' + name);
+                // because defineLocale currently also sets the global locale, we
+                // want to undo that for lazy loaded locales
+                locale_locales__getSetGlobalLocale(oldLocale);
+            } catch (e) { }
+        }
+        return locales[name];
+    }
+
+    // This function will load locale and then set the global locale.  If
+    // no arguments are passed in, it will simply return the current global
+    // locale key.
+    function locale_locales__getSetGlobalLocale (key, values) {
+        var data;
+        if (key) {
+            if (isUndefined(values)) {
+                data = locale_locales__getLocale(key);
+            }
+            else {
+                data = defineLocale(key, values);
+            }
+
+            if (data) {
+                // moment.duration._locale = moment._locale = data;
+                globalLocale = data;
+            }
+        }
+
+        return globalLocale._abbr;
+    }
+
+    function defineLocale (name, config) {
+        if (config !== null) {
+            var parentConfig = baseConfig;
+            config.abbr = name;
+            if (locales[name] != null) {
+                deprecateSimple('defineLocaleOverride',
+                        'use moment.updateLocale(localeName, config) to change ' +
+                        'an existing locale. moment.defineLocale(localeName, ' +
+                        'config) should only be used for creating a new locale ' +
+                        'See http://momentjs.com/guides/#/warnings/define-locale/ for more info.');
+                parentConfig = locales[name]._config;
+            } else if (config.parentLocale != null) {
+                if (locales[config.parentLocale] != null) {
+                    parentConfig = locales[config.parentLocale]._config;
+                } else {
+                    // treat as if there is no base config
+                    deprecateSimple('parentLocaleUndefined',
+                            'specified parentLocale is not defined yet. See http://momentjs.com/guides/#/warnings/parent-locale/');
+                }
+            }
+            locales[name] = new Locale(mergeConfigs(parentConfig, config));
+
+            // backwards compat for now: also set the locale
+            locale_locales__getSetGlobalLocale(name);
+
+            return locales[name];
+        } else {
+            // useful for testing
+            delete locales[name];
+            return null;
+        }
+    }
+
+    function updateLocale(name, config) {
+        if (config != null) {
+            var locale, parentConfig = baseConfig;
+            // MERGE
+            if (locales[name] != null) {
+                parentConfig = locales[name]._config;
+            }
+            config = mergeConfigs(parentConfig, config);
+            locale = new Locale(config);
+            locale.parentLocale = locales[name];
+            locales[name] = locale;
+
+            // backwards compat for now: also set the locale
+            locale_locales__getSetGlobalLocale(name);
+        } else {
+            // pass null for config to unupdate, useful for tests
+            if (locales[name] != null) {
+                if (locales[name].parentLocale != null) {
+                    locales[name] = locales[name].parentLocale;
+                } else if (locales[name] != null) {
+                    delete locales[name];
+                }
+            }
+        }
+        return locales[name];
+    }
+
+    // returns locale data
+    function locale_locales__getLocale (key) {
+        var locale;
+
+        if (key && key._locale && key._locale._abbr) {
+            key = key._locale._abbr;
+        }
+
+        if (!key) {
+            return globalLocale;
+        }
+
+        if (!isArray(key)) {
+            //short-circuit everything else
+            locale = loadLocale(key);
+            if (locale) {
+                return locale;
+            }
+            key = [key];
+        }
+
+        return chooseLocale(key);
+    }
+
+    function locale_locales__listLocales() {
+        return keys(locales);
     }
 
     function checkOverflow (m) {
@@ -1174,157 +2020,11 @@
         'moment construction falls back to js Date. This is ' +
         'discouraged and will be removed in upcoming major ' +
         'release. Please refer to ' +
-        'https://github.com/moment/moment/issues/1407 for more info.',
+        'http://momentjs.com/guides/#/warnings/js-date/ for more info.',
         function (config) {
             config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
         }
     );
-
-    function createDate (y, m, d, h, M, s, ms) {
-        //can't just apply() to create a date:
-        //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
-        var date = new Date(y, m, d, h, M, s, ms);
-
-        //the date constructor remaps years 0-99 to 1900-1999
-        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
-            date.setFullYear(y);
-        }
-        return date;
-    }
-
-    function createUTCDate (y) {
-        var date = new Date(Date.UTC.apply(null, arguments));
-
-        //the Date.UTC function remaps years 0-99 to 1900-1999
-        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
-            date.setUTCFullYear(y);
-        }
-        return date;
-    }
-
-    // FORMATTING
-
-    addFormatToken('Y', 0, 0, function () {
-        var y = this.year();
-        return y <= 9999 ? '' + y : '+' + y;
-    });
-
-    addFormatToken(0, ['YY', 2], 0, function () {
-        return this.year() % 100;
-    });
-
-    addFormatToken(0, ['YYYY',   4],       0, 'year');
-    addFormatToken(0, ['YYYYY',  5],       0, 'year');
-    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-
-    // ALIASES
-
-    addUnitAlias('year', 'y');
-
-    // PARSING
-
-    addRegexToken('Y',      matchSigned);
-    addRegexToken('YY',     match1to2, match2);
-    addRegexToken('YYYY',   match1to4, match4);
-    addRegexToken('YYYYY',  match1to6, match6);
-    addRegexToken('YYYYYY', match1to6, match6);
-
-    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
-    addParseToken('YYYY', function (input, array) {
-        array[YEAR] = input.length === 2 ? utils_hooks__hooks.parseTwoDigitYear(input) : toInt(input);
-    });
-    addParseToken('YY', function (input, array) {
-        array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
-    });
-    addParseToken('Y', function (input, array) {
-        array[YEAR] = parseInt(input, 10);
-    });
-
-    // HELPERS
-
-    function daysInYear(year) {
-        return isLeapYear(year) ? 366 : 365;
-    }
-
-    function isLeapYear(year) {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    }
-
-    // HOOKS
-
-    utils_hooks__hooks.parseTwoDigitYear = function (input) {
-        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
-    };
-
-    // MOMENTS
-
-    var getSetYear = makeGetSet('FullYear', true);
-
-    function getIsLeapYear () {
-        return isLeapYear(this.year());
-    }
-
-    // start-of-first-week - start-of-year
-    function firstWeekOffset(year, dow, doy) {
-        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
-            fwd = 7 + dow - doy,
-            // first-week day local weekday -- which local weekday is fwd
-            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
-
-        return -fwdlw + fwd - 1;
-    }
-
-    //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
-    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
-        var localWeekday = (7 + weekday - dow) % 7,
-            weekOffset = firstWeekOffset(year, dow, doy),
-            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
-            resYear, resDayOfYear;
-
-        if (dayOfYear <= 0) {
-            resYear = year - 1;
-            resDayOfYear = daysInYear(resYear) + dayOfYear;
-        } else if (dayOfYear > daysInYear(year)) {
-            resYear = year + 1;
-            resDayOfYear = dayOfYear - daysInYear(year);
-        } else {
-            resYear = year;
-            resDayOfYear = dayOfYear;
-        }
-
-        return {
-            year: resYear,
-            dayOfYear: resDayOfYear
-        };
-    }
-
-    function weekOfYear(mom, dow, doy) {
-        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
-            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
-            resWeek, resYear;
-
-        if (week < 1) {
-            resYear = mom.year() - 1;
-            resWeek = week + weeksInYear(resYear, dow, doy);
-        } else if (week > weeksInYear(mom.year(), dow, doy)) {
-            resWeek = week - weeksInYear(mom.year(), dow, doy);
-            resYear = mom.year() + 1;
-        } else {
-            resYear = mom.year();
-            resWeek = week;
-        }
-
-        return {
-            week: resWeek,
-            year: resYear
-        };
-    }
-
-    function weeksInYear(year, dow, doy) {
-        var weekOffset = firstWeekOffset(year, dow, doy),
-            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
-        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
-    }
 
     // Pick the first defined of two or three arguments.
     function defaults(a, b, c) {
@@ -1522,9 +2222,9 @@
         }
 
         // clear _12h flag if hour is <= 12
-        if (getParsingFlags(config).bigHour === true &&
-                config._a[HOUR] <= 12 &&
-                config._a[HOUR] > 0) {
+        if (config._a[HOUR] <= 12 &&
+            getParsingFlags(config).bigHour === true &&
+            config._a[HOUR] > 0) {
             getParsingFlags(config).bigHour = undefined;
         }
 
@@ -1650,11 +2350,11 @@
             return new Moment(checkOverflow(input));
         } else if (isArray(format)) {
             configFromStringAndArray(config);
-        } else if (format) {
-            configFromStringAndFormat(config);
         } else if (isDate(input)) {
             config._d = input;
-        } else {
+        } else if (format) {
+            configFromStringAndFormat(config);
+        }  else {
             configFromInput(config);
         }
 
@@ -1695,6 +2395,11 @@
             strict = locale;
             locale = undefined;
         }
+
+        if ((isObject(input) && isObjectEmpty(input)) ||
+                (isArray(input) && input.length === 0)) {
+            input = undefined;
+        }
         // object construction must be done this way.
         // https://github.com/moment/moment/issues/1423
         c._isAMomentObject = true;
@@ -1712,19 +2417,19 @@
     }
 
     var prototypeMin = deprecate(
-         'moment().min is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
-         function () {
-             var other = local__createLocal.apply(null, arguments);
-             if (this.isValid() && other.isValid()) {
-                 return other < this ? this : other;
-             } else {
-                 return valid__createInvalid();
-             }
-         }
-     );
+        'moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/',
+        function () {
+            var other = local__createLocal.apply(null, arguments);
+            if (this.isValid() && other.isValid()) {
+                return other < this ? this : other;
+            } else {
+                return valid__createInvalid();
+            }
+        }
+    );
 
     var prototypeMax = deprecate(
-        'moment().max is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
+        'moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/',
         function () {
             var other = local__createLocal.apply(null, arguments);
             if (this.isValid() && other.isValid()) {
@@ -2143,7 +2848,8 @@
             var dur, tmp;
             //invert the arguments, but complain about it
             if (period !== null && !isNaN(+period)) {
-                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period).');
+                deprecateSimple(name, 'moment().' + name  + '(period, number) is deprecated. Please use moment().' + name + '(number, period). ' +
+                'See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info.');
                 tmp = val; val = period; period = tmp;
             }
 
@@ -2183,20 +2889,24 @@
     var add_subtract__add      = createAdder(1, 'add');
     var add_subtract__subtract = createAdder(-1, 'subtract');
 
-    function moment_calendar__calendar (time, formats) {
-        // We want to compare the start of today, vs this.
-        // Getting start-of-today depends on whether we're local/utc/offset or not.
-        var now = time || local__createLocal(),
-            sod = cloneWithOffset(now, this).startOf('day'),
-            diff = this.diff(sod, 'days', true),
-            format = diff < -6 ? 'sameElse' :
+    function getCalendarFormat(myMoment, now) {
+        var diff = myMoment.diff(now, 'days', true);
+        return diff < -6 ? 'sameElse' :
                 diff < -1 ? 'lastWeek' :
                 diff < 0 ? 'lastDay' :
                 diff < 1 ? 'sameDay' :
                 diff < 2 ? 'nextDay' :
                 diff < 7 ? 'nextWeek' : 'sameElse';
+    }
 
-        var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+    function moment_calendar__calendar (time, formats) {
+        // We want to compare the start of today, vs this.
+        // Getting start-of-today depends on whether we're local/utc/offset or not.
+        var now = time || local__createLocal(),
+            sod = cloneWithOffset(now, this).startOf('day'),
+            format = utils_hooks__hooks.calendarFormat(this, sod) || 'sameElse';
+
+        var output = formats && (isFunction(formats[format]) ? formats[format].call(this, now) : formats[format]);
 
         return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
     }
@@ -2413,27 +3123,27 @@
         // the following switch intentionally omits break keywords
         // to utilize falling through the cases.
         switch (units) {
-        case 'year':
-            this.month(0);
-            /* falls through */
-        case 'quarter':
-        case 'month':
-            this.date(1);
-            /* falls through */
-        case 'week':
-        case 'isoWeek':
-        case 'day':
-        case 'date':
-            this.hours(0);
-            /* falls through */
-        case 'hour':
-            this.minutes(0);
-            /* falls through */
-        case 'minute':
-            this.seconds(0);
-            /* falls through */
-        case 'second':
-            this.milliseconds(0);
+            case 'year':
+                this.month(0);
+                /* falls through */
+            case 'quarter':
+            case 'month':
+                this.date(1);
+                /* falls through */
+            case 'week':
+            case 'isoWeek':
+            case 'day':
+            case 'date':
+                this.hours(0);
+                /* falls through */
+            case 'hour':
+                this.minutes(0);
+                /* falls through */
+            case 'minute':
+                this.seconds(0);
+                /* falls through */
+            case 'second':
+                this.milliseconds(0);
         }
 
         // weeks are a special case
@@ -2475,7 +3185,7 @@
     }
 
     function toDate () {
-        return this._offset ? new Date(this.valueOf()) : this._d;
+        return new Date(this.valueOf());
     }
 
     function toArray () {
@@ -2546,6 +3256,12 @@
 
     addUnitAlias('weekYear', 'gg');
     addUnitAlias('isoWeekYear', 'GG');
+
+    // PRIORITY
+
+    addUnitPriority('weekYear', 1);
+    addUnitPriority('isoWeekYear', 1);
+
 
     // PARSING
 
@@ -2622,6 +3338,10 @@
 
     addUnitAlias('quarter', 'Q');
 
+    // PRIORITY
+
+    addUnitPriority('quarter', 7);
+
     // PARSING
 
     addRegexToken('Q', match1);
@@ -2637,65 +3357,14 @@
 
     // FORMATTING
 
-    addFormatToken('w', ['ww', 2], 'wo', 'week');
-    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-
-    // ALIASES
-
-    addUnitAlias('week', 'w');
-    addUnitAlias('isoWeek', 'W');
-
-    // PARSING
-
-    addRegexToken('w',  match1to2);
-    addRegexToken('ww', match1to2, match2);
-    addRegexToken('W',  match1to2);
-    addRegexToken('WW', match1to2, match2);
-
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
-        week[token.substr(0, 1)] = toInt(input);
-    });
-
-    // HELPERS
-
-    // LOCALES
-
-    function localeWeek (mom) {
-        return weekOfYear(mom, this._week.dow, this._week.doy).week;
-    }
-
-    var defaultLocaleWeek = {
-        dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
-    };
-
-    function localeFirstDayOfWeek () {
-        return this._week.dow;
-    }
-
-    function localeFirstDayOfYear () {
-        return this._week.doy;
-    }
-
-    // MOMENTS
-
-    function getSetWeek (input) {
-        var week = this.localeData().week(this);
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    function getSetISOWeek (input) {
-        var week = weekOfYear(this, 1, 4).week;
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    // FORMATTING
-
     addFormatToken('D', ['DD', 2], 'Do', 'date');
 
     // ALIASES
 
     addUnitAlias('date', 'D');
+
+    // PRIOROITY
+    addUnitPriority('date', 9);
 
     // PARSING
 
@@ -2716,332 +3385,14 @@
 
     // FORMATTING
 
-    addFormatToken('d', 0, 'do', 'day');
-
-    addFormatToken('dd', 0, 0, function (format) {
-        return this.localeData().weekdaysMin(this, format);
-    });
-
-    addFormatToken('ddd', 0, 0, function (format) {
-        return this.localeData().weekdaysShort(this, format);
-    });
-
-    addFormatToken('dddd', 0, 0, function (format) {
-        return this.localeData().weekdays(this, format);
-    });
-
-    addFormatToken('e', 0, 0, 'weekday');
-    addFormatToken('E', 0, 0, 'isoWeekday');
-
-    // ALIASES
-
-    addUnitAlias('day', 'd');
-    addUnitAlias('weekday', 'e');
-    addUnitAlias('isoWeekday', 'E');
-
-    // PARSING
-
-    addRegexToken('d',    match1to2);
-    addRegexToken('e',    match1to2);
-    addRegexToken('E',    match1to2);
-    addRegexToken('dd',   function (isStrict, locale) {
-        return locale.weekdaysMinRegex(isStrict);
-    });
-    addRegexToken('ddd',   function (isStrict, locale) {
-        return locale.weekdaysShortRegex(isStrict);
-    });
-    addRegexToken('dddd',   function (isStrict, locale) {
-        return locale.weekdaysRegex(isStrict);
-    });
-
-    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
-        var weekday = config._locale.weekdaysParse(input, token, config._strict);
-        // if we didn't get a weekday name, mark the date as invalid
-        if (weekday != null) {
-            week.d = weekday;
-        } else {
-            getParsingFlags(config).invalidWeekday = input;
-        }
-    });
-
-    addWeekParseToken(['d', 'e', 'E'], function (input, week, config, token) {
-        week[token] = toInt(input);
-    });
-
-    // HELPERS
-
-    function parseWeekday(input, locale) {
-        if (typeof input !== 'string') {
-            return input;
-        }
-
-        if (!isNaN(input)) {
-            return parseInt(input, 10);
-        }
-
-        input = locale.weekdaysParse(input);
-        if (typeof input === 'number') {
-            return input;
-        }
-
-        return null;
-    }
-
-    // LOCALES
-
-    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-    function localeWeekdays (m, format) {
-        return isArray(this._weekdays) ? this._weekdays[m.day()] :
-            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
-    }
-
-    var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
-    function localeWeekdaysShort (m) {
-        return this._weekdaysShort[m.day()];
-    }
-
-    var defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_');
-    function localeWeekdaysMin (m) {
-        return this._weekdaysMin[m.day()];
-    }
-
-    function day_of_week__handleStrictParse(weekdayName, format, strict) {
-        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
-        if (!this._weekdaysParse) {
-            this._weekdaysParse = [];
-            this._shortWeekdaysParse = [];
-            this._minWeekdaysParse = [];
-
-            for (i = 0; i < 7; ++i) {
-                mom = create_utc__createUTC([2000, 1]).day(i);
-                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
-                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
-                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
-            }
-        }
-
-        if (strict) {
-            if (format === 'dddd') {
-                ii = indexOf.call(this._weekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else if (format === 'ddd') {
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else {
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            }
-        } else {
-            if (format === 'dddd') {
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else if (format === 'ddd') {
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            } else {
-                ii = indexOf.call(this._minWeekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._weekdaysParse, llc);
-                if (ii !== -1) {
-                    return ii;
-                }
-                ii = indexOf.call(this._shortWeekdaysParse, llc);
-                return ii !== -1 ? ii : null;
-            }
-        }
-    }
-
-    function localeWeekdaysParse (weekdayName, format, strict) {
-        var i, mom, regex;
-
-        if (this._weekdaysParseExact) {
-            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
-        }
-
-        if (!this._weekdaysParse) {
-            this._weekdaysParse = [];
-            this._minWeekdaysParse = [];
-            this._shortWeekdaysParse = [];
-            this._fullWeekdaysParse = [];
-        }
-
-        for (i = 0; i < 7; i++) {
-            // make the regex if we don't have it already
-
-            mom = create_utc__createUTC([2000, 1]).day(i);
-            if (strict && !this._fullWeekdaysParse[i]) {
-                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
-                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
-                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
-            }
-            if (!this._weekdaysParse[i]) {
-                regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
-                this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
-            }
-            // test the regex
-            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
-                return i;
-            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
-                return i;
-            }
-        }
-    }
-
-    // MOMENTS
-
-    function getSetDayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
-        if (input != null) {
-            input = parseWeekday(input, this.localeData());
-            return this.add(input - day, 'd');
-        } else {
-            return day;
-        }
-    }
-
-    function getSetLocaleDayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
-        return input == null ? weekday : this.add(input - weekday, 'd');
-    }
-
-    function getSetISODayOfWeek (input) {
-        if (!this.isValid()) {
-            return input != null ? this : NaN;
-        }
-        // behaves the same as moment#day except
-        // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
-        // as a setter, sunday should belong to the previous week.
-        return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
-    }
-
-    var defaultWeekdaysRegex = matchWord;
-    function weekdaysRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysStrictRegex;
-            } else {
-                return this._weekdaysRegex;
-            }
-        } else {
-            return this._weekdaysStrictRegex && isStrict ?
-                this._weekdaysStrictRegex : this._weekdaysRegex;
-        }
-    }
-
-    var defaultWeekdaysShortRegex = matchWord;
-    function weekdaysShortRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysShortStrictRegex;
-            } else {
-                return this._weekdaysShortRegex;
-            }
-        } else {
-            return this._weekdaysShortStrictRegex && isStrict ?
-                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
-        }
-    }
-
-    var defaultWeekdaysMinRegex = matchWord;
-    function weekdaysMinRegex (isStrict) {
-        if (this._weekdaysParseExact) {
-            if (!hasOwnProp(this, '_weekdaysRegex')) {
-                computeWeekdaysParse.call(this);
-            }
-            if (isStrict) {
-                return this._weekdaysMinStrictRegex;
-            } else {
-                return this._weekdaysMinRegex;
-            }
-        } else {
-            return this._weekdaysMinStrictRegex && isStrict ?
-                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
-        }
-    }
-
-
-    function computeWeekdaysParse () {
-        function cmpLenRev(a, b) {
-            return b.length - a.length;
-        }
-
-        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
-            i, mom, minp, shortp, longp;
-        for (i = 0; i < 7; i++) {
-            // make the regex if we don't have it already
-            mom = create_utc__createUTC([2000, 1]).day(i);
-            minp = this.weekdaysMin(mom, '');
-            shortp = this.weekdaysShort(mom, '');
-            longp = this.weekdays(mom, '');
-            minPieces.push(minp);
-            shortPieces.push(shortp);
-            longPieces.push(longp);
-            mixedPieces.push(minp);
-            mixedPieces.push(shortp);
-            mixedPieces.push(longp);
-        }
-        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
-        // will match the longer piece.
-        minPieces.sort(cmpLenRev);
-        shortPieces.sort(cmpLenRev);
-        longPieces.sort(cmpLenRev);
-        mixedPieces.sort(cmpLenRev);
-        for (i = 0; i < 7; i++) {
-            shortPieces[i] = regexEscape(shortPieces[i]);
-            longPieces[i] = regexEscape(longPieces[i]);
-            mixedPieces[i] = regexEscape(mixedPieces[i]);
-        }
-
-        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
-        this._weekdaysShortRegex = this._weekdaysRegex;
-        this._weekdaysMinRegex = this._weekdaysRegex;
-
-        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
-        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
-        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
-    }
-
-    // FORMATTING
-
     addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
 
     // ALIASES
 
     addUnitAlias('dayOfYear', 'DDD');
+
+    // PRIORITY
+    addUnitPriority('dayOfYear', 4);
 
     // PARSING
 
@@ -3062,136 +3413,15 @@
 
     // FORMATTING
 
-    function hFormat() {
-        return this.hours() % 12 || 12;
-    }
-
-    function kFormat() {
-        return this.hours() || 24;
-    }
-
-    addFormatToken('H', ['HH', 2], 0, 'hour');
-    addFormatToken('h', ['hh', 2], 0, hFormat);
-    addFormatToken('k', ['kk', 2], 0, kFormat);
-
-    addFormatToken('hmm', 0, 0, function () {
-        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
-    });
-
-    addFormatToken('hmmss', 0, 0, function () {
-        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
-            zeroFill(this.seconds(), 2);
-    });
-
-    addFormatToken('Hmm', 0, 0, function () {
-        return '' + this.hours() + zeroFill(this.minutes(), 2);
-    });
-
-    addFormatToken('Hmmss', 0, 0, function () {
-        return '' + this.hours() + zeroFill(this.minutes(), 2) +
-            zeroFill(this.seconds(), 2);
-    });
-
-    function meridiem (token, lowercase) {
-        addFormatToken(token, 0, 0, function () {
-            return this.localeData().meridiem(this.hours(), this.minutes(), lowercase);
-        });
-    }
-
-    meridiem('a', true);
-    meridiem('A', false);
-
-    // ALIASES
-
-    addUnitAlias('hour', 'h');
-
-    // PARSING
-
-    function matchMeridiem (isStrict, locale) {
-        return locale._meridiemParse;
-    }
-
-    addRegexToken('a',  matchMeridiem);
-    addRegexToken('A',  matchMeridiem);
-    addRegexToken('H',  match1to2);
-    addRegexToken('h',  match1to2);
-    addRegexToken('HH', match1to2, match2);
-    addRegexToken('hh', match1to2, match2);
-
-    addRegexToken('hmm', match3to4);
-    addRegexToken('hmmss', match5to6);
-    addRegexToken('Hmm', match3to4);
-    addRegexToken('Hmmss', match5to6);
-
-    addParseToken(['H', 'HH'], HOUR);
-    addParseToken(['a', 'A'], function (input, array, config) {
-        config._isPm = config._locale.isPM(input);
-        config._meridiem = input;
-    });
-    addParseToken(['h', 'hh'], function (input, array, config) {
-        array[HOUR] = toInt(input);
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('hmm', function (input, array, config) {
-        var pos = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos));
-        array[MINUTE] = toInt(input.substr(pos));
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('hmmss', function (input, array, config) {
-        var pos1 = input.length - 4;
-        var pos2 = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos1));
-        array[MINUTE] = toInt(input.substr(pos1, 2));
-        array[SECOND] = toInt(input.substr(pos2));
-        getParsingFlags(config).bigHour = true;
-    });
-    addParseToken('Hmm', function (input, array, config) {
-        var pos = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos));
-        array[MINUTE] = toInt(input.substr(pos));
-    });
-    addParseToken('Hmmss', function (input, array, config) {
-        var pos1 = input.length - 4;
-        var pos2 = input.length - 2;
-        array[HOUR] = toInt(input.substr(0, pos1));
-        array[MINUTE] = toInt(input.substr(pos1, 2));
-        array[SECOND] = toInt(input.substr(pos2));
-    });
-
-    // LOCALES
-
-    function localeIsPM (input) {
-        // IE8 Quirks Mode & IE7 Standards Mode do not allow accessing strings like arrays
-        // Using charAt should be more compatible.
-        return ((input + '').toLowerCase().charAt(0) === 'p');
-    }
-
-    var defaultLocaleMeridiemParse = /[ap]\.?m?\.?/i;
-    function localeMeridiem (hours, minutes, isLower) {
-        if (hours > 11) {
-            return isLower ? 'pm' : 'PM';
-        } else {
-            return isLower ? 'am' : 'AM';
-        }
-    }
-
-
-    // MOMENTS
-
-    // Setting the hour should keep the time, because the user explicitly
-    // specified which hour he wants. So trying to maintain the same hour (in
-    // a new timezone) makes sense. Adding/subtracting hours does not follow
-    // this rule.
-    var getSetHour = makeGetSet('Hours', true);
-
-    // FORMATTING
-
     addFormatToken('m', ['mm', 2], 0, 'minute');
 
     // ALIASES
 
     addUnitAlias('minute', 'm');
+
+    // PRIORITY
+
+    addUnitPriority('minute', 14);
 
     // PARSING
 
@@ -3210,6 +3440,10 @@
     // ALIASES
 
     addUnitAlias('second', 's');
+
+    // PRIORITY
+
+    addUnitPriority('second', 15);
 
     // PARSING
 
@@ -3255,6 +3489,10 @@
     // ALIASES
 
     addUnitAlias('millisecond', 'ms');
+
+    // PRIORITY
+
+    addUnitPriority('millisecond', 16);
 
     // PARSING
 
@@ -3305,7 +3543,7 @@
     momentPrototype__proto.fromNow           = fromNow;
     momentPrototype__proto.to                = to;
     momentPrototype__proto.toNow             = toNow;
-    momentPrototype__proto.get               = getSet;
+    momentPrototype__proto.get               = stringGet;
     momentPrototype__proto.invalidAt         = invalidAt;
     momentPrototype__proto.isAfter           = isAfter;
     momentPrototype__proto.isBefore          = isBefore;
@@ -3320,7 +3558,7 @@
     momentPrototype__proto.max               = prototypeMax;
     momentPrototype__proto.min               = prototypeMin;
     momentPrototype__proto.parsingFlags      = parsingFlags;
-    momentPrototype__proto.set               = getSet;
+    momentPrototype__proto.set               = stringSet;
     momentPrototype__proto.startOf           = startOf;
     momentPrototype__proto.subtract          = add_subtract__subtract;
     momentPrototype__proto.toArray           = toArray;
@@ -3380,7 +3618,6 @@
     momentPrototype__proto.parseZone            = setOffsetToParsedOffset;
     momentPrototype__proto.hasAlignedHourOffset = hasAlignedHourOffset;
     momentPrototype__proto.isDST                = isDaylightSavingTime;
-    momentPrototype__proto.isDSTShifted         = isDaylightSavingTimeShifted;
     momentPrototype__proto.isLocal              = isLocal;
     momentPrototype__proto.isUtcOffset          = isUtcOffset;
     momentPrototype__proto.isUtc                = isUtc;
@@ -3394,7 +3631,8 @@
     momentPrototype__proto.dates  = deprecate('dates accessor is deprecated. Use date instead.', getSetDayOfMonth);
     momentPrototype__proto.months = deprecate('months accessor is deprecated. Use month instead', getSetMonth);
     momentPrototype__proto.years  = deprecate('years accessor is deprecated. Use year instead', getSetYear);
-    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. https://github.com/moment/moment/issues/1779', getSetZone);
+    momentPrototype__proto.zone   = deprecate('moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/', getSetZone);
+    momentPrototype__proto.isDSTShifted = deprecate('isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information', isDaylightSavingTimeShifted);
 
     var momentPrototype = momentPrototype__proto;
 
@@ -3406,143 +3644,46 @@
         return local__createLocal.apply(null, arguments).parseZone();
     }
 
-    var defaultCalendar = {
-        sameDay : '[Today at] LT',
-        nextDay : '[Tomorrow at] LT',
-        nextWeek : 'dddd [at] LT',
-        lastDay : '[Yesterday at] LT',
-        lastWeek : '[Last] dddd [at] LT',
-        sameElse : 'L'
-    };
-
-    function locale_calendar__calendar (key, mom, now) {
-        var output = this._calendar[key];
-        return isFunction(output) ? output.call(mom, now) : output;
-    }
-
-    var defaultLongDateFormat = {
-        LTS  : 'h:mm:ss A',
-        LT   : 'h:mm A',
-        L    : 'MM/DD/YYYY',
-        LL   : 'MMMM D, YYYY',
-        LLL  : 'MMMM D, YYYY h:mm A',
-        LLLL : 'dddd, MMMM D, YYYY h:mm A'
-    };
-
-    function longDateFormat (key) {
-        var format = this._longDateFormat[key],
-            formatUpper = this._longDateFormat[key.toUpperCase()];
-
-        if (format || !formatUpper) {
-            return format;
-        }
-
-        this._longDateFormat[key] = formatUpper.replace(/MMMM|MM|DD|dddd/g, function (val) {
-            return val.slice(1);
-        });
-
-        return this._longDateFormat[key];
-    }
-
-    var defaultInvalidDate = 'Invalid date';
-
-    function invalidDate () {
-        return this._invalidDate;
-    }
-
-    var defaultOrdinal = '%d';
-    var defaultOrdinalParse = /\d{1,2}/;
-
-    function ordinal (number) {
-        return this._ordinal.replace('%d', number);
-    }
-
     function preParsePostFormat (string) {
         return string;
     }
 
-    var defaultRelativeTime = {
-        future : 'in %s',
-        past   : '%s ago',
-        s  : 'a few seconds',
-        m  : 'a minute',
-        mm : '%d minutes',
-        h  : 'an hour',
-        hh : '%d hours',
-        d  : 'a day',
-        dd : '%d days',
-        M  : 'a month',
-        MM : '%d months',
-        y  : 'a year',
-        yy : '%d years'
-    };
-
-    function relative__relativeTime (number, withoutSuffix, string, isFuture) {
-        var output = this._relativeTime[string];
-        return (isFunction(output)) ?
-            output(number, withoutSuffix, string, isFuture) :
-            output.replace(/%d/i, number);
-    }
-
-    function pastFuture (diff, output) {
-        var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
-    }
-
     var prototype__proto = Locale.prototype;
 
-    prototype__proto._calendar       = defaultCalendar;
     prototype__proto.calendar        = locale_calendar__calendar;
-    prototype__proto._longDateFormat = defaultLongDateFormat;
     prototype__proto.longDateFormat  = longDateFormat;
-    prototype__proto._invalidDate    = defaultInvalidDate;
     prototype__proto.invalidDate     = invalidDate;
-    prototype__proto._ordinal        = defaultOrdinal;
     prototype__proto.ordinal         = ordinal;
-    prototype__proto._ordinalParse   = defaultOrdinalParse;
     prototype__proto.preparse        = preParsePostFormat;
     prototype__proto.postformat      = preParsePostFormat;
-    prototype__proto._relativeTime   = defaultRelativeTime;
     prototype__proto.relativeTime    = relative__relativeTime;
     prototype__proto.pastFuture      = pastFuture;
     prototype__proto.set             = locale_set__set;
 
     // Month
     prototype__proto.months            =        localeMonths;
-    prototype__proto._months           = defaultLocaleMonths;
     prototype__proto.monthsShort       =        localeMonthsShort;
-    prototype__proto._monthsShort      = defaultLocaleMonthsShort;
     prototype__proto.monthsParse       =        localeMonthsParse;
-    prototype__proto._monthsRegex      = defaultMonthsRegex;
     prototype__proto.monthsRegex       = monthsRegex;
-    prototype__proto._monthsShortRegex = defaultMonthsShortRegex;
     prototype__proto.monthsShortRegex  = monthsShortRegex;
 
     // Week
     prototype__proto.week = localeWeek;
-    prototype__proto._week = defaultLocaleWeek;
     prototype__proto.firstDayOfYear = localeFirstDayOfYear;
     prototype__proto.firstDayOfWeek = localeFirstDayOfWeek;
 
     // Day of Week
     prototype__proto.weekdays       =        localeWeekdays;
-    prototype__proto._weekdays      = defaultLocaleWeekdays;
     prototype__proto.weekdaysMin    =        localeWeekdaysMin;
-    prototype__proto._weekdaysMin   = defaultLocaleWeekdaysMin;
     prototype__proto.weekdaysShort  =        localeWeekdaysShort;
-    prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
     prototype__proto.weekdaysParse  =        localeWeekdaysParse;
 
-    prototype__proto._weekdaysRegex      = defaultWeekdaysRegex;
     prototype__proto.weekdaysRegex       =        weekdaysRegex;
-    prototype__proto._weekdaysShortRegex = defaultWeekdaysShortRegex;
     prototype__proto.weekdaysShortRegex  =        weekdaysShortRegex;
-    prototype__proto._weekdaysMinRegex   = defaultWeekdaysMinRegex;
     prototype__proto.weekdaysMinRegex    =        weekdaysMinRegex;
 
     // Hours
     prototype__proto.isPM = localeIsPM;
-    prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
     prototype__proto.meridiem = localeMeridiem;
 
     function lists__get (format, index, field, setter) {
@@ -3871,6 +4012,18 @@
         return substituteTimeAgo.apply(null, a);
     }
 
+    // This function allows you to set the rounding function for relative time strings
+    function duration_humanize__getSetRelativeTimeRounding (roundingFunction) {
+        if (roundingFunction === undefined) {
+            return round;
+        }
+        if (typeof(roundingFunction) === 'function') {
+            round = roundingFunction;
+            return true;
+        }
+        return false;
+    }
+
     // This function allows you to set a threshold for relative time strings
     function duration_humanize__getSetRelativeTimeThreshold (threshold, limit) {
         if (thresholds[threshold] === undefined) {
@@ -4003,7 +4156,7 @@
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.13.0';
+    utils_hooks__hooks.version = '2.14.1';
 
     setHookCallback(local__createLocal);
 
@@ -4030,7 +4183,9 @@
     utils_hooks__hooks.locales               = locale_locales__listLocales;
     utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
     utils_hooks__hooks.normalizeUnits        = normalizeUnits;
+    utils_hooks__hooks.relativeTimeRounding = duration_humanize__getSetRelativeTimeRounding;
     utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
+    utils_hooks__hooks.calendarFormat        = getCalendarFormat;
     utils_hooks__hooks.prototype             = momentPrototype;
 
     var _moment = utils_hooks__hooks;
@@ -4039,13 +4194,13 @@
 
 }));
 //! moment.js locale configuration
-//! locale : brazilian portuguese (pt-br)
+//! locale : Portuguese (Brazil) [pt-br]
 //! author : Caio Ribeiro Pereira : https://github.com/caio-ribeiro-pereira
 
 ;(function (global, factory) {
    typeof exports === 'object' && typeof module !== 'undefined'
        && typeof require === 'function' ? factory(require('../moment')) :
-   typeof define === 'function' && define.amd ? define(['moment'], factory) :
+   typeof define === 'function' && define.amd ? define(['../moment'], factory) :
    factory(global.moment)
 }(this, function (moment) { 'use strict';
 
@@ -4099,6 +4254,55 @@
     return pt_br;
 
 }));
+/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames () {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				classes.push(classNames.apply(null, arg));
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes.push(key);
+					}
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+		// register as 'classnames', consistent with npm package name
+		define('classnames', [], function () {
+			return classNames;
+		});
+	} else {
+		window.classNames = classNames;
+	}
+}());
+
 /**
  * A mixin for handling (effectively) onClickOutside for React components.
  * Note that we're not intercepting any events in this approach, and we're
@@ -4231,6 +4435,3697 @@
   };
 
 }));
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+rey.factory('classNames', ['window', function (window) {
+  return window.classNames;
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.factory('uim.DateFormat', [function () {
+  return {
+
+    date: {
+      input: 'DD/MM/YYYY',
+      output: 'YYYY-MM-DD'
+    },
+
+    time: {
+      input: 'HH:mm',
+      output: 'HH:mm:ss'
+    },
+
+    datetime: {
+      input: 'DD/MM/YYYY HH:mm',
+      output: 'YYYY-MM-DD HH:mm:ss'
+    }
+
+  };
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.factory('uim.DatePicker', [function () {
+  return DatePicker;
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.factory('moment', ['window', function (window) {
+  return window.moment;
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.factory('uim.ValueFormat', ['moment', 'uim.DateFormat', function (moment, DateFormat) {
+  return {
+
+    date: function date(value) {
+      var date = moment(value, DateFormat.date.output);
+      if (date.isValid()) {
+        return date.format(DateFormat.date.input);
+      }
+    },
+
+    time: function time(value) {
+      var time = moment(value, DateFormat.time.output);
+      if (time.isValid()) {
+        return time.format(DateFormat.time.input);
+      }
+    },
+
+    datetime: function datetime(value) {
+      var datetime = moment(value, DateFormat.datetime.output);
+      if (datetime.isValid()) {
+        return datetime.format(DateFormat.datetime.input);
+      }
+    }
+
+  };
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Breadcrumb', ['React', 'Immutable', 'classNames', 'uim.LinkGroup', function (React, Immutable, classNames, LinkGroup) {
+  return {
+
+    statics: {
+      pickProps: LinkGroup.pickProps
+    },
+
+    propTypes: {
+      className: React.PropTypes.string
+    },
+
+    render: function render() {
+      var classes = _defineProperty({
+        breadcrumb: true
+      }, this.props.className, this.props.className);
+      return React.createElement(LinkGroup, _extends({}, this.props, { className: classNames(classes) }));
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Failure', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
+  return {
+
+    propTypes: {
+      label: React.PropTypes.string.isRequired,
+      message: React.PropTypes.string,
+      buttonLabel: React.PropTypes.string.isRequired,
+      onClose: React.PropTypes.func.isRequired
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        buttonLabel: 'OK'
+      };
+    },
+    render: function render() {
+      return React.createElement(
+        'div',
+        { className: 'dialog failure' },
+        React.createElement(
+          'header',
+          null,
+          React.createElement(Icon, { name: 'exclamation-circle' }),
+          React.createElement(
+            'h2',
+            null,
+            this.props.label
+          )
+        ),
+        this.props.message ? React.createElement(
+          'p',
+          null,
+          this.props.message
+        ) : undefined,
+        React.createElement(
+          'footer',
+          null,
+          React.createElement(
+            'button',
+            { type: 'button', onClick: this.props.onClose },
+            this.props.buttonLabel
+          )
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Button', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          htmlType: field.get('htmlType'),
+          disabled: field.get('disabled'),
+          style: field.get('style'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      htmlType: React.PropTypes.string.isRequired,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        htmlType: 'button',
+        disabled: false
+      };
+    },
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+
+
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        button: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'button',
+        {
+          style: style,
+          'data-button-name': this.props.name,
+          type: this.props.htmlType,
+          disabled: this.props.disabled,
+          className: classNames(classes),
+          onClick: this.handleClick },
+        this.props.label
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.ButtonGroup', ['React', 'Immutable', 'classNames', 'uim.Button', function (React, Immutable, classNames, Button) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          buttons: field.get('buttons'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      buttons: React.PropTypes.List.isRequired,
+      onClick: React.PropTypes.func.isRequired,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleClick: function handleClick(button, event) {
+      if (this.props.onClick) {
+        event.button = button;
+        this.props.onClick(event);
+      }
+    },
+    renderButton: function renderButton(button, index) {
+      var props = Button.pickProps(this.props.path, button);
+      return React.createElement(Button, _extends({ key: index }, props, { onClick: this.handleClick.bind(this, button) }));
+    },
+    render: function render() {
+      var _classes3;
+
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = (_classes3 = {}, _defineProperty(_classes3, 'button-group', true), _defineProperty(_classes3, this.props.className, !!this.props.className), _classes3);
+      return React.createElement(
+        'div',
+        { 'data-field-name': this.props.name, style: style, className: classNames(classes) },
+        this.props.buttons.map(this.renderButton)
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Checkbox', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          style: field.get('style'),
+          disabled: field.get('disabled'),
+          value: field.get('value'),
+          checked: !!values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      checked: React.PropTypes.bool.isRequired,
+      onClick: React.PropTypes.func.isRequired,
+      onChange: React.PropTypes.func.isRequired,
+      value: React.PropTypes.any,
+      disabled: React.PropTypes.bool,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.checked,
+          event: event
+        });
+      }
+    },
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.checked,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        checkbox: true,
+        disabled: this.props.disabled
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'label',
+        { className: classNames(classes), style: style },
+        React.createElement('input', { ref: 'input',
+          type: 'checkbox',
+          name: this.props.name,
+          checked: this.props.checked,
+          disabled: this.props.disabled,
+          value: this.props.value,
+          onClick: this.handleClick,
+          onChange: this.handleChange }),
+        React.createElement(
+          'span',
+          null,
+          this.props.label
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.CheckGroup', ['React', 'Immutable', 'classNames', 'uim.Button', 'uim.Field', function (React, Immutable, classNames, Button, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          checkboxes: field.get('checkboxes'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      label: React.PropTypes.string,
+      input: React.PropTypes.bool.isRequired,
+      checkboxes: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      onChange: React.PropTypes.func.isRequired,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    renderCheckbox: function renderCheckbox(option, index) {
+      var name = option.get('name') || index;
+      var label = option.get('label') || name;
+      var path = this.props.path.push(name);
+      return React.createElement(Checkbox, { ref: name,
+        key: index,
+        path: path,
+        name: name,
+        label: label,
+        checked: !!this.props.values.getIn(path),
+        disabled: option.get('disabled'),
+        onChange: this.props.onChange });
+    },
+    render: function render() {
+      var _classes5;
+
+      var classes = (_classes5 = {}, _defineProperty(_classes5, 'check-group', true), _defineProperty(_classes5, this.props.className, !!this.props.className), _classes5);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.props.checkboxes.map(this.renderCheckbox)
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.DateField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat', function (React, Immutable, classNames, Value, Field, DatePicker, DateFormat) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          value: values.getIn(path),
+          style: field.get('style'),
+          inputFormat: field.get('inputFormat'),
+          outputFormat: field.get('outputFormat'),
+          placeholder: field.get('placeholder')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      inputFormat: React.PropTypes.string.isRequired,
+      outputFormat: React.PropTypes.string.isRequired,
+      placeholder: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        inputFormat: DateFormat.date.input,
+        outputFormat: DateFormat.date.output
+      };
+    },
+    parseInput: function parseInput(date) {
+      if (typeof date === 'string') {
+        date = date.substr(0, this.props.outputFormat.length);
+      }
+      return date ? moment(date, this.props.outputFormat) : undefined;
+    },
+    parseOutput: function parseOutput(date) {
+      return date.isValid() ? date.format(this.props.outputFormat) : undefined;
+    },
+    handleChange: function handleChange(value) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.parseOutput(value)
+        });
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = React.createElement(DatePicker, {
+          dateFormat: this.props.inputFormat,
+          selected: this.parseInput(this.props.value),
+          onChange: this.handleChange,
+          placeholderText: this.props.placeholder });
+      } else {
+        content = React.createElement(Value, {
+          className: 'date-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.props.value,
+          format: 'date' });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes6;
+
+      var classes = (_classes6 = {}, _defineProperty(_classes6, 'date-field', true), _defineProperty(_classes6, this.props.className, !!this.props.className), _classes6);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.DateRangeField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat', function (React, Immutable, classNames, Value, Field, DatePicker, DateFormat) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          value: values.getIn(path),
+          style: field.get('style'),
+          inputFormat: field.get('inputFormat'),
+          outputFormat: field.get('outputFormat'),
+          placeholder: field.get('placeholder')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.List,
+      onChange: React.PropTypes.func,
+      placeholder: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.List]),
+      className: React.PropTypes.string,
+      inputFormat: React.PropTypes.string.isRequired,
+      outputFormat: React.PropTypes.string.isRequired,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        inputFormat: DateFormat.date.input,
+        outputFormat: DateFormat.date.output
+      };
+    },
+    parseInput: function parseInput(value, index) {
+      var date = void 0;
+      if (Immutable.List.isList(value)) {
+        date = value.get(index);
+      } else if (index === 0 && rey.isString(value)) {
+        date = value;
+      }
+      if (typeof date === 'string') {
+        date = date.substr(0, this.props.outputFormat.length);
+      }
+      return date ? moment(date, this.props.outputFormat) : undefined;
+    },
+    parseOutput: function parseOutput(date) {
+      return date && date.isValid() ? date.format(this.props.outputFormat) : undefined;
+    },
+    handleChange: function handleChange(value, index) {
+      var newValue = void 0;
+      if (Immutable.List.isList(this.props.value)) {
+        newValue = this.props.value.set(index, this.parseOutput(value));
+      } else {
+        newValue = Immutable.List().set(index, this.parseOutput(value));
+      }
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: newValue
+        });
+      }
+    },
+    getPlaceholder: function getPlaceholder(index) {
+      var placeholder = void 0;
+      if (rey.isString(this.props.placeholder)) {
+        placeholder = this.props.placeholder;
+      } else if (Immutable.List.isList(this.props.placeholder)) {
+        placeholder = this.props.placeholder.get(index);
+      }
+      return placeholder;
+    },
+    renderContent: function renderContent() {
+      var _this = this;
+
+      var content = void 0;
+      if (this.props.input) {
+        var startDate = this.parseInput(this.props.value, 0);
+        var endDate = this.parseInput(this.props.value, 1);
+        content = [React.createElement(DatePicker, {
+          key: 'startDate',
+          ref: 'startDate',
+          startDate: startDate,
+          endDate: endDate,
+          selected: startDate,
+          dateFormat: this.props.inputFormat,
+          isClearable: true,
+          onBlur: function onBlur() {
+            return _this.refs.startDate.setOpen(false);
+          },
+          onChange: function onChange(date) {
+            return _this.handleChange(date, 0);
+          },
+          placeholderText: this.getPlaceholder(0) }), React.createElement(DatePicker, {
+          key: 'endDate',
+          ref: 'endDate',
+          startDate: startDate,
+          endDate: endDate,
+          selected: endDate,
+          isClearable: true,
+          onBlur: function onBlur() {
+            return _this.refs.endDate.setOpen(false);
+          },
+          dateFormat: this.props.inputFormat,
+          onChange: function onChange(date) {
+            return _this.handleChange(date, 1);
+          },
+          placeholderText: this.getPlaceholder(1) })];
+      } else {
+        content = React.createElement(Value, {
+          className: 'date-range-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.props.value,
+          format: 'date' });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes7;
+
+      var classes = (_classes7 = {}, _defineProperty(_classes7, 'date-range-field', true), _defineProperty(_classes7, this.props.className, !!this.props.className), _classes7);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          style: this.props.style,
+          name: this.props.name,
+          label: this.props.label,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Field', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    propTypes: {
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        field: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { 'data-field-name': this.props.name, style: style, className: classNames(classes) },
+        React.createElement(
+          'label',
+          null,
+          this.props.label
+        ),
+        this.props.children
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.FieldGroup', ['React', 'Immutable', 'classNames', 'uim.IconButton', function (React, Immutable, classNames, IconButton) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          fields: field.get('fields'),
+          className: field.get('className'),
+          style: field.get('style'),
+          multiple: field.get('multiple'),
+          values: values
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      fields: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      collapsed: React.PropTypes.bool.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object]),
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        input: true,
+        collapsed: false,
+        multiple: false
+      };
+    },
+    onClickAddEntry: function onClickAddEntry(event) {
+      if (this.props.onChange) {
+        var entries = this.props.values.getIn(this.props.path);
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path.push(entries ? entries.size : 0),
+          value: Immutable.Map(),
+          event: event
+        });
+      }
+    },
+    onClickRemoveEntry: function onClickRemoveEntry(entryIndex, event) {
+      if (this.props.onChange) {
+        var entries = this.props.values.getIn(this.props.path);
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path.push(entryIndex),
+          value: null,
+          event: event
+        });
+      }
+    },
+    renderField: function renderField(path, field, index) {
+
+      var Component = rey.inject('uim.' + field.get('type'));
+
+      if (!Component) {
+        console.error(new Error('unknown component type (' + field.get('type') + ')'));
+      }
+
+      if (!Component.pickProps) {
+        console.error(new Error('invalid component type (' + field.get('type') + ')'));
+      }
+
+      var props = Component.pickProps(path, field, this.props.values);
+
+      return React.createElement(Component, _extends({
+        key: index
+      }, props, {
+        input: this.props.input,
+        onClick: this.props.onClick,
+        onChange: this.props.onChange }));
+    },
+    renderEntry: function renderEntry(entryIndex) {
+      var _this2 = this;
+
+      return React.createElement(
+        'div',
+        { key: entryIndex, className: 'field-group-entry' },
+        this.props.input && React.createElement(
+          'div',
+          { className: 'field-group-entry-action' },
+          React.createElement(IconButton, {
+            name: 'removeFieldGroupEntry',
+            icon: 'trash-o',
+            onClick: this.onClickRemoveEntry.bind(this, entryIndex) })
+        ),
+        React.createElement(
+          'div',
+          { className: 'field-group-entry-fields' },
+          this.props.fields.map(function (field, index) {
+            return _this2.renderField(_this2.props.path.push(entryIndex), field, index);
+          })
+        )
+      );
+    },
+    wrapEntries: function wrapEntries(children) {
+      return React.createElement(
+        'div',
+        { className: 'field-group-entries' },
+        children,
+        React.createElement(
+          'div',
+          { className: 'field-group-entries-action' },
+          React.createElement(IconButton, {
+            name: 'addFieldGroupEntry',
+            icon: 'plus',
+            onClick: this.onClickAddEntry })
+        )
+      );
+    },
+    renderFields: function renderFields() {
+      var _this3 = this;
+
+      var content = void 0;
+      if (this.props.multiple) {
+        (function () {
+          var children = [];
+          var entries = _this3.props.values.getIn(_this3.props.path);
+          if (Immutable.Map.isMap(entries)) {
+            entries.forEach(function (entry, entryIndex) {
+              if (Immutable.Map.isMap(entry)) {
+                children.push(_this3.renderEntry(entryIndex));
+              }
+            }, _this3);
+          }
+          if (!children.length) {
+            children = _this3.renderEntry(0);
+          }
+          content = _this3.wrapEntries(children);
+        })();
+      } else {
+        content = this.props.fields.map(function (field, index) {
+          return _this3.renderField(_this3.props.path, field, index);
+        });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes9;
+
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = (_classes9 = {}, _defineProperty(_classes9, 'field-group', true), _defineProperty(_classes9, 'field-group-multiple', !!this.props.multiple), _defineProperty(_classes9, this.props.className, !!this.props.className), _classes9);
+      if (this.props.collapsed) {
+        style.display = 'none';
+      }
+      return React.createElement(
+        'div',
+        { className: classNames(classes), style: style },
+        this.renderFields()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Fieldset', ['React', 'Immutable', 'classNames', 'uim.FieldGroup', function (React, Immutable, classNames, FieldGroup) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          fields: field.get('fields'),
+          className: field.get('className'),
+          style: field.get('style'),
+          multiple: field.get('multiple'),
+          collapsible: field.get('collapsible'),
+          collapsed: field.get('collapsed'),
+          values: values
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      fields: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      collapsible: React.PropTypes.bool.isRequired,
+      collapsed: React.PropTypes.bool.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object]),
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        input: true,
+        collapsible: false,
+        collapsed: false,
+        multiple: false
+      };
+    },
+    getInitialState: function getInitialState() {
+      return {
+        collapsed: this.props.collapsed
+      };
+    },
+    handleClickLegend: function handleClickLegend() {
+      if (this.props.collapsible) {
+        this.setState({
+          collapsed: !this.state.collapsed
+        });
+      }
+    },
+    render: function render() {
+      var classes = _defineProperty({
+        fieldset: true
+      }, this.props.className, !!this.props.className);
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      return React.createElement(
+        'div',
+        { 'data-fieldset-name': this.props.name, style: style, className: classNames(classes) },
+        React.createElement(
+          'fieldset',
+          null,
+          React.createElement(
+            'legend',
+            { onClick: this.handleClickLegend },
+            this.props.label
+          ),
+          React.createElement(FieldGroup, {
+            path: this.props.path,
+            fields: this.props.fields,
+            values: this.props.values,
+            input: this.props.input,
+            collapsed: this.state.collapsed,
+            multiple: this.props.multiple,
+            onClick: this.props.onClick,
+            onChange: this.props.onChange })
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.FileField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.Icon', function (React, Immutable, classNames, Value, Field, Icon) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          style: field.get('style'),
+          multiple: field.get('multiple'),
+          placeholder: field.get('placeholder'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
+      input: React.PropTypes.bool.isRequired,
+      placeholder: React.PropTypes.string.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object]),
+      className: React.PropTypes.string
+    },
+
+    getInitialState: function getInitialState() {
+      return {
+        files: []
+      };
+    },
+    getDefaultProps: function getDefaultProps() {
+      return {
+        multiple: false,
+        placeholder: 'Browse file...'
+      };
+    },
+    getFiles: function getFiles() {
+      var files;
+      if (this.props.input) {
+        files = this.state.files;
+      } else if (Immutable.List.isList(this.props.value)) {
+        files = this.props.value.toJS();
+      } else if (Immutable.Map.isMap(this.props.value)) {
+        files = [this.props.value.toJS()];
+      } else {
+        files = [];
+      }
+      return files;
+    },
+    onBrowseFile: function onBrowseFile(event) {
+      var files = Array.prototype.slice.call(this.refs.input.files);
+      if (this.props.multiple) {
+        files = this.state.files.concat(files);
+      }
+      this.setState({
+        files: files
+      }, this.handleChange.bind(this, event));
+      this.refs.input.value = '';
+    },
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.props.multiple ? this.state.files : this.state.files[0],
+          event: event
+        });
+      }
+    },
+    renderInput: function renderInput() {
+      if (this.props.input) {
+        return React.createElement(
+          'div',
+          { className: 'file-field-input' },
+          React.createElement(Icon, { name: 'cloud-upload' }),
+          this.props.placeholder,
+          React.createElement('input', {
+            ref: 'input',
+            type: 'file',
+            multiple: this.props.multiple,
+            onChange: this.onBrowseFile })
+        );
+      }
+    },
+    onClickFile: function onClickFile(file, event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: file,
+          event: event
+        });
+      }
+    },
+    onRemoveFile: function onRemoveFile(removedFile, event) {
+      event.stopPropagation();
+      this.setState({
+        files: this.state.files.filter(function (file) {
+          return file !== removedFile;
+        })
+      }, this.handleChange.bind(this, event));
+    },
+    renderFile: function renderFile(file, index) {
+      return React.createElement(
+        'div',
+        { key: index, className: 'file-field-file', onClick: this.onClickFile.bind(this, file) },
+        React.createElement(Icon, { name: 'file-o' }),
+        file.name,
+        this.props.input && React.createElement(Icon, { name: 'trash-o', onClick: this.onRemoveFile.bind(this, file) })
+      );
+    },
+    renderContent: function renderContent() {
+      return React.createElement(
+        'div',
+        { className: 'file-field-content' },
+        this.renderInput(),
+        this.getFiles().map(this.renderFile, this)
+      );
+    },
+    render: function render() {
+      var _classes11;
+
+      var classes = (_classes11 = {}, _defineProperty(_classes11, 'file-field', true), _defineProperty(_classes11, this.props.className, !!this.props.className), _classes11);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Formset', ['React', 'Immutable', 'classNames', 'uim.FieldGroup', function (React, Immutable, classNames, FieldGroup) {
+  return {
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.node,
+      fields: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      collapsible: React.PropTypes.bool.isRequired,
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        input: true,
+        collapsible: false
+      };
+    },
+    getInitialState: function getInitialState() {
+      return {
+        collapsed: false
+      };
+    },
+    handleClickTitle: function handleClickTitle() {
+      if (this.props.collapsible) {
+        this.setState({
+          collapsed: !this.state.collapsed
+        });
+      }
+    },
+    renderTitle: function renderTitle() {
+      if (this.props.label) {
+        return React.createElement(
+          'h1',
+          { className: 'title', onClick: this.handleClickTitle },
+          React.createElement(
+            'span',
+            null,
+            this.props.label
+          )
+        );
+      }
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        formset: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { 'data-form-name': this.props.name, style: style, className: classNames(classes) },
+        this.renderTitle(),
+        React.createElement(FieldGroup, {
+          path: this.props.path,
+          input: this.props.input,
+          fields: this.props.fields,
+          values: this.props.values,
+          collapsed: this.state.collapsed,
+          onClick: this.props.onClick,
+          onChange: this.props.onChange })
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          rows: field.get('rows'),
+          cols: field.get('cols'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      rows: React.PropTypes.number,
+      cols: React.PropTypes.number,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = React.createElement('textarea', {
+          ref: 'input',
+          rows: this.props.rows,
+          cols: this.props.cols,
+          value: this.props.value || '',
+          onChange: this.handleChange });
+      } else {
+        content = React.createElement(Value, {
+          className: 'memo-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.props.value });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes13;
+
+      var classes = (_classes13 = {}, _defineProperty(_classes13, 'memo-field', true), _defineProperty(_classes13, this.props.className, !!this.props.className), _classes13);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.PasswordField', ['React', 'Immutable', 'classNames', 'uim.Field', function (React, Immutable, classNames, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          style: field.get('style'),
+          empty: !values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      empty: React.PropTypes.bool,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    componentDidUpdate: function componentDidUpdate() {
+      if (this.props.empty) {
+        this.refs.input.value = '';
+      }
+    },
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var _classes14;
+
+      var classes = (_classes14 = {}, _defineProperty(_classes14, 'password-field', true), _defineProperty(_classes14, this.props.className, !!this.props.className), _classes14);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        React.createElement('input', {
+          ref: 'input',
+          type: 'password',
+          onChange: this.handleChange })
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Radio', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      value: React.PropTypes.any.isRequired,
+      checked: React.PropTypes.bool.isRequired,
+      onChange: React.PropTypes.func.isRequired,
+      disabled: React.PropTypes.bool,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        radio: true,
+        disabled: this.props.disabled
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'label',
+        { style: style, className: classNames(classes) },
+        React.createElement('input', { ref: 'input',
+          type: 'radio',
+          name: this.props.name,
+          value: this.props.value,
+          checked: this.props.checked,
+          disabled: this.props.disabled,
+          onChange: this.handleChange }),
+        React.createElement(
+          'span',
+          null,
+          this.props.label
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.RadioGroup', ['React', 'Immutable', 'classNames', 'uim.Field', 'uim.Value', 'uim.Radio', function (React, Immutable, classNames, Field, Value, Radio) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          options: field.get('options'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
+      input: React.PropTypes.bool.isRequired,
+      options: React.PropTypes.List.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func.isRequired,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    renderRadio: function renderRadio(option, index) {
+      return React.createElement(Radio, { ref: index,
+        key: index,
+        path: this.props.path,
+        name: this.props.name,
+        label: option.get('label'),
+        value: option.get('value'),
+        checked: this.props.value === option.get('value'),
+        disabled: option.get('disabled'),
+        onChange: this.props.onChange });
+    },
+    getSelectedLabel: function getSelectedLabel() {
+      var value = this.props.value;
+      var selected = this.props.options.find(function (option) {
+        return option.get('value') === value;
+      });
+      if (selected) {
+        return selected.get('label');
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = this.props.options.map(this.renderRadio);
+      } else {
+        content = React.createElement(Value, {
+          className: 'radio-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.getSelectedLabel() });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes16;
+
+      var classes = (_classes16 = {}, _defineProperty(_classes16, 'radio-group', true), _defineProperty(_classes16, this.props.className, !!this.props.className), _classes16);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectButton', ['React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Value', function (React, Immutable, classNames, Icon, Value) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          label: field.get('label'),
+          name: field.get('name'),
+          options: field.get('options'),
+          disabled: field.get('disabled'),
+          disabledValues: field.get('disabledValues'),
+          className: field.get('className'),
+          blankValue: field.get('blankValue'),
+          multiple: field.get('multiple'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      multiple: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getInitialState: function getInitialState() {
+      return {
+        showOptions: false
+      };
+    },
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false,
+        multiple: false
+      };
+    },
+    handleClickCaret: function handleClickCaret(event) {
+      event.event.stopPropagation();
+      this.setState({ showOptions: !this.state.showOptions });
+    },
+    getChangedValue: function getChangedValue(option) {
+      var value;
+      if (this.props.multiple) {
+        var index = this.props.value.indexOf(option.get('value'));
+        if (index === -1) {
+          value = this.props.value.push(option.get('value'));
+        } else {
+          value = this.props.value.delete(index);
+        }
+      } else {
+        value = option.get('value');
+      }
+      return value;
+    },
+    handleClickOption: function handleClickOption(option, event) {
+      event.stopPropagation();
+      if (!option.get('disabled')) {
+        if (!this.props.multiple) {
+          this.setState({ showOptions: !this.state.showOptions });
+        }
+
+        if (this.props.onChange) {
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path,
+            value: this.getChangedValue(option),
+            option: option,
+            event: event
+          });
+        }
+      }
+    },
+    handleClickValue: function handleClickValue(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.props.value,
+          event: event.event
+        });
+      }
+    },
+    renderOptionIcon: function renderOptionIcon(option) {
+      var icon;
+      if (option.has('icon')) {
+        icon = React.createElement(Icon, { key: 'icon', name: option.get('icon') });
+      }
+      return icon;
+    },
+    renderSelected: function renderSelected(option) {
+      var selected;
+      if (this.props.multiple) {
+        if (this.props.value.indexOf(option.get('value')) !== -1) {
+          selected = React.createElement(Icon, { name: 'check', className: 'icon-selected' });
+        } else {
+          selected = React.createElement(Icon, { name: 'check', className: 'icon-unselected' });
+        }
+      }
+      return selected;
+    },
+    renderOption: function renderOption(option, index) {
+
+      var classes = {};
+      classes['select-button-option'] = true;
+      classes['disabled'] = !!option.get('disabled');
+      classes[option.get('className')] = !!option.get('className');
+
+      var onClick = this.handleClickOption.bind(this, option);
+
+      return React.createElement(
+        'li',
+        { key: index, className: classNames(classes), onClick: onClick },
+        this.renderSelected(option),
+        this.renderOptionIcon(option),
+        option.get('label')
+      );
+    },
+    isDisabled: function isDisabled() {
+      return this.props.disabled || (this.props.disabledValues ? this.props.disabledValues.indexOf(this.props.value) !== -1 : false);
+    },
+    isSelected: function isSelected(option) {
+      var selected = false;
+      if (this.props.value || this.props.value === 0) {
+        if (this.props.multiple) {
+          if (this.props.value.indexOf(option.get('value')) !== -1) {
+            selected = true;
+          }
+        } else if (option.get('value') === this.props.value) {
+          selected = true;
+        }
+      }
+      return selected;
+    },
+    getSelectedOptions: function getSelectedOptions() {
+      return this.props.options.filter(function (option) {
+        return this.isSelected(option);
+      }, this);
+    },
+    renderSelectedOption: function renderSelectedOption() {
+
+      var classes = {};
+      classes['select-button-value'] = true;
+
+      var selectedOptions = this.getSelectedOptions();
+      var value;
+      var icon;
+
+      if (selectedOptions.size > 1) {
+        value = selectedOptions.map(function (option) {
+          return option.get('selectedLabel') || option.get('label');
+        }).join(', ');
+      } else if (selectedOptions.size > 0) {
+        classes[selectedOptions.getIn([0, 'className'])] = !!selectedOptions.getIn([0, 'className']);
+        value = selectedOptions.getIn([0, 'selectedLabel']) || selectedOptions.getIn([0, 'label']);
+        icon = this.renderOptionIcon(selectedOptions.get(0));
+      } else if (this.props.blankValue) {
+        classes['select-button-blank'] = true;
+        value = this.props.blankValue;
+      }
+
+      return React.createElement(Value, {
+        onClick: this.handleClickValue,
+        className: classNames(classes),
+        path: this.props.path,
+        name: this.props.name,
+        value: [icon, value] });
+    },
+    renderCaretIcon: function renderCaretIcon() {
+      return React.createElement(Icon, {
+        key: 'icon',
+        name: 'caret-down',
+        className: 'select-button-icon',
+        onClick: this.handleClickCaret });
+    },
+    renderList: function renderList() {
+      return React.createElement(
+        'ul',
+        { key: 'list' },
+        this.props.options.map(this.renderOption)
+      );
+    },
+    renderOptions: function renderOptions() {
+      if (!this.isDisabled()) {
+        return [this.renderCaretIcon(), this.renderList()];
+      }
+    },
+    render: function render() {
+      var _classes17;
+
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = (_classes17 = {
+        button: true,
+        disabled: this.isDisabled()
+      }, _defineProperty(_classes17, 'select-button', true), _defineProperty(_classes17, 'show-options', this.state.showOptions), _defineProperty(_classes17, this.props.className, !!this.props.className), _classes17);
+      return React.createElement(
+        'a',
+        { 'data-button-name': this.props.name, className: classNames(classes), style: style },
+        this.renderSelectedOption(),
+        this.renderOptions()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectButtonField', ['React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field', function (React, Immutable, classNames, SelectButton, Field) {
+  return {
+
+    statics: {
+      pickProps: SelectButton.pickProps
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      options: React.PropTypes.List.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      disabledValues: React.PropTypes.List,
+      blankValue: React.PropTypes.string,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false
+      };
+    },
+    render: function render() {
+      var _classes18;
+
+      var classes = (_classes18 = {}, _defineProperty(_classes18, 'select-button-field', true), _defineProperty(_classes18, this.props.className, !!this.props.className), _classes18);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        React.createElement(SelectButton, {
+          path: this.props.path,
+          name: this.props.name,
+          options: this.props.options,
+          value: this.props.value,
+          disabled: this.props.disabled,
+          disabledValues: this.props.disabledValues,
+          onClick: this.props.onClick,
+          onChange: this.props.onChange,
+          className: this.props.className })
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.SelectField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          options: field.get('options'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      options: React.PropTypes.List.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    renderOption: function renderOption(option, index) {
+      return React.createElement(
+        'option',
+        { key: index, value: option.get('value') },
+        option.get('label')
+      );
+    },
+    getSelectedLabel: function getSelectedLabel() {
+      var value = this.props.value;
+      var selected = this.props.options.find(function (option) {
+        return option.get('value') === value;
+      });
+      if (selected) {
+        return selected.get('label');
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = React.createElement(
+          'select',
+          { ref: 'input', value: this.props.value || '', onChange: this.handleChange },
+          this.props.options.map(this.renderOption)
+        );
+      } else {
+        content = React.createElement(Value, {
+          className: 'select-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.getSelectedLabel() });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes19;
+
+      var classes = (_classes19 = {}, _defineProperty(_classes19, 'select-field', true), _defineProperty(_classes19, this.props.className, !!this.props.className), _classes19);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.TextField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          options: field.get('options'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      options: React.PropTypes.List,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    getId: function getId() {
+      return this.props.path.toJS().join('-');
+    },
+    renderOptions: function renderOptions() {
+      if (this.props.input && this.props.options) {
+        return React.createElement(
+          'datalist',
+          { id: this.getId() + '-options' },
+          this.props.options.map(function (option, index) {
+            return React.createElement(
+              'option',
+              { key: index, value: option },
+              option
+            );
+          })
+        );
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = React.createElement('input', {
+          ref: 'input',
+          type: 'text',
+          value: this.props.value || '',
+          list: this.getId() + '-options',
+          onChange: this.handleChange });
+      } else {
+        content = React.createElement(Value, {
+          className: 'text-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.props.value });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes20;
+
+      var classes = (_classes20 = {}, _defineProperty(_classes20, 'text-field', true), _defineProperty(_classes20, this.props.className, !!this.props.className), _classes20);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent(),
+        this.renderOptions()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path)
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      input: React.PropTypes.bool.isRequired,
+      value: React.PropTypes.any,
+      onChange: React.PropTypes.func.isRequired,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    handleChange: function handleChange(event) {
+      if (this.props.onChange) {
+        this.props.onChange({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.refs.input.value,
+          event: event
+        });
+      }
+    },
+    renderContent: function renderContent() {
+      var content = void 0;
+      if (this.props.input) {
+        content = React.createElement('input', {
+          ref: 'input',
+          type: 'time',
+          value: this.props.value,
+          onChange: this.handleChange });
+      } else {
+        content = React.createElement(Value, {
+          className: 'time-value',
+          path: this.props.path,
+          name: this.props.name,
+          value: this.props.value });
+      }
+      return content;
+    },
+    render: function render() {
+      var _classes21;
+
+      var classes = (_classes21 = {}, _defineProperty(_classes21, 'time-field', true), _defineProperty(_classes21, this.props.className, !!this.props.className), _classes21);
+      return React.createElement(
+        Field,
+        { ref: 'field',
+          name: this.props.name,
+          label: this.props.label,
+          style: this.props.style,
+          className: classNames(classes) },
+        this.renderContent()
+      );
+    }
+  };
+}]);
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Value', ['React', 'Immutable', 'classNames', 'uim.ValueFormat', function (React, Immutable, classNames, ValueFormat) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          format: field.get('format'),
+          className: field.get('className'),
+          style: field.get('style'),
+          value: values.getIn(path),
+          texts: field.get('texts')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List,
+      name: React.PropTypes.string,
+      value: React.PropTypes.any,
+      texts: React.PropTypes.Map,
+      format: React.PropTypes.string,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object]),
+      onClick: React.PropTypes.func
+    },
+
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          value: this.props.value,
+          event: event
+        });
+      }
+    },
+    getValue: function getValue() {
+      var value = void 0;
+      if (this.props.value || this.props.value === 0) {
+        if (this.props.format) {
+          if (ValueFormat[this.props.format]) {
+            value = ValueFormat[this.props.format](this.props.value);
+          } else {
+            throw new Error('unknown format (' + this.props.format + ')');
+          }
+        } else {
+          value = this.props.value;
+        }
+      } else {
+        value = '-';
+      }
+      if (this.props.texts) {
+        value = this.props.texts.get(value);
+      }
+      return value;
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        value: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { className: classNames(classes), style: this.props.style, onClick: this.handleClick },
+        this.getValue()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Icon', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  var globals = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+  return {
+
+    statics: {
+
+      globals: globals,
+
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          icon: field.get('icon'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      icon: React.PropTypes.string,
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List()
+      };
+    },
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var _classes23;
+
+      var icon = this.props.icon || this.props.name;
+      var classes = (_classes23 = {
+        icon: true
+      }, _defineProperty(_classes23, globals.className || 'fa', true), _defineProperty(_classes23, this.props.className, !!this.props.className), _defineProperty(_classes23, (globals.classNamePrefix || 'fa-') + icon, true), _classes23);
+      return React.createElement('span', { className: classNames(classes), onClick: this.handleClick });
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.IconButton', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          icon: field.get('icon'),
+          disabled: field.get('disabled'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      icon: React.PropTypes.string.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        disabled: false
+      };
+    },
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var _classes24;
+
+      var classes = (_classes24 = {}, _defineProperty(_classes24, 'icon-button', true), _defineProperty(_classes24, this.props.className, !!this.props.className), _classes24);
+      return React.createElement(Icon, {
+        name: this.props.name,
+        icon: this.props.icon,
+        className: classNames(classes),
+        'data-button-name': this.props.name,
+        disabled: this.props.disabled,
+        onClick: this.handleClick });
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Link', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  var globals = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+  return {
+
+    statics: {
+
+      globals: globals,
+
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          href: field.get('href'),
+          label: field.get('label'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      name: React.PropTypes.string,
+      path: React.PropTypes.List.isRequired,
+      href: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List()
+      };
+    },
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+      if (globals.clickHandler) {
+        globals.clickHandler(event, this.props.href);
+      }
+    },
+    render: function render() {
+      var classes = _defineProperty({}, this.props.className, !!this.props.className);
+      return React.createElement(
+        'a',
+        { name: this.props.name,
+          href: this.props.href,
+          className: classNames(classes),
+          onClick: this.handleClick },
+        this.props.label ? this.props.label : undefined,
+        this.props.children ? this.props.children : undefined
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.LinkButton', ['React', 'Immutable', 'classNames', 'uim.Link', function (React, Immutable, classNames, Link) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          href: field.get('href'),
+          label: field.get('label'),
+          disabled: field.get('disabled'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      disabled: React.PropTypes.bool.isRequired,
+      onClick: React.PropTypes.func,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        disabled: false
+      };
+    },
+    handleClick: function handleClick(event) {
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: event
+        });
+      }
+    },
+    render: function render() {
+      var _classes26;
+
+      var classes = (_classes26 = {
+        button: true
+      }, _defineProperty(_classes26, 'link-button', true), _defineProperty(_classes26, this.props.className, !!this.props.className), _classes26);
+      return React.createElement(Link, {
+        name: this.props.name,
+        href: this.props.href,
+        label: this.props.label,
+        className: classNames(classes),
+        'data-button-name': this.props.name,
+        disabled: this.props.disabled,
+        onClick: this.handleClick });
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.LinkGroup', ['React', 'Immutable', 'classNames', 'uim.Link', 'uim.Icon', function (React, Immutable, classNames, Link, Icon) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          links: field.get('links'),
+          className: field.get('className'),
+          collapsed: field.get('collapsed')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      links: React.PropTypes.List.isRequired,
+      className: React.PropTypes.string,
+      collapsed: React.PropTypes.bool.isRequired
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        links: Immutable.List(),
+        collapsed: false
+      };
+    },
+    renderIcon: function renderIcon(link) {
+      if (link.has('icon')) {
+        return React.createElement(Icon, { key: 'icon', name: link.get('icon') });
+      }
+    },
+    renderLink: function renderLink(link, index) {
+      return React.createElement(
+        'li',
+        { key: index, className: link.get('className') },
+        React.createElement(
+          Link,
+          { name: link.get('name'), href: link.get('href'), className: link.get('className') },
+          this.renderIcon(link),
+          link.get('label')
+        )
+      );
+    },
+    render: function render() {
+      var _classes27;
+
+      var classes = (_classes27 = {}, _defineProperty(_classes27, 'link-group', true), _defineProperty(_classes27, this.props.className, !!this.props.className), _classes27);
+      var style = {};
+      if (this.props.collapsed) {
+        style.display = 'none';
+      }
+      return React.createElement(
+        'ul',
+        { className: classNames(classes), style: style },
+        this.props.links.map(this.renderLink)
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.List', ['React', 'Immutable', 'classNames', 'uim.Table', 'uim.Formset', 'uim.Toolbar', 'uim.Pages', 'uim.SelectButton', function (React, Immutable, classNames, Table, Formset, Toolbar, Pages, SelectButton) {
+  return {
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      filter: React.PropTypes.oneOfType([React.PropTypes.List, React.PropTypes.node, React.PropTypes.bool]),
+      header: React.PropTypes.oneOfType([React.PropTypes.List, React.PropTypes.node, React.PropTypes.bool]),
+      footer: React.PropTypes.oneOfType([React.PropTypes.List, React.PropTypes.node, React.PropTypes.bool]),
+      rows: React.PropTypes.List.isRequired,
+      columns: React.PropTypes.List.isRequired,
+      transformColumns: React.PropTypes.func,
+      empty: React.PropTypes.node,
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        rows: Immutable.List(),
+        path: Immutable.List(),
+        columns: Immutable.List(),
+        header: true,
+        footer: false
+      };
+    },
+    renderFilter: function renderFilter() {
+      if (this.props.filter) {
+        var filter = this.props.filter;
+        if (Immutable.List.isList(this.props.filter)) {
+          filter = React.createElement(Formset, {
+            name: 'filter',
+            path: this.props.path,
+            values: this.props.values,
+            fields: this.props.filter,
+            onClick: this.props.onClick,
+            onChange: this.props.onChange });
+        }
+        return React.createElement(
+          'div',
+          { className: 'list-filter' },
+          filter
+        );
+      }
+    },
+    renderLimit: function renderLimit() {
+      if (this.props.limits.size) {
+        return React.createElement(SelectButton, {
+          name: 'limit',
+          path: this.props.path.push('limit'),
+          value: this.props.values.getIn(this.props.path.push('limit')),
+          options: this.props.limits,
+          onChange: this.props.onChange,
+          className: 'select-limit' });
+      }
+    },
+    renderPages: function renderPages() {
+      if (this.props.pages > 1) {
+        return React.createElement(
+          'div',
+          { className: 'list-pages' },
+          React.createElement(Pages, {
+            name: 'page',
+            path: this.props.path.push('page'),
+            value: Number(this.props.values.getIn(this.props.path.push('page'))),
+            pages: this.props.pages,
+            onChange: this.props.onChange }),
+          this.renderLimit()
+        );
+      }
+    },
+    isEmpty: function isEmpty() {
+      return this.props.rows.size === 0 && this.props.empty;
+    },
+    renderEmpty: function renderEmpty() {
+      return React.createElement(
+        'div',
+        { className: 'list-empty' },
+        React.createElement(
+          'p',
+          null,
+          this.props.empty
+        )
+      );
+    },
+    renderHeader: function renderHeader() {
+      var header = this.props.header;
+      if (Immutable.List.isList(this.props.header)) {
+        header = React.createElement(Toolbar, {
+          name: 'header',
+          path: this.props.path,
+          tools: this.props.header,
+          values: this.props.values,
+          onClick: this.props.onClick,
+          onChange: this.props.onChange });
+      }
+      return header;
+    },
+    renderFooter: function renderFooter() {
+      var footer = this.props.footer;
+      if (Immutable.List.isList(this.props.footer)) {
+        footer = React.createElement(Toolbar, {
+          name: 'footer',
+          path: this.props.path,
+          tools: this.props.footer,
+          values: this.props.values,
+          onClick: this.props.onClick,
+          onChange: this.props.onChange });
+      }
+      return footer;
+    },
+    renderTable: function renderTable() {
+      return React.createElement(
+        'div',
+        { className: 'list-table' },
+        React.createElement(Table, {
+          name: 'table',
+          header: this.renderHeader(),
+          footer: this.renderFooter(),
+          rows: this.props.rows,
+          columns: this.props.columns,
+          transformColumns: this.props.transformColumns,
+          onClick: this.props.onClick,
+          onChange: this.props.onChange })
+      );
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        list: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { 'data-list-name': this.props.name, style: style, className: classNames(classes) },
+        this.renderFilter(),
+        this.isEmpty() ? this.renderEmpty() : this.renderTable(),
+        this.renderPages()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Pages', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          pages: field.get('pages'),
+          range: field.get('range'),
+          value: Number(values.getIn(path)),
+          className: field.get('className'),
+          style: field.get('style')
+        };
+      }
+    },
+
+    propTypes: {
+      name: React.PropTypes.string.isRequired,
+      path: React.PropTypes.List.isRequired,
+      value: React.PropTypes.number.isRequired,
+      pages: React.PropTypes.number.isRequired,
+      range: React.PropTypes.number.isRequired,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        value: 1,
+        pages: 1,
+        range: 5
+      };
+    },
+    handleClick: function handleClick(event, page) {
+      if (page && page !== this.props.value) {
+        if (this.props.onChange) {
+          this.props.onChange({
+            name: this.props.name,
+            path: this.props.path,
+            value: page,
+            event: event
+          });
+        }
+      }
+    },
+    renderPages: function renderPages() {
+      var _this4 = this;
+
+      var parts = [];
+      var pages = this.props.pages;
+      var current = this.props.value;
+      var previous = current > 1;
+      var next = current < pages;
+      var first = Math.max(1, current - this.props.range);
+      var last = Math.min(pages, current + this.props.range);
+
+      if (previous) {
+        parts.push(React.createElement(
+          'li',
+          { key: 'previous', onClick: function onClick(e) {
+              return _this4.handleClick(e, current - 1);
+            } },
+          React.createElement(Icon, { name: 'previous', icon: 'chevron-left' })
+        ));
+      }
+
+      var _loop = function _loop(i) {
+        parts.push(React.createElement(
+          'li',
+          { key: i,
+            onClick: function onClick(e) {
+              return _this4.handleClick(e, i);
+            },
+            className: current === i ? 'current' : '' },
+          i.toString()
+        ));
+      };
+
+      for (var i = first; i <= last; i++) {
+        _loop(i);
+      }
+
+      if (next) {
+        parts.push(React.createElement(
+          'li',
+          { key: 'next', onClick: function onClick(e) {
+              return _this4.handleClick(e, current + 1);
+            } },
+          React.createElement(Icon, { name: 'next', icon: 'chevron-right' })
+        ));
+      }
+
+      return parts;
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        pages: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'ul',
+        { style: style, className: classNames(classes) },
+        this.renderPages()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Table', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          rows: field.get('rows'),
+          columns: field.get('columns'),
+          header: field.get('header'),
+          footer: field.get('footer'),
+          className: field.get('className'),
+          style: field.get('style')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      header: React.PropTypes.oneOfType([React.PropTypes.node, React.PropTypes.bool]),
+      footer: React.PropTypes.oneOfType([React.PropTypes.node, React.PropTypes.bool]),
+      rows: React.PropTypes.List.isRequired,
+      columns: React.PropTypes.List.isRequired,
+      transformColumns: React.PropTypes.func,
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func,
+      className: React.PropTypes.string,
+      style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        rows: Immutable.List(),
+        columns: Immutable.List(),
+        header: true,
+        footer: false
+      };
+    },
+    handleClick: function handleClick(row, column, event) {
+      if (this.props.onClick) {
+        event.row = row;
+        event.column = column;
+        this.props.onClick(event);
+      }
+    },
+    isValidTarget: function isValidTarget(target) {
+      return target.hasAttribute('data-row-index') && target.hasAttribute('data-column-index');
+    },
+    findTarget: function findTarget(event) {
+      var target = event.target;
+      while (!this.isValidTarget(target)) {
+        target = target.parentNode;
+        if (target === document.body) {
+          break;
+        }
+      }
+      if (this.isValidTarget(target)) {
+        return target;
+      }
+    },
+    handleClickBody: function handleClickBody(event) {
+      var target = this.findTarget(event);
+      if (target) {
+
+        var rowIndex = Number(target.getAttribute('data-row-index'));
+        var colIndex = Number(target.getAttribute('data-column-index'));
+        var row = this.props.rows.get(rowIndex);
+        var column = this.props.columns.get(colIndex);
+
+        if (this.props.onClick) {
+          this.props.onClick({
+            name: this.props.name,
+            path: this.props.path,
+            row: row,
+            column: column,
+            event: event
+          });
+        }
+      }
+    },
+    handleChange: function handleChange(row, column, event) {
+      if (this.props.onChange) {
+        event.row = row;
+        event.column = column;
+        this.props.onChange(event);
+      }
+    },
+    renderHeadCol: function renderHeadCol(column, index) {
+      var style = {};
+      if (column.get('width')) {
+        style.width = column.get('width');
+      }
+      return React.createElement(
+        'th',
+        { key: index,
+          style: style,
+          className: 'table-column',
+          'data-column-index': index,
+          'data-column-name': column.get('name') },
+        column.get('label')
+      );
+    },
+    renderCol: function renderCol(row, rowIndex, column, colIndex) {
+
+      var Component = rey.inject('uim.' + column.get('type'));
+
+      if (!Component) {
+        throw new Error('unknown component type (' + column.get('type') + ')');
+      }
+
+      if (!Component.pickProps) {
+        throw new Error('invalid component type (' + column.get('type') + ')');
+      }
+
+      var props = Component.pickProps(this.props.path, column, row);
+
+      return React.createElement(
+        'td',
+        { key: colIndex,
+          className: 'table-column',
+          'data-row-index': rowIndex,
+          'data-column-index': colIndex,
+          'data-column-name': column.get('name') },
+        React.createElement(Component, _extends({}, props, {
+          onClick: this.handleClick.bind(this, row, column),
+          onChange: this.handleChange.bind(this, row, column) }))
+      );
+    },
+    renderRow: function renderRow(row, rowIndex) {
+      var _this5 = this;
+
+      return React.createElement(
+        'tr',
+        { key: rowIndex, className: 'table-row', 'data-row-index': rowIndex },
+        this.getColumns(row, rowIndex).map(function (column, colIndex) {
+          return _this5.renderCol(row, rowIndex, column, colIndex);
+        })
+      );
+    },
+    getColumns: function getColumns(row, rowIndex) {
+      var columns = this.props.columns;
+      if (this.props.transformColumns) {
+        columns = this.props.transformColumns(columns, row, rowIndex);
+      }
+      return columns;
+    },
+    renderBody: function renderBody() {
+      var classes = {
+        'table-body': true,
+        'no-foot': !this.props.footer
+      };
+      return React.createElement(
+        'tbody',
+        { className: classNames(classes), onClick: this.handleClickBody },
+        this.props.rows.map(this.renderRow)
+      );
+    },
+    renderHeader: function renderHeader() {
+      if (this.props.header) {
+        var content = void 0;
+        if (this.props.header === true) {
+          content = React.createElement(
+            'tr',
+            { className: 'table-head table-row' },
+            this.getColumns().map(this.renderHeadCol)
+          );
+        } else {
+          content = React.createElement(
+            'tr',
+            { className: 'table-head table-custom-head table-row' },
+            React.createElement(
+              'th',
+              { className: 'table-column', colSpan: this.props.columns.size },
+              this.props.header
+            )
+          );
+        }
+        return React.createElement(
+          'thead',
+          null,
+          content
+        );
+      }
+    },
+    renderFooter: function renderFooter() {
+      if (this.props.footer) {
+        return React.createElement(
+          'tfoot',
+          null,
+          React.createElement(
+            'tr',
+            { className: 'table-foot table-custom-foot table-row' },
+            React.createElement(
+              'td',
+              { className: 'table-column', colSpan: this.props.columns.size },
+              this.props.footer
+            )
+          )
+        );
+      }
+    },
+    render: function render() {
+      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var classes = _defineProperty({
+        table: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'table',
+        { 'data-table-name': this.props.name, style: style, className: classNames(classes), cellSpacing: 0 },
+        this.renderHeader(),
+        this.renderBody(),
+        this.renderFooter()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Loading', ['React', function (React) {
+  return {
+    render: function render() {
+      return React.createElement(
+        'div',
+        { className: 'loading' },
+        React.createElement('span', { className: 'fa fa-spinner fa-spin' })
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.MenuButton', ['React', 'Immutable', 'classNames', 'uim.Icon', 'uim.LinkGroup', 'uim.IconButton', function (React, Immutable, classNames, Icon, LinkGroup, IconButton) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          icon: field.get('icon'),
+          links: field.get('links'),
+          groups: field.get('groups'),
+          button: field.get('button'),
+          counter: field.get('counter'),
+          className: field.get('className')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      icon: React.PropTypes.string.isRequired,
+      button: React.PropTypes.bool.isRequired,
+      links: React.PropTypes.List,
+      groups: React.PropTypes.List,
+      counter: React.PropTypes.number,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        icon: 'bars',
+        button: false
+      };
+    },
+    getInitialState: function getInitialState() {
+      return {
+        showMenu: false
+      };
+    },
+    handleClick: function handleClick() {
+      this.setState({ showMenu: !this.state.showMenu });
+    },
+    renderIcon: function renderIcon() {
+      var icon = void 0;
+      if (this.props.button) {
+        icon = React.createElement(IconButton, {
+          name: this.props.icon,
+          icon: this.props.icon,
+          onClick: this.handleClick });
+      } else {
+        icon = React.createElement(Icon, { name: this.props.icon, onClick: this.handleClick });
+      }
+      return icon;
+    },
+    renderCounter: function renderCounter() {
+      if (this.props.counter) {
+        return React.createElement(
+          'div',
+          { className: 'menu-button-counter', onClick: this.handleClick },
+          this.props.counter
+        );
+      }
+    },
+    renderMenu: function renderMenu() {
+      var _this6 = this;
+
+      var content = void 0;
+      if (this.props.groups) {
+        content = this.props.groups.map(function (group, index) {
+          return React.createElement(
+            'div',
+            { key: index, className: 'menu-button-group' },
+            group.get('label') && React.createElement(
+              'h2',
+              null,
+              group.get('label')
+            ),
+            React.createElement(LinkGroup, {
+              name: _this6.props.name + '-' + index + '-links',
+              path: _this6.props.path.concat(index, 'links'),
+              links: group.get('links'),
+              className: 'menu-button-links' })
+          );
+        });
+      } else if (this.props.links) {
+        content = React.createElement(LinkGroup, {
+          name: this.props.name + '-links',
+          path: this.props.path.push('links'),
+          links: this.props.links,
+          className: 'menu-button-links' });
+      }
+      return React.createElement(
+        'div',
+        { className: 'menu-button-dropdown' },
+        content
+      );
+    },
+    render: function render() {
+      var _classes31;
+
+      var classes = (_classes31 = {
+        show: this.state.showMenu
+      }, _defineProperty(_classes31, 'menu-button', true), _defineProperty(_classes31, this.props.className, !!this.props.className), _classes31);
+      return React.createElement(
+        'div',
+        { className: classNames(classes) },
+        this.renderCounter(),
+        this.renderIcon(),
+        this.renderMenu()
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Menuset', ['React', 'Immutable', 'classNames', 'uim.LinkGroup', function (React, Immutable, classNames, LinkGroup) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          label: field.get('label'),
+          links: field.get('links'),
+          className: field.get('className'),
+          collapsible: field.get('collapsible'),
+          collapsed: field.get('collapsed')
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      name: React.PropTypes.string.isRequired,
+      label: React.PropTypes.string.isRequired,
+      links: React.PropTypes.List.isRequired,
+      collapsible: React.PropTypes.bool.isRequired,
+      collapsed: React.PropTypes.bool.isRequired,
+      className: React.PropTypes.string
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        collapsible: false,
+        collapsed: false
+      };
+    },
+    getInitialState: function getInitialState() {
+      return {
+        collapsed: this.props.collapsed
+      };
+    },
+    handleClickLegend: function handleClickLegend() {
+      if (this.props.collapsible) {
+        this.setState({
+          collapsed: !this.state.collapsed
+        });
+      }
+    },
+    renderLabel: function renderLabel() {
+      if (this.props.label) {
+        return React.createElement(
+          'legend',
+          { onClick: this.handleClickLegend },
+          this.props.label
+        );
+      }
+    },
+    render: function render() {
+      var classes = _defineProperty({
+        menuset: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { 'data-menu-name': this.props.name, className: classNames(classes) },
+        React.createElement(
+          'fieldset',
+          null,
+          this.renderLabel(),
+          React.createElement(LinkGroup, {
+            name: this.props.name,
+            path: this.props.path,
+            links: this.props.links,
+            collapsed: this.state.collapsed })
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Overlay', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+    render: function render() {
+      return React.createElement(
+        'div',
+        { className: 'overlay' },
+        React.createElement(
+          'div',
+          { className: 'overlay-container' },
+          this.props.children
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Success', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
+  return {
+
+    propTypes: {
+      label: React.PropTypes.string.isRequired,
+      message: React.PropTypes.string,
+      buttonLabel: React.PropTypes.string.isRequired,
+      onClose: React.PropTypes.func.isRequired
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        buttonLabel: 'OK'
+      };
+    },
+    render: function render() {
+      return React.createElement(
+        'div',
+        { className: 'dialog success' },
+        React.createElement(
+          'header',
+          null,
+          React.createElement(Icon, { name: 'check-circle-o' }),
+          React.createElement(
+            'h2',
+            null,
+            this.props.label
+          )
+        ),
+        this.props.message ? React.createElement(
+          'p',
+          null,
+          this.props.message
+        ) : undefined,
+        React.createElement(
+          'footer',
+          null,
+          React.createElement(
+            'button',
+            { type: 'button', onClick: this.props.onClose },
+            this.props.buttonLabel
+          )
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.Toolbar', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
+  return {
+
+    statics: {
+      pickProps: function pickProps(path, field, values) {
+        path = field.has('path') ? field.get('path') : path.push(field.get('name'));
+        return {
+          path: path,
+          name: field.get('name'),
+          tools: field.get('tools'),
+          className: field.get('className'),
+          values: values
+        };
+      }
+    },
+
+    propTypes: {
+      path: React.PropTypes.List.isRequired,
+      values: React.PropTypes.Map.isRequired,
+      tools: React.PropTypes.List,
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func,
+      onChange: React.PropTypes.func
+    },
+
+    getDefaultProps: function getDefaultProps() {
+      return {
+        path: Immutable.List(),
+        tools: Immutable.List(),
+        values: Immutable.Map()
+      };
+    },
+    renderTool: function renderTool(tool, index) {
+
+      var Component = rey.inject('uim.' + tool.get('type'));
+
+      if (!Component) {
+        console.error(new Error('unknown component type (' + tool.get('type') + ')'));
+      }
+
+      if (!Component.pickProps) {
+        console.error(new Error('invalid component type (' + tool.get('type') + ')'));
+      }
+
+      var props = Component.pickProps(this.props.path, tool, this.props.values);
+
+      return React.createElement(
+        'div',
+        { key: index, 'data-tool-name': tool.get('name'), className: 'tool' },
+        React.createElement(Component, _extends({}, props, {
+          onClick: this.props.onClick,
+          onChange: this.props.onChange }))
+      );
+    },
+
+
+    render: function render() {
+
+      var classes = _defineProperty({
+        toolbar: true
+      }, this.props.className, !!this.props.className);
+
+      return React.createElement(
+        'div',
+        { 'data-toolbar-name': this.props.name, className: classNames(classes) },
+        this.props.tools.map(this.renderTool)
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
+
+/*!
+**  uimmutable -- UI components for Rey framework.
+**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
+**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
+**  Distributed on <http://github.com/yneves/uimmutable>
+*/
+// - -------------------------------------------------------------------- - //
+
+'use strict';
+
+rey.component('uim.View', ['React', 'Immutable', 'classNames', 'ReactCSSTransitionGroup', 'uim.Loading', 'uim.Toolbar', 'uim.Overlay', function (React, Immutable, classNames, CSSTransitionGroup, Loading, Toolbar, Overlay) {
+  return {
+
+    propTypes: {
+      header: React.PropTypes.any,
+      footer: React.PropTypes.any,
+      overlay: React.PropTypes.any,
+      isLoading: React.PropTypes.bool,
+      className: React.PropTypes.string
+    },
+
+    renderOverlay: function renderOverlay() {
+      var hasOverlay = Immutable.List.isList(this.props.overlay) ? !!this.props.overlay.size : !!this.props.overlay;
+      if (hasOverlay) {
+        return React.createElement(
+          Overlay,
+          null,
+          this.props.overlay
+        );
+      }
+    },
+    renderHeader: function renderHeader() {
+      var header = void 0;
+      if (Immutable.List.isList(this.props.header)) {
+        header = React.createElement(Toolbar, {
+          name: 'header',
+          tools: this.props.header,
+          onClick: this.props.onClick });
+      } else if (this.props.header) {
+        header = this.props.header;
+      }
+      if (header) {
+        return React.createElement(
+          'header',
+          { className: 'header' },
+          React.createElement(
+            'div',
+            { className: 'header-center' },
+            header
+          )
+        );
+      }
+    },
+    renderFooter: function renderFooter() {
+      var footer = void 0;
+      if (Immutable.List.isList(this.props.footer)) {
+        footer = React.createElement(Toolbar, {
+          name: 'footer',
+          tools: this.props.footer,
+          onClick: this.props.onClick });
+      } else if (this.props.footer) {
+        footer = this.props.footer;
+      }
+      if (footer) {
+        return React.createElement(
+          'footer',
+          { className: 'footer' },
+          React.createElement(
+            'div',
+            { className: 'footer-center' },
+            footer
+          )
+        );
+      }
+    },
+    render: function render() {
+      var classes = _defineProperty({
+        view: true
+      }, this.props.className, !!this.props.className);
+      return React.createElement(
+        'div',
+        { className: classNames(classes) },
+        this.renderHeader(),
+        React.createElement(
+          'main',
+          null,
+          this.props.children,
+          this.props.isLoading ? React.createElement(Loading, null) : undefined
+        ),
+        this.renderFooter(),
+        React.createElement(
+          CSSTransitionGroup,
+          {
+            transitionName: 'overlay',
+            transitionEnterTimeout: 400,
+            transitionLeaveTimeout: 120 },
+          this.renderOverlay()
+        )
+      );
+    }
+  };
+}]);
+
+// - -------------------------------------------------------------------- - //
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -7329,285 +11224,3 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';var _extends=Object.assign||function(target){for(var i=1;i<arguments.length;i++){var source=arguments[i];for(var key in source){if(Object.prototype.hasOwnProperty.call(source,key)){target[key]=source[key];}}}return target;};function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else{obj[key]=value;}return obj;}rey.factory('uim.DateFormat',[function(){return{date:{input:'DD/MM/YYYY',output:'YYYY-MM-DD'},time:{input:'HH:mm',output:'HH:mm:ss'},datetime:{input:'DD/MM/YYYY HH:mm',output:'YYYY-MM-DD HH:mm:ss'}};}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.factory('uim.DatePicker',[function(){return DatePicker;}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.factory('moment',[function(){return moment;}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.factory('uim.ValueFormat',['moment','uim.DateFormat',function(moment,DateFormat){return{date:function date(value){var date=moment(value,DateFormat.date.output);if(date.isValid()){return date.format(DateFormat.date.input);}},time:function time(value){var time=moment(value,DateFormat.time.output);if(time.isValid()){return time.format(DateFormat.time.input);}},datetime:function datetime(value){var datetime=moment(value,DateFormat.datetime.output);if(datetime.isValid()){return datetime.format(DateFormat.datetime.input);}}};}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Breadcrumb',['React','Immutable','classNames','uim.LinkGroup',function(React,Immutable,classNames,LinkGroup){return{statics:{pickProps:LinkGroup.pickProps},propTypes:{className:React.PropTypes.string},render:function render(){var classes=_defineProperty({breadcrumb:true},this.props.className,this.props.className);return React.createElement(LinkGroup,_extends({},this.props,{className:classNames(classes)}));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Failure',['React','Immutable','classNames','uim.Icon',function(React,Immutable,classNames,Icon){return{propTypes:{label:React.PropTypes.string.isRequired,message:React.PropTypes.string,buttonLabel:React.PropTypes.string.isRequired,onClose:React.PropTypes.func.isRequired},getDefaultProps:function getDefaultProps(){return{buttonLabel:'OK'};},render:function render(){return React.createElement('div',{className:'dialog failure'},React.createElement('header',null,React.createElement(Icon,{name:'exclamation-circle'}),React.createElement('h2',null,this.props.label)),this.props.message?React.createElement('p',null,this.props.message):undefined,React.createElement('footer',null,React.createElement('button',{type:'button',onClick:this.props.onClose},this.props.buttonLabel)));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Button',['React','Immutable','classNames',function(React,Immutable,classNames){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),htmlType:field.get('htmlType'),disabled:field.get('disabled'),style:field.get('style'),className:field.get('className')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,disabled:React.PropTypes.bool.isRequired,htmlType:React.PropTypes.string.isRequired,onClick:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),htmlType:'button',disabled:false};},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,event:event});}},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({button:true},this.props.className,!!this.props.className);return React.createElement('button',{style:style,'data-button-name':this.props.name,type:this.props.htmlType,disabled:this.props.disabled,className:classNames(classes),onClick:this.handleClick},this.props.label);}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.ButtonGroup',['React','Immutable','classNames','uim.Button',function(React,Immutable,classNames,Button){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),buttons:field.get('buttons'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,buttons:React.PropTypes.List.isRequired,onClick:React.PropTypes.func.isRequired,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleClick:function handleClick(button,event){if(this.props.onClick){event.button=button;this.props.onClick(event);}},renderButton:function renderButton(button,index){var props=Button.pickProps(this.props.path,button);return React.createElement(Button,_extends({key:index},props,{onClick:this.handleClick.bind(this,button)}));},render:function render(){var _classes3;var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=(_classes3={},_defineProperty(_classes3,'button-group',true),_defineProperty(_classes3,this.props.className,!!this.props.className),_classes3);return React.createElement('div',{'data-field-name':this.props.name,style:style,className:classNames(classes)},this.props.buttons.map(this.renderButton));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Checkbox',['React','Immutable','classNames',function(React,Immutable,classNames){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),style:field.get('style'),disabled:field.get('disabled'),value:field.get('value'),checked:!!values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,checked:React.PropTypes.bool.isRequired,onClick:React.PropTypes.func.isRequired,onChange:React.PropTypes.func.isRequired,value:React.PropTypes.any,disabled:React.PropTypes.bool,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,value:this.refs.input.checked,event:event});}},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.checked,event:event});}},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({checkbox:true,disabled:this.props.disabled},this.props.className,!!this.props.className);return React.createElement('label',{className:classNames(classes),style:style},React.createElement('input',{ref:'input',type:'checkbox',name:this.props.name,checked:this.props.checked,disabled:this.props.disabled,value:this.props.value,onClick:this.handleClick,onChange:this.handleChange}),React.createElement('span',null,this.props.label));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.CheckGroup',['React','Immutable','classNames','uim.Button','uim.Field',function(React,Immutable,classNames,Button,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),checkboxes:field.get('checkboxes'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,label:React.PropTypes.string,input:React.PropTypes.bool.isRequired,checkboxes:React.PropTypes.List.isRequired,values:React.PropTypes.Map.isRequired,onChange:React.PropTypes.func.isRequired,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},renderCheckbox:function renderCheckbox(option,index){var name=option.get('name')||index;var label=option.get('label')||name;var path=this.props.path.push(name);return React.createElement(Checkbox,{ref:name,key:index,path:path,name:name,label:label,checked:!!this.props.values.getIn(path),disabled:option.get('disabled'),onChange:this.props.onChange});},render:function render(){var _classes5;var classes=(_classes5={},_defineProperty(_classes5,'check-group',true),_defineProperty(_classes5,this.props.className,!!this.props.className),_classes5);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.props.checkboxes.map(this.renderCheckbox));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.DateField',['React','Immutable','classNames','uim.Value','uim.Field','uim.DatePicker','uim.DateFormat',function(React,Immutable,classNames,Value,Field,DatePicker,DateFormat){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),value:values.getIn(path),style:field.get('style'),inputFormat:field.get('inputFormat'),outputFormat:field.get('outputFormat'),placeholder:field.get('placeholder')};}},propTypes:{path:React.PropTypes.List.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,value:React.PropTypes.any,onChange:React.PropTypes.func,className:React.PropTypes.string,inputFormat:React.PropTypes.string.isRequired,outputFormat:React.PropTypes.string.isRequired,placeholder:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{inputFormat:DateFormat.date.input,outputFormat:DateFormat.date.output};},parseInput:function parseInput(date){if(typeof date==='string'){date=date.substr(0,this.props.outputFormat.length);}return date?moment(date,this.props.outputFormat):undefined;},parseOutput:function parseOutput(date){return date.isValid()?date.format(this.props.outputFormat):undefined;},handleChange:function handleChange(value){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.parseOutput(value)});}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=React.createElement(DatePicker,{dateFormat:this.props.inputFormat,selected:this.parseInput(this.props.value),onChange:this.handleChange,placeholderText:this.props.placeholder});}else{content=React.createElement(Value,{className:'date-value',path:this.props.path,name:this.props.name,value:this.props.value,format:'date'});}return content;},render:function render(){var _classes6;var classes=(_classes6={},_defineProperty(_classes6,'date-field',true),_defineProperty(_classes6,this.props.className,!!this.props.className),_classes6);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.DateRangeField',['React','Immutable','classNames','uim.Value','uim.Field','uim.DatePicker','uim.DateFormat',function(React,Immutable,classNames,Value,Field,DatePicker,DateFormat){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),value:values.getIn(path),style:field.get('style'),inputFormat:field.get('inputFormat'),outputFormat:field.get('outputFormat'),placeholder:field.get('placeholder')};}},propTypes:{path:React.PropTypes.List.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,value:React.PropTypes.List,onChange:React.PropTypes.func,placeholder:React.PropTypes.oneOfType([React.PropTypes.string,React.PropTypes.List]),className:React.PropTypes.string,inputFormat:React.PropTypes.string.isRequired,outputFormat:React.PropTypes.string.isRequired,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{inputFormat:DateFormat.date.input,outputFormat:DateFormat.date.output};},parseInput:function parseInput(value,index){var date=void 0;if(Immutable.List.isList(value)){date=value.get(index);}else if(index===0&&rey.isString(value)){date=value;}if(typeof date==='string'){date=date.substr(0,this.props.outputFormat.length);}return date?moment(date,this.props.outputFormat):undefined;},parseOutput:function parseOutput(date){return date&&date.isValid()?date.format(this.props.outputFormat):undefined;},handleChange:function handleChange(value,index){var newValue=void 0;if(Immutable.List.isList(this.props.value)){newValue=this.props.value.set(index,this.parseOutput(value));}else{newValue=Immutable.List().set(index,this.parseOutput(value));}if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:newValue});}},getPlaceholder:function getPlaceholder(index){var placeholder=void 0;if(rey.isString(this.props.placeholder)){placeholder=this.props.placeholder;}else if(Immutable.List.isList(this.props.placeholder)){placeholder=this.props.placeholder.get(index);}return placeholder;},renderContent:function renderContent(){var _this=this;var content=void 0;if(this.props.input){var startDate=this.parseInput(this.props.value,0);var endDate=this.parseInput(this.props.value,1);content=[React.createElement(DatePicker,{key:'startDate',ref:'startDate',startDate:startDate,endDate:endDate,selected:startDate,dateFormat:this.props.inputFormat,isClearable:true,onBlur:function onBlur(){return _this.refs.startDate.setOpen(false);},onChange:function onChange(date){return _this.handleChange(date,0);},placeholderText:this.getPlaceholder(0)}),React.createElement(DatePicker,{key:'endDate',ref:'endDate',startDate:startDate,endDate:endDate,selected:endDate,isClearable:true,onBlur:function onBlur(){return _this.refs.endDate.setOpen(false);},dateFormat:this.props.inputFormat,onChange:function onChange(date){return _this.handleChange(date,1);},placeholderText:this.getPlaceholder(1)})];}else{content=React.createElement(Value,{className:'date-range-value',path:this.props.path,name:this.props.name,value:this.props.value,format:'date'});}return content;},render:function render(){var _classes7;var classes=(_classes7={},_defineProperty(_classes7,'date-range-field',true),_defineProperty(_classes7,this.props.className,!!this.props.className),_classes7);return React.createElement(Field,{ref:'field',style:this.props.style,name:this.props.name,label:this.props.label,className:classNames(classes)},this.renderContent());}};}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Field',['React','Immutable','classNames',function(React,Immutable,classNames){return{propTypes:{name:React.PropTypes.string.isRequired,label:React.PropTypes.string,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({field:true},this.props.className,!!this.props.className);return React.createElement('div',{'data-field-name':this.props.name,style:style,className:classNames(classes)},React.createElement('label',null,this.props.label),this.props.children);}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.FieldGroup',['React','Immutable','classNames','uim.IconButton',function(React,Immutable,classNames,IconButton){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),fields:field.get('fields'),className:field.get('className'),style:field.get('style'),multiple:field.get('multiple'),values:values};}},propTypes:{path:React.PropTypes.List.isRequired,input:React.PropTypes.bool.isRequired,fields:React.PropTypes.List.isRequired,values:React.PropTypes.Map.isRequired,collapsed:React.PropTypes.bool.isRequired,multiple:React.PropTypes.bool.isRequired,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object]),onClick:React.PropTypes.func,onChange:React.PropTypes.func},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),input:true,collapsed:false,multiple:false};},onClickAddEntry:function onClickAddEntry(event){if(this.props.onChange){var entries=this.props.values.getIn(this.props.path);this.props.onChange({name:this.props.name,path:this.props.path.push(entries?entries.size:0),value:Immutable.Map(),event:event});}},onClickRemoveEntry:function onClickRemoveEntry(entryIndex,event){if(this.props.onChange){var entries=this.props.values.getIn(this.props.path);this.props.onChange({name:this.props.name,path:this.props.path.push(entryIndex),value:null,event:event});}},renderField:function renderField(path,field,index){var Component=rey.inject('uim.'+field.get('type'));if(!Component){console.error(new Error('unknown component type ('+field.get('type')+')'));}if(!Component.pickProps){console.error(new Error('invalid component type ('+field.get('type')+')'));}var props=Component.pickProps(path,field,this.props.values);return React.createElement(Component,_extends({key:index},props,{input:this.props.input,onClick:this.props.onClick,onChange:this.props.onChange}));},renderEntry:function renderEntry(entryIndex){var _this2=this;return React.createElement('div',{key:entryIndex,className:'field-group-entry'},this.props.input&&React.createElement('div',{className:'field-group-entry-action'},React.createElement(IconButton,{name:'removeFieldGroupEntry',icon:'trash-o',onClick:this.onClickRemoveEntry.bind(this,entryIndex)})),React.createElement('div',{className:'field-group-entry-fields'},this.props.fields.map(function(field,index){return _this2.renderField(_this2.props.path.push(entryIndex),field,index);})));},wrapEntries:function wrapEntries(children){return React.createElement('div',{className:'field-group-entries'},children,React.createElement('div',{className:'field-group-entries-action'},React.createElement(IconButton,{name:'addFieldGroupEntry',icon:'plus',onClick:this.onClickAddEntry})));},renderFields:function renderFields(){var _this3=this;var content=void 0;if(this.props.multiple){(function(){var children=[];var entries=_this3.props.values.getIn(_this3.props.path);if(Immutable.Map.isMap(entries)){entries.forEach(function(entry,entryIndex){if(Immutable.Map.isMap(entry)){children.push(_this3.renderEntry(entryIndex));}},_this3);}if(!children.length){children=_this3.renderEntry(0);}content=_this3.wrapEntries(children);})();}else{content=this.props.fields.map(function(field,index){return _this3.renderField(_this3.props.path,field,index);});}return content;},render:function render(){var _classes9;var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=(_classes9={},_defineProperty(_classes9,'field-group',true),_defineProperty(_classes9,'field-group-multiple',!!this.props.multiple),_defineProperty(_classes9,this.props.className,!!this.props.className),_classes9);if(this.props.collapsed){style.display='none';}return React.createElement('div',{className:classNames(classes),style:style},this.renderFields());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Fieldset',['React','Immutable','classNames','uim.FieldGroup',function(React,Immutable,classNames,FieldGroup){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),fields:field.get('fields'),className:field.get('className'),style:field.get('style'),multiple:field.get('multiple'),collapsible:field.get('collapsible'),collapsed:field.get('collapsed'),values:values};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,fields:React.PropTypes.List.isRequired,values:React.PropTypes.Map.isRequired,collapsible:React.PropTypes.bool.isRequired,collapsed:React.PropTypes.bool.isRequired,multiple:React.PropTypes.bool.isRequired,input:React.PropTypes.bool.isRequired,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object]),onChange:React.PropTypes.func,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),input:true,collapsible:false,collapsed:false,multiple:false};},getInitialState:function getInitialState(){return{collapsed:this.props.collapsed};},handleClickLegend:function handleClickLegend(){if(this.props.collapsible){this.setState({collapsed:!this.state.collapsed});}},render:function render(){var classes=_defineProperty({fieldset:true},this.props.className,!!this.props.className);var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;return React.createElement('div',{'data-fieldset-name':this.props.name,style:style,className:classNames(classes)},React.createElement('fieldset',null,React.createElement('legend',{onClick:this.handleClickLegend},this.props.label),React.createElement(FieldGroup,{path:this.props.path,fields:this.props.fields,values:this.props.values,input:this.props.input,collapsed:this.state.collapsed,multiple:this.props.multiple,onClick:this.props.onClick,onChange:this.props.onChange})));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.FileField',['React','Immutable','classNames','uim.Value','uim.Field','uim.Icon',function(React,Immutable,classNames,Value,Field,Icon){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),style:field.get('style'),multiple:field.get('multiple'),placeholder:field.get('placeholder'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string,input:React.PropTypes.bool.isRequired,placeholder:React.PropTypes.string.isRequired,multiple:React.PropTypes.bool.isRequired,value:React.PropTypes.any,onChange:React.PropTypes.func,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object]),className:React.PropTypes.string},getInitialState:function getInitialState(){return{files:[]};},getDefaultProps:function getDefaultProps(){return{multiple:false,placeholder:'Browse file...'};},getFiles:function getFiles(){var files;if(this.props.input){files=this.state.files;}else if(Immutable.List.isList(this.props.value)){files=this.props.value.toJS();}else if(Immutable.Map.isMap(this.props.value)){files=[this.props.value.toJS()];}else{files=[];}return files;},onBrowseFile:function onBrowseFile(event){var files=Array.prototype.slice.call(this.refs.input.files);if(this.props.multiple){files=this.state.files.concat(files);}this.setState({files:files},this.handleChange.bind(this,event));this.refs.input.value='';},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.props.multiple?this.state.files:this.state.files[0],event:event});}},renderInput:function renderInput(){if(this.props.input){return React.createElement('div',{className:'file-field-input'},React.createElement(Icon,{name:'cloud-upload'}),this.props.placeholder,React.createElement('input',{ref:'input',type:'file',multiple:this.props.multiple,onChange:this.onBrowseFile}));}},onClickFile:function onClickFile(file,event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,value:file,event:event});}},onRemoveFile:function onRemoveFile(removedFile,event){event.stopPropagation();this.setState({files:this.state.files.filter(function(file){return file!==removedFile;})},this.handleChange.bind(this,event));},renderFile:function renderFile(file,index){return React.createElement('div',{key:index,className:'file-field-file',onClick:this.onClickFile.bind(this,file)},React.createElement(Icon,{name:'file-o'}),file.name,this.props.input&&React.createElement(Icon,{name:'trash-o',onClick:this.onRemoveFile.bind(this,file)}));},renderContent:function renderContent(){return React.createElement('div',{className:'file-field-content'},this.renderInput(),this.getFiles().map(this.renderFile,this));},render:function render(){var _classes11;var classes=(_classes11={},_defineProperty(_classes11,'file-field',true),_defineProperty(_classes11,this.props.className,!!this.props.className),_classes11);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Formset',['React','Immutable','classNames','uim.FieldGroup',function(React,Immutable,classNames,FieldGroup){return{propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.node,fields:React.PropTypes.List.isRequired,values:React.PropTypes.Map.isRequired,input:React.PropTypes.bool.isRequired,collapsible:React.PropTypes.bool.isRequired,onClick:React.PropTypes.func,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),input:true,collapsible:false};},getInitialState:function getInitialState(){return{collapsed:false};},handleClickTitle:function handleClickTitle(){if(this.props.collapsible){this.setState({collapsed:!this.state.collapsed});}},renderTitle:function renderTitle(){if(this.props.label){return React.createElement('h1',{className:'title',onClick:this.handleClickTitle},React.createElement('span',null,this.props.label));}},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({formset:true},this.props.className,!!this.props.className);return React.createElement('div',{'data-form-name':this.props.name,style:style,className:classNames(classes)},this.renderTitle(),React.createElement(FieldGroup,{path:this.props.path,input:this.props.input,fields:this.props.fields,values:this.props.values,collapsed:this.state.collapsed,onClick:this.props.onClick,onChange:this.props.onChange}));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.MemoField',['React','Immutable','classNames','uim.Value','uim.Field',function(React,Immutable,classNames,Value,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),rows:field.get('rows'),cols:field.get('cols'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,rows:React.PropTypes.number,cols:React.PropTypes.number,value:React.PropTypes.any,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=React.createElement('textarea',{ref:'input',rows:this.props.rows,cols:this.props.cols,value:this.props.value||'',onChange:this.handleChange});}else{content=React.createElement(Value,{className:'memo-value',path:this.props.path,name:this.props.name,value:this.props.value});}return content;},render:function render(){var _classes13;var classes=(_classes13={},_defineProperty(_classes13,'memo-field',true),_defineProperty(_classes13,this.props.className,!!this.props.className),_classes13);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.PasswordField',['React','Immutable','classNames','uim.Field',function(React,Immutable,classNames,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),style:field.get('style'),empty:!values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,empty:React.PropTypes.bool,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},componentDidUpdate:function componentDidUpdate(){if(this.props.empty){this.refs.input.value='';}},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},render:function render(){var _classes14;var classes=(_classes14={},_defineProperty(_classes14,'password-field',true),_defineProperty(_classes14,this.props.className,!!this.props.className),_classes14);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},React.createElement('input',{ref:'input',type:'password',onChange:this.handleChange}));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Radio',['React','Immutable','classNames',function(React,Immutable,classNames){return{propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,value:React.PropTypes.any.isRequired,checked:React.PropTypes.bool.isRequired,onChange:React.PropTypes.func.isRequired,disabled:React.PropTypes.bool,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({radio:true,disabled:this.props.disabled},this.props.className,!!this.props.className);return React.createElement('label',{style:style,className:classNames(classes)},React.createElement('input',{ref:'input',type:'radio',name:this.props.name,value:this.props.value,checked:this.props.checked,disabled:this.props.disabled,onChange:this.handleChange}),React.createElement('span',null,this.props.label));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.RadioGroup',['React','Immutable','classNames','uim.Field','uim.Value','uim.Radio',function(React,Immutable,classNames,Field,Value,Radio){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),options:field.get('options'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string,input:React.PropTypes.bool.isRequired,options:React.PropTypes.List.isRequired,value:React.PropTypes.any,onChange:React.PropTypes.func.isRequired,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},renderRadio:function renderRadio(option,index){return React.createElement(Radio,{ref:index,key:index,path:this.props.path,name:this.props.name,label:option.get('label'),value:option.get('value'),checked:this.props.value===option.get('value'),disabled:option.get('disabled'),onChange:this.props.onChange});},getSelectedLabel:function getSelectedLabel(){var value=this.props.value;var selected=this.props.options.find(function(option){return option.get('value')===value;});if(selected){return selected.get('label');}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=this.props.options.map(this.renderRadio);}else{content=React.createElement(Value,{className:'radio-value',path:this.props.path,name:this.props.name,value:this.getSelectedLabel()});}return content;},render:function render(){var _classes16;var classes=(_classes16={},_defineProperty(_classes16,'radio-group',true),_defineProperty(_classes16,this.props.className,!!this.props.className),_classes16);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.SelectButton',['React','Immutable','classNames','uim.Icon','uim.Value',function(React,Immutable,classNames,Icon,Value){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,label:field.get('label'),name:field.get('name'),options:field.get('options'),disabled:field.get('disabled'),disabledValues:field.get('disabledValues'),className:field.get('className'),blankValue:field.get('blankValue'),multiple:field.get('multiple'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,options:React.PropTypes.List.isRequired,disabled:React.PropTypes.bool.isRequired,multiple:React.PropTypes.bool.isRequired,disabledValues:React.PropTypes.List,blankValue:React.PropTypes.string,value:React.PropTypes.any,onChange:React.PropTypes.func,onClick:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getInitialState:function getInitialState(){return{showOptions:false};},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),disabled:false,multiple:false};},handleClickCaret:function handleClickCaret(event){event.event.stopPropagation();this.setState({showOptions:!this.state.showOptions});},getChangedValue:function getChangedValue(option){var value;if(this.props.multiple){var index=this.props.value.indexOf(option.get('value'));if(index===-1){value=this.props.value.push(option.get('value'));}else{value=this.props.value.delete(index);}}else{value=option.get('value');}return value;},handleClickOption:function handleClickOption(option,event){event.stopPropagation();if(!option.get('disabled')){if(!this.props.multiple){this.setState({showOptions:!this.state.showOptions});}if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.getChangedValue(option),option:option,event:event});}}},handleClickValue:function handleClickValue(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,value:this.props.value,event:event.event});}},renderOptionIcon:function renderOptionIcon(option){var icon;if(option.has('icon')){icon=React.createElement(Icon,{key:'icon',name:option.get('icon')});}return icon;},renderSelected:function renderSelected(option){var selected;if(this.props.multiple){if(this.props.value.indexOf(option.get('value'))!==-1){selected=React.createElement(Icon,{name:'check',className:'icon-selected'});}else{selected=React.createElement(Icon,{name:'check',className:'icon-unselected'});}}return selected;},renderOption:function renderOption(option,index){var classes={};classes['select-button-option']=true;classes['disabled']=!!option.get('disabled');classes[option.get('className')]=!!option.get('className');var onClick=this.handleClickOption.bind(this,option);return React.createElement('li',{key:index,className:classNames(classes),onClick:onClick},this.renderSelected(option),this.renderOptionIcon(option),option.get('label'));},isDisabled:function isDisabled(){return this.props.disabled||(this.props.disabledValues?this.props.disabledValues.indexOf(this.props.value)!==-1:false);},isSelected:function isSelected(option){var selected=false;if(this.props.value||this.props.value===0){if(this.props.multiple){if(this.props.value.indexOf(option.get('value'))!==-1){selected=true;}}else if(option.get('value')===this.props.value){selected=true;}}return selected;},getSelectedOptions:function getSelectedOptions(){return this.props.options.filter(function(option){return this.isSelected(option);},this);},renderSelectedOption:function renderSelectedOption(){var classes={};classes['select-button-value']=true;var selectedOptions=this.getSelectedOptions();var value;var icon;if(selectedOptions.size>1){value=selectedOptions.map(function(option){return option.get('selectedLabel')||option.get('label');}).join(', ');}else if(selectedOptions.size>0){classes[selectedOptions.getIn([0,'className'])]=!!selectedOptions.getIn([0,'className']);value=selectedOptions.getIn([0,'selectedLabel'])||selectedOptions.getIn([0,'label']);icon=this.renderOptionIcon(selectedOptions.get(0));}else if(this.props.blankValue){classes['select-button-blank']=true;value=this.props.blankValue;}return React.createElement(Value,{onClick:this.handleClickValue,className:classNames(classes),path:this.props.path,name:this.props.name,value:[icon,value]});},renderCaretIcon:function renderCaretIcon(){return React.createElement(Icon,{key:'icon',name:'caret-down',className:'select-button-icon',onClick:this.handleClickCaret});},renderList:function renderList(){return React.createElement('ul',{key:'list'},this.props.options.map(this.renderOption));},renderOptions:function renderOptions(){if(!this.isDisabled()){return[this.renderCaretIcon(),this.renderList()];}},render:function render(){var _classes17;var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=(_classes17={button:true,disabled:this.isDisabled()},_defineProperty(_classes17,'select-button',true),_defineProperty(_classes17,'show-options',this.state.showOptions),_defineProperty(_classes17,this.props.className,!!this.props.className),_classes17);return React.createElement('a',{'data-button-name':this.props.name,className:classNames(classes),style:style},this.renderSelectedOption(),this.renderOptions());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.SelectButtonField',['React','Immutable','classNames','uim.SelectButton','uim.Field',function(React,Immutable,classNames,SelectButton,Field){return{statics:{pickProps:SelectButton.pickProps},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,options:React.PropTypes.List.isRequired,disabled:React.PropTypes.bool.isRequired,disabledValues:React.PropTypes.List,blankValue:React.PropTypes.string,value:React.PropTypes.any,onChange:React.PropTypes.func,onClick:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),disabled:false};},render:function render(){var _classes18;var classes=(_classes18={},_defineProperty(_classes18,'select-button-field',true),_defineProperty(_classes18,this.props.className,!!this.props.className),_classes18);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},React.createElement(SelectButton,{path:this.props.path,name:this.props.name,options:this.props.options,value:this.props.value,disabled:this.props.disabled,disabledValues:this.props.disabledValues,onClick:this.props.onClick,onChange:this.props.onChange,className:this.props.className}));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.SelectField',['React','Immutable','classNames','uim.Value','uim.Field',function(React,Immutable,classNames,Value,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),options:field.get('options'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,options:React.PropTypes.List.isRequired,value:React.PropTypes.any,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},renderOption:function renderOption(option,index){return React.createElement('option',{key:index,value:option.get('value')},option.get('label'));},getSelectedLabel:function getSelectedLabel(){var value=this.props.value;var selected=this.props.options.find(function(option){return option.get('value')===value;});if(selected){return selected.get('label');}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=React.createElement('select',{ref:'input',value:this.props.value||'',onChange:this.handleChange},this.props.options.map(this.renderOption));}else{content=React.createElement(Value,{className:'select-value',path:this.props.path,name:this.props.name,value:this.getSelectedLabel()});}return content;},render:function render(){var _classes19;var classes=(_classes19={},_defineProperty(_classes19,'select-field',true),_defineProperty(_classes19,this.props.className,!!this.props.className),_classes19);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.TextField',['React','Immutable','classNames','uim.Value','uim.Field',function(React,Immutable,classNames,Value,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),options:field.get('options'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,value:React.PropTypes.any,options:React.PropTypes.List,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},getId:function getId(){return this.props.path.toJS().join('-');},renderOptions:function renderOptions(){if(this.props.input&&this.props.options){return React.createElement('datalist',{id:this.getId()+'-options'},this.props.options.map(function(option,index){return React.createElement('option',{key:index,value:option},option);}));}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=React.createElement('input',{ref:'input',type:'text',value:this.props.value||'',list:this.getId()+'-options',onChange:this.handleChange});}else{content=React.createElement(Value,{className:'text-value',path:this.props.path,name:this.props.name,value:this.props.value});}return content;},render:function render(){var _classes20;var classes=(_classes20={},_defineProperty(_classes20,'text-field',true),_defineProperty(_classes20,this.props.className,!!this.props.className),_classes20);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent(),this.renderOptions());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.TimeField',['React','Immutable','classNames','uim.Value','uim.Field',function(React,Immutable,classNames,Value,Field){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),className:field.get('className'),style:field.get('style'),value:values.getIn(path)};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,input:React.PropTypes.bool.isRequired,value:React.PropTypes.any,onChange:React.PropTypes.func.isRequired,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},handleChange:function handleChange(event){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:this.refs.input.value,event:event});}},renderContent:function renderContent(){var content=void 0;if(this.props.input){content=React.createElement('input',{ref:'input',type:'time',value:this.props.value,onChange:this.handleChange});}else{content=React.createElement(Value,{className:'time-value',path:this.props.path,name:this.props.name,value:this.props.value});}return content;},render:function render(){var _classes21;var classes=(_classes21={},_defineProperty(_classes21,'time-field',true),_defineProperty(_classes21,this.props.className,!!this.props.className),_classes21);return React.createElement(Field,{ref:'field',name:this.props.name,label:this.props.label,style:this.props.style,className:classNames(classes)},this.renderContent());}};}]);/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Value',['React','Immutable','classNames','uim.ValueFormat',function(React,Immutable,classNames,ValueFormat){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),format:field.get('format'),className:field.get('className'),style:field.get('style'),value:values.getIn(path),texts:field.get('texts')};}},propTypes:{path:React.PropTypes.List,name:React.PropTypes.string,value:React.PropTypes.any,texts:React.PropTypes.Map,format:React.PropTypes.string,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object]),onClick:React.PropTypes.func},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,value:this.props.value,event:event});}},getValue:function getValue(){var value=void 0;if(this.props.value||this.props.value===0){if(this.props.format){if(ValueFormat[this.props.format]){value=ValueFormat[this.props.format](this.props.value);}else{throw new Error('unknown format ('+this.props.format+')');}}else{value=this.props.value;}}else{value='-';}if(this.props.texts){value=this.props.texts.get(value);}return value;},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({value:true},this.props.className,!!this.props.className);return React.createElement('div',{className:classNames(classes),style:this.props.style,onClick:this.handleClick},this.getValue());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Icon',['React','Immutable','classNames',function(React,Immutable,classNames){var globals=arguments.length<=3||arguments[3]===undefined?{}:arguments[3];return{statics:{globals:globals,pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),icon:field.get('icon'),className:field.get('className')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,icon:React.PropTypes.string,className:React.PropTypes.string,onClick:React.PropTypes.func},getDefaultProps:function getDefaultProps(){return{path:Immutable.List()};},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,event:event});}},render:function render(){var _classes23;var icon=this.props.icon||this.props.name;var classes=(_classes23={icon:true},_defineProperty(_classes23,globals.className||'fa',true),_defineProperty(_classes23,this.props.className,!!this.props.className),_defineProperty(_classes23,(globals.classNamePrefix||'fa-')+icon,true),_classes23);return React.createElement('span',{className:classNames(classes),onClick:this.handleClick});}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.IconButton',['React','Immutable','classNames','uim.Icon',function(React,Immutable,classNames,Icon){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),icon:field.get('icon'),disabled:field.get('disabled'),className:field.get('className')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,icon:React.PropTypes.string.isRequired,disabled:React.PropTypes.bool.isRequired,onClick:React.PropTypes.func,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),disabled:false};},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,event:event});}},render:function render(){var _classes24;var classes=(_classes24={},_defineProperty(_classes24,'icon-button',true),_defineProperty(_classes24,this.props.className,!!this.props.className),_classes24);return React.createElement(Icon,{name:this.props.name,icon:this.props.icon,className:classNames(classes),'data-button-name':this.props.name,disabled:this.props.disabled,onClick:this.handleClick});}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Link',['React','Immutable','classNames',function(React,Immutable,classNames){var globals=arguments.length<=3||arguments[3]===undefined?{}:arguments[3];return{statics:{globals:globals,pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),href:field.get('href'),label:field.get('label'),className:field.get('className')};}},propTypes:{name:React.PropTypes.string,path:React.PropTypes.List.isRequired,href:React.PropTypes.string.isRequired,label:React.PropTypes.string,onClick:React.PropTypes.func,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{path:Immutable.List()};},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,event:event});}if(globals.clickHandler){globals.clickHandler(event,this.props.href);}},render:function render(){var classes=_defineProperty({},this.props.className,!!this.props.className);return React.createElement('a',{name:this.props.name,href:this.props.href,className:classNames(classes),onClick:this.handleClick},this.props.label?this.props.label:undefined,this.props.children?this.props.children:undefined);}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.LinkButton',['React','Immutable','classNames','uim.Link',function(React,Immutable,classNames,Link){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),href:field.get('href'),label:field.get('label'),disabled:field.get('disabled'),className:field.get('className')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,disabled:React.PropTypes.bool.isRequired,onClick:React.PropTypes.func,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{disabled:false};},handleClick:function handleClick(event){if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,event:event});}},render:function render(){var _classes26;var classes=(_classes26={button:true},_defineProperty(_classes26,'link-button',true),_defineProperty(_classes26,this.props.className,!!this.props.className),_classes26);return React.createElement(Link,{name:this.props.name,href:this.props.href,label:this.props.label,className:classNames(classes),'data-button-name':this.props.name,disabled:this.props.disabled,onClick:this.handleClick});}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.LinkGroup',['React','Immutable','classNames','uim.Link','uim.Icon',function(React,Immutable,classNames,Link,Icon){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),links:field.get('links'),className:field.get('className'),collapsed:field.get('collapsed')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,links:React.PropTypes.List.isRequired,className:React.PropTypes.string,collapsed:React.PropTypes.bool.isRequired},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),links:Immutable.List(),collapsed:false};},renderIcon:function renderIcon(link){if(link.has('icon')){return React.createElement(Icon,{key:'icon',name:link.get('icon')});}},renderLink:function renderLink(link,index){return React.createElement('li',{key:index,className:link.get('className')},React.createElement(Link,{name:link.get('name'),href:link.get('href'),className:link.get('className')},this.renderIcon(link),link.get('label')));},render:function render(){var _classes27;var classes=(_classes27={},_defineProperty(_classes27,'link-group',true),_defineProperty(_classes27,this.props.className,!!this.props.className),_classes27);var style={};if(this.props.collapsed){style.display='none';}return React.createElement('ul',{className:classNames(classes),style:style},this.props.links.map(this.renderLink));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.List',['React','Immutable','classNames','uim.Table','uim.Formset','uim.Toolbar','uim.Pages','uim.SelectButton',function(React,Immutable,classNames,Table,Formset,Toolbar,Pages,SelectButton){return{propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,values:React.PropTypes.Map.isRequired,filter:React.PropTypes.oneOfType([React.PropTypes.List,React.PropTypes.node,React.PropTypes.bool]),header:React.PropTypes.oneOfType([React.PropTypes.List,React.PropTypes.node,React.PropTypes.bool]),footer:React.PropTypes.oneOfType([React.PropTypes.List,React.PropTypes.node,React.PropTypes.bool]),rows:React.PropTypes.List.isRequired,columns:React.PropTypes.List.isRequired,transformColumns:React.PropTypes.func,empty:React.PropTypes.node,onClick:React.PropTypes.func,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{rows:Immutable.List(),path:Immutable.List(),columns:Immutable.List(),header:true,footer:false};},renderFilter:function renderFilter(){if(this.props.filter){var filter=this.props.filter;if(Immutable.List.isList(this.props.filter)){filter=React.createElement(Formset,{name:'filter',path:this.props.path,values:this.props.values,fields:this.props.filter,onClick:this.props.onClick,onChange:this.props.onChange});}return React.createElement('div',{className:'list-filter'},filter);}},renderLimit:function renderLimit(){if(this.props.limits.size){return React.createElement(SelectButton,{name:'limit',path:this.props.path.push('limit'),value:this.props.values.getIn(this.props.path.push('limit')),options:this.props.limits,onChange:this.props.onChange,className:'select-limit'});}},renderPages:function renderPages(){if(this.props.pages>1){return React.createElement('div',{className:'list-pages'},React.createElement(Pages,{name:'page',path:this.props.path.push('page'),value:Number(this.props.values.getIn(this.props.path.push('page'))),pages:this.props.pages,onChange:this.props.onChange}),this.renderLimit());}},isEmpty:function isEmpty(){return this.props.rows.size===0&&this.props.empty;},renderEmpty:function renderEmpty(){return React.createElement('div',{className:'list-empty'},React.createElement('p',null,this.props.empty));},renderHeader:function renderHeader(){var header=this.props.header;if(Immutable.List.isList(this.props.header)){header=React.createElement(Toolbar,{name:'header',path:this.props.path,tools:this.props.header,values:this.props.values,onClick:this.props.onClick,onChange:this.props.onChange});}return header;},renderFooter:function renderFooter(){var footer=this.props.footer;if(Immutable.List.isList(this.props.footer)){footer=React.createElement(Toolbar,{name:'footer',path:this.props.path,tools:this.props.footer,values:this.props.values,onClick:this.props.onClick,onChange:this.props.onChange});}return footer;},renderTable:function renderTable(){return React.createElement('div',{className:'list-table'},React.createElement(Table,{name:'table',header:this.renderHeader(),footer:this.renderFooter(),rows:this.props.rows,columns:this.props.columns,transformColumns:this.props.transformColumns,onClick:this.props.onClick,onChange:this.props.onChange}));},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({list:true},this.props.className,!!this.props.className);return React.createElement('div',{'data-list-name':this.props.name,style:style,className:classNames(classes)},this.renderFilter(),this.isEmpty()?this.renderEmpty():this.renderTable(),this.renderPages());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Pages',['React','Immutable','classNames','uim.Icon',function(React,Immutable,classNames,Icon){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),pages:field.get('pages'),range:field.get('range'),value:Number(values.getIn(path)),className:field.get('className'),style:field.get('style')};}},propTypes:{name:React.PropTypes.string.isRequired,path:React.PropTypes.List.isRequired,value:React.PropTypes.number.isRequired,pages:React.PropTypes.number.isRequired,range:React.PropTypes.number.isRequired,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),value:1,pages:1,range:5};},handleClick:function handleClick(event,page){if(page&&page!==this.props.value){if(this.props.onChange){this.props.onChange({name:this.props.name,path:this.props.path,value:page,event:event});}}},renderPages:function renderPages(){var _this4=this;var parts=[];var pages=this.props.pages;var current=this.props.value;var previous=current>1;var next=current<pages;var first=Math.max(1,current-this.props.range);var last=Math.min(pages,current+this.props.range);if(previous){parts.push(React.createElement('li',{key:'previous',onClick:function onClick(e){return _this4.handleClick(e,current-1);}},React.createElement(Icon,{name:'previous',icon:'chevron-left'})));}var _loop=function _loop(i){parts.push(React.createElement('li',{key:i,onClick:function onClick(e){return _this4.handleClick(e,i);},className:current===i?'current':''},i.toString()));};for(var i=first;i<=last;i++){_loop(i);}if(next){parts.push(React.createElement('li',{key:'next',onClick:function onClick(e){return _this4.handleClick(e,current+1);}},React.createElement(Icon,{name:'next',icon:'chevron-right'})));}return parts;},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({pages:true},this.props.className,!!this.props.className);return React.createElement('ul',{style:style,className:classNames(classes)},this.renderPages());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Table',['React','Immutable','classNames',function(React,Immutable,classNames){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),rows:field.get('rows'),columns:field.get('columns'),header:field.get('header'),footer:field.get('footer'),className:field.get('className'),style:field.get('style')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,header:React.PropTypes.oneOfType([React.PropTypes.node,React.PropTypes.bool]),footer:React.PropTypes.oneOfType([React.PropTypes.node,React.PropTypes.bool]),rows:React.PropTypes.List.isRequired,columns:React.PropTypes.List.isRequired,transformColumns:React.PropTypes.func,onClick:React.PropTypes.func,onChange:React.PropTypes.func,className:React.PropTypes.string,style:React.PropTypes.oneOfType([React.PropTypes.Map,React.PropTypes.object])},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),rows:Immutable.List(),columns:Immutable.List(),header:true,footer:false};},handleClick:function handleClick(row,column,event){if(this.props.onClick){event.row=row;event.column=column;this.props.onClick(event);}},isValidTarget:function isValidTarget(target){return target.hasAttribute('data-row-index')&&target.hasAttribute('data-column-index');},findTarget:function findTarget(event){var target=event.target;while(!this.isValidTarget(target)){target=target.parentNode;if(target===document.body){break;}}if(this.isValidTarget(target)){return target;}},handleClickBody:function handleClickBody(event){var target=this.findTarget(event);if(target){var rowIndex=Number(target.getAttribute('data-row-index'));var colIndex=Number(target.getAttribute('data-column-index'));var row=this.props.rows.get(rowIndex);var column=this.props.columns.get(colIndex);if(this.props.onClick){this.props.onClick({name:this.props.name,path:this.props.path,row:row,column:column,event:event});}}},handleChange:function handleChange(row,column,event){if(this.props.onChange){event.row=row;event.column=column;this.props.onChange(event);}},renderHeadCol:function renderHeadCol(column,index){var style={};if(column.get('width')){style.width=column.get('width');}return React.createElement('th',{key:index,style:style,className:'table-column','data-column-index':index,'data-column-name':column.get('name')},column.get('label'));},renderCol:function renderCol(row,rowIndex,column,colIndex){var Component=rey.inject('uim.'+column.get('type'));if(!Component){throw new Error('unknown component type ('+column.get('type')+')');}if(!Component.pickProps){throw new Error('invalid component type ('+column.get('type')+')');}var props=Component.pickProps(this.props.path,column,row);return React.createElement('td',{key:colIndex,className:'table-column','data-row-index':rowIndex,'data-column-index':colIndex,'data-column-name':column.get('name')},React.createElement(Component,_extends({},props,{onClick:this.handleClick.bind(this,row,column),onChange:this.handleChange.bind(this,row,column)})));},renderRow:function renderRow(row,rowIndex){var _this5=this;return React.createElement('tr',{key:rowIndex,className:'table-row','data-row-index':rowIndex},this.getColumns(row,rowIndex).map(function(column,colIndex){return _this5.renderCol(row,rowIndex,column,colIndex);}));},getColumns:function getColumns(row,rowIndex){var columns=this.props.columns;if(this.props.transformColumns){columns=this.props.transformColumns(columns,row,rowIndex);}return columns;},renderBody:function renderBody(){var classes={'table-body':true,'no-foot':!this.props.footer};return React.createElement('tbody',{className:classNames(classes),onClick:this.handleClickBody},this.props.rows.map(this.renderRow));},renderHeader:function renderHeader(){if(this.props.header){var content=void 0;if(this.props.header===true){content=React.createElement('tr',{className:'table-head table-row'},this.getColumns().map(this.renderHeadCol));}else{content=React.createElement('tr',{className:'table-head table-custom-head table-row'},React.createElement('th',{className:'table-column',colSpan:this.props.columns.size},this.props.header));}return React.createElement('thead',null,content);}},renderFooter:function renderFooter(){if(this.props.footer){return React.createElement('tfoot',null,React.createElement('tr',{className:'table-foot table-custom-foot table-row'},React.createElement('td',{className:'table-column',colSpan:this.props.columns.size},this.props.footer)));}},render:function render(){var style=Immutable.Map.isMap(this.props.style)?this.props.style.toJS():this.props.style;var classes=_defineProperty({table:true},this.props.className,!!this.props.className);return React.createElement('table',{'data-table-name':this.props.name,style:style,className:classNames(classes),cellSpacing:0},this.renderHeader(),this.renderBody(),this.renderFooter());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Loading',['React',function(React){return{render:function render(){return React.createElement('div',{className:'loading'},React.createElement('span',{className:'fa fa-spinner fa-spin'}));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.MenuButton',['React','Immutable','classNames','uim.Icon','uim.LinkGroup','uim.IconButton',function(React,Immutable,classNames,Icon,LinkGroup,IconButton){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),icon:field.get('icon'),links:field.get('links'),groups:field.get('groups'),button:field.get('button'),counter:field.get('counter'),className:field.get('className')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,icon:React.PropTypes.string.isRequired,button:React.PropTypes.bool.isRequired,links:React.PropTypes.List,groups:React.PropTypes.List,counter:React.PropTypes.number,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),icon:'bars',button:false};},getInitialState:function getInitialState(){return{showMenu:false};},handleClick:function handleClick(){this.setState({showMenu:!this.state.showMenu});},renderIcon:function renderIcon(){var icon=void 0;if(this.props.button){icon=React.createElement(IconButton,{name:this.props.icon,icon:this.props.icon,onClick:this.handleClick});}else{icon=React.createElement(Icon,{name:this.props.icon,onClick:this.handleClick});}return icon;},renderCounter:function renderCounter(){if(this.props.counter){return React.createElement('div',{className:'menu-button-counter',onClick:this.handleClick},this.props.counter);}},renderMenu:function renderMenu(){var _this6=this;var content=void 0;if(this.props.groups){content=this.props.groups.map(function(group,index){return React.createElement('div',{key:index,className:'menu-button-group'},group.get('label')&&React.createElement('h2',null,group.get('label')),React.createElement(LinkGroup,{name:_this6.props.name+'-'+index+'-links',path:_this6.props.path.concat(index,'links'),links:group.get('links'),className:'menu-button-links'}));});}else if(this.props.links){content=React.createElement(LinkGroup,{name:this.props.name+'-links',path:this.props.path.push('links'),links:this.props.links,className:'menu-button-links'});}return React.createElement('div',{className:'menu-button-dropdown'},content);},render:function render(){var _classes31;var classes=(_classes31={show:this.state.showMenu},_defineProperty(_classes31,'menu-button',true),_defineProperty(_classes31,this.props.className,!!this.props.className),_classes31);return React.createElement('div',{className:classNames(classes)},this.renderCounter(),this.renderIcon(),this.renderMenu());}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Menuset',['React','Immutable','classNames','uim.LinkGroup',function(React,Immutable,classNames,LinkGroup){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),label:field.get('label'),links:field.get('links'),className:field.get('className'),collapsible:field.get('collapsible'),collapsed:field.get('collapsed')};}},propTypes:{path:React.PropTypes.List.isRequired,name:React.PropTypes.string.isRequired,label:React.PropTypes.string.isRequired,links:React.PropTypes.List.isRequired,collapsible:React.PropTypes.bool.isRequired,collapsed:React.PropTypes.bool.isRequired,className:React.PropTypes.string},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),collapsible:false,collapsed:false};},getInitialState:function getInitialState(){return{collapsed:this.props.collapsed};},handleClickLegend:function handleClickLegend(){if(this.props.collapsible){this.setState({collapsed:!this.state.collapsed});}},renderLabel:function renderLabel(){if(this.props.label){return React.createElement('legend',{onClick:this.handleClickLegend},this.props.label);}},render:function render(){var classes=_defineProperty({menuset:true},this.props.className,!!this.props.className);return React.createElement('div',{'data-menu-name':this.props.name,className:classNames(classes)},React.createElement('fieldset',null,this.renderLabel(),React.createElement(LinkGroup,{name:this.props.name,path:this.props.path,links:this.props.links,collapsed:this.state.collapsed})));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Overlay',['React','Immutable','classNames',function(React,Immutable,classNames){return{render:function render(){return React.createElement('div',{className:'overlay'},React.createElement('div',{className:'overlay-container'},this.props.children));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Success',['React','Immutable','classNames','uim.Icon',function(React,Immutable,classNames,Icon){return{propTypes:{label:React.PropTypes.string.isRequired,message:React.PropTypes.string,buttonLabel:React.PropTypes.string.isRequired,onClose:React.PropTypes.func.isRequired},getDefaultProps:function getDefaultProps(){return{buttonLabel:'OK'};},render:function render(){return React.createElement('div',{className:'dialog success'},React.createElement('header',null,React.createElement(Icon,{name:'check-circle-o'}),React.createElement('h2',null,this.props.label)),this.props.message?React.createElement('p',null,this.props.message):undefined,React.createElement('footer',null,React.createElement('button',{type:'button',onClick:this.props.onClose},this.props.buttonLabel)));}};}]);// - -------------------------------------------------------------------- - //
-/*!
-**  uimmutable -- UI components for Rey framework.
-**  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
-**  Licensed under The MIT License <http://opensource.org/licenses/MIT>
-**  Distributed on <http://github.com/yneves/uimmutable>
-*/// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.Toolbar',['React','Immutable','classNames',function(React,Immutable,classNames){return{statics:{pickProps:function pickProps(path,field,values){path=field.has('path')?field.get('path'):path.push(field.get('name'));return{path:path,name:field.get('name'),tools:field.get('tools'),className:field.get('className'),values:values};}},propTypes:{path:React.PropTypes.List.isRequired,values:React.PropTypes.Map.isRequired,tools:React.PropTypes.List,className:React.PropTypes.string,onClick:React.PropTypes.func,onChange:React.PropTypes.func},getDefaultProps:function getDefaultProps(){return{path:Immutable.List(),tools:Immutable.List(),values:Immutable.Map()};},renderTool:function renderTool(tool,index){var Component=rey.inject('uim.'+tool.get('type'));if(!Component){console.error(new Error('unknown component type ('+tool.get('type')+')'));}if(!Component.pickProps){console.error(new Error('invalid component type ('+tool.get('type')+')'));}var props=Component.pickProps(this.props.path,tool,this.props.values);return React.createElement('div',{key:index,'data-tool-name':tool.get('name'),className:'tool'},React.createElement(Component,_extends({},props,{onClick:this.props.onClick,onChange:this.props.onChange})));},render:function render(){var classes=_defineProperty({toolbar:true},this.props.className,!!this.props.className);return React.createElement('div',{'data-toolbar-name':this.props.name,className:classNames(classes)},this.props.tools.map(this.renderTool));}};}]);// - -------------------------------------------------------------------- - //
-// - -------------------------------------------------------------------- - //
-'use strict';rey.component('uim.View',['React','Immutable','classNames','CSSTransitionGroup','uim.Loading','uim.Toolbar','uim.Overlay',function(React,Immutable,classNames,CSSTransitionGroup,Loading,Toolbar,Overlay){return{propTypes:{header:React.PropTypes.any,footer:React.PropTypes.any,overlay:React.PropTypes.any,isLoading:React.PropTypes.bool,className:React.PropTypes.string},renderOverlay:function renderOverlay(){var hasOverlay=Immutable.List.isList(this.props.overlay)?!!this.props.overlay.size:!!this.props.overlay;if(hasOverlay){return React.createElement(Overlay,null,this.props.overlay);}},renderHeader:function renderHeader(){var header=void 0;if(Immutable.List.isList(this.props.header)){header=React.createElement(Toolbar,{name:'header',tools:this.props.header,onClick:this.props.onClick});}else if(this.props.header){header=this.props.header;}if(header){return React.createElement('header',{className:'header'},React.createElement('div',{className:'header-center'},header));}},renderFooter:function renderFooter(){var footer=void 0;if(Immutable.List.isList(this.props.footer)){footer=React.createElement(Toolbar,{name:'footer',tools:this.props.footer,onClick:this.props.onClick});}else if(this.props.footer){footer=this.props.footer;}if(footer){return React.createElement('footer',{className:'footer'},React.createElement('div',{className:'footer-center'},footer));}},render:function render(){var classes=_defineProperty({view:true},this.props.className,!!this.props.className);return React.createElement('div',{className:classNames(classes)},this.renderHeader(),React.createElement('main',null,this.props.children,this.props.isLoading?React.createElement(Loading,null):undefined),this.renderFooter(),React.createElement(CSSTransitionGroup,{transitionName:'overlay',transitionEnterTimeout:400,transitionLeaveTimeout:120},this.renderOverlay()));}};}]);// - -------------------------------------------------------------------- - //

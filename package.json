@@ -2,10 +2,7 @@
   "name": "uimmutable",
   "version": "0.4.0",
   "description": "React components with Immutable powers.",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "mocha"
-  },
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/yneves/uimmutable.git"
@@ -31,16 +28,12 @@
     "grunt": "^1.0.1",
     "grunt-babel": "^6.0.0",
     "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-jscs": "^3.0.1",
-    "jsdom": "^9.3.0",
-    "mocha-jsdom": "^1.1.0",
     "moment": "^2.13.0",
     "react-datepicker": "^0.27.0",
-    "react-onclickoutside": "4.8.0"
-  },
-  "devDependencies": {
-    "mocha": "^2.5.3"
+    "react-onclickoutside": "4.8.0",
+    "rey": "^1.0.0"
   }
 }

@@ -137,7 +137,7 @@ rey.component('uim.Table', [
 
     renderCol(row, rowIndex, column, colIndex) {
 
-      const Component = rey.inject('uim.' + column.get('type'));
+      const Component = rey.deps.get('uim.' + column.get('type'));
 
       if (!Component) {
         throw new Error('unknown component type (' + column.get('type') + ')');

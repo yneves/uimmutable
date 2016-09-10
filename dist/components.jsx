@@ -926,7 +926,7 @@ rey.component('uim.FieldGroup', [
 
     renderField(path, field, index) {
 
-      const Component = rey.inject('uim.' + field.get('type'));
+      const Component = rey.deps.get('uim.' + field.get('type'));
 
       if (!Component) {
         console.error(new Error('unknown component type (' + field.get('type') + ')'));
@@ -3339,7 +3339,7 @@ rey.component('uim.Table', [
 
     renderCol(row, rowIndex, column, colIndex) {
 
-      const Component = rey.inject('uim.' + column.get('type'));
+      const Component = rey.deps.get('uim.' + column.get('type'));
 
       if (!Component) {
         throw new Error('unknown component type (' + column.get('type') + ')');
@@ -3834,7 +3834,7 @@ rey.component('uim.Toolbar', [
 
     renderTool(tool, index) {
 
-      const Component = rey.inject('uim.' + tool.get('type'));
+      const Component = rey.deps.get('uim.' + tool.get('type'));
 
       if (!Component) {
         console.error(new Error('unknown component type (' + tool.get('type') + ')'));

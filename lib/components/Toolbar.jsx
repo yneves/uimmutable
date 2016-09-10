@@ -45,7 +45,7 @@ rey.component('uim.Toolbar', [
 
     renderTool(tool, index) {
 
-      const Component = rey.inject('uim.' + tool.get('type'));
+      const Component = rey.deps.get('uim.' + tool.get('type'));
 
       if (!Component) {
         console.error(new Error('unknown component type (' + tool.get('type') + ')'));

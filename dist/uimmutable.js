@@ -5400,7 +5400,7 @@ rey.component('uim.FieldGroup', ['React', 'Immutable', 'classNames', 'uim.IconBu
     render: function render() {
       var _classes9;
 
-      var style = Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style;
+      var style = this.props.style ? Immutable.Map.isMap(this.props.style) ? this.props.style.toJS() : this.props.style : {};
       var classes = (_classes9 = {}, _defineProperty(_classes9, 'field-group', true), _defineProperty(_classes9, 'field-group-multiple', !!this.props.multiple), _defineProperty(_classes9, this.props.className, !!this.props.className), _classes9);
       if (this.props.collapsed) {
         style.display = 'none';

@@ -161,8 +161,10 @@ rey.component('uim.FieldGroup', [
     },
 
     render() {
-      const style = Immutable.Map.isMap(this.props.style)
-        ? this.props.style.toJS() : this.props.style;
+      const style = this.props.style
+        ? Immutable.Map.isMap(this.props.style)
+          ? this.props.style.toJS() : this.props.style
+        : {};
       const classes = {
         ['field-group']: true,
         ['field-group-multiple']: !!this.props.multiple,

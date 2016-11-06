@@ -2315,7 +2315,7 @@ rey.component('uim.Value', ['React', 'Immutable', 'classNames', 'uim.ValueFormat
 'use strict';
 
 rey.component('uim.Icon', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
-  var globals = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+  var globals = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
   return {
 
     statics: {
@@ -2447,7 +2447,7 @@ rey.component('uim.IconButton', ['React', 'Immutable', 'classNames', 'uim.Icon',
 'use strict';
 
 rey.component('uim.Link', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
-  var globals = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+  var globals = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
   return {
 
     statics: {

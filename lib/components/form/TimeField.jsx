@@ -20,6 +20,7 @@ rey.component('uim.TimeField', [
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -33,6 +34,7 @@ rey.component('uim.TimeField', [
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func.isRequired,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -60,7 +62,8 @@ rey.component('uim.TimeField', [
             ref='input'
             type='time'
             value={this.props.value}
-            onChange={this.handleChange} />
+            onChange={this.handleChange}
+            required={this.props.required} />
         );
       } else {
         content = (

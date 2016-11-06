@@ -22,6 +22,7 @@ rey.component('uim.MemoField', [
           label: field.get('label'),
           rows: field.get('rows'),
           cols: field.get('cols'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -37,6 +38,7 @@ rey.component('uim.MemoField', [
       rows: React.PropTypes.number,
       cols: React.PropTypes.number,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -65,7 +67,8 @@ rey.component('uim.MemoField', [
             rows={this.props.rows}
             cols={this.props.cols}
             value={this.props.value || ''}
-            onChange={this.handleChange} />
+            onChange={this.handleChange}
+            required={this.props.required} />
         );
       } else {
         content = (

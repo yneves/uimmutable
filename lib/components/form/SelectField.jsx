@@ -21,6 +21,7 @@ rey.component('uim.SelectField', [
           name: field.get('name'),
           label: field.get('label'),
           options: field.get('options'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -35,6 +36,7 @@ rey.component('uim.SelectField', [
       input: React.PropTypes.bool.isRequired,
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -76,7 +78,9 @@ rey.component('uim.SelectField', [
       let content;
       if (this.props.input) {
         content = (
-          <select ref='input' value={this.props.value || ''} onChange={this.handleChange}>
+          <select ref='input' value={this.props.value || ''}
+            onChange={this.handleChange}
+            required={this.props.required}>
             {this.props.options.map(this.renderOption)}
           </select>
         );

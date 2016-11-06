@@ -530,6 +530,7 @@ rey.component('uim.DateField', ['React', 'Immutable', 'classNames', 'uim.Value',
           className: field.get('className'),
           value: values.getIn(path),
           style: field.get('style'),
+          required: field.get('required'),
           inputFormat: field.get('inputFormat'),
           outputFormat: field.get('outputFormat'),
           placeholder: field.get('placeholder')
@@ -541,6 +542,7 @@ rey.component('uim.DateField', ['React', 'Immutable', 'classNames', 'uim.Value',
       path: React.PropTypes.List.isRequired,
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
+      required: React.PropTypes.bool,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
@@ -581,7 +583,8 @@ rey.component('uim.DateField', ['React', 'Immutable', 'classNames', 'uim.Value',
           dateFormat: this.props.inputFormat,
           selected: this.parseInput(this.props.value),
           onChange: this.handleChange,
-          placeholderText: this.props.placeholder });
+          placeholderText: this.props.placeholder,
+          required: this.props.required });
       } else {
         content = React.createElement(Value, {
           className: 'date-value',
@@ -1100,6 +1103,7 @@ rey.component('uim.FileField', ['React', 'Immutable', 'classNames', 'uim.Value',
           label: field.get('label'),
           className: field.get('className'),
           style: field.get('style'),
+          required: field.get('required'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
           value: values.getIn(path)
@@ -1116,6 +1120,7 @@ rey.component('uim.FileField', ['React', 'Immutable', 'classNames', 'uim.Value',
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
+      required: React.PropTypes.bool,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object]),
       className: React.PropTypes.string
     },
@@ -1175,7 +1180,8 @@ rey.component('uim.FileField', ['React', 'Immutable', 'classNames', 'uim.Value',
             ref: 'input',
             type: 'file',
             multiple: this.props.multiple,
-            onChange: this.onBrowseFile })
+            onChange: this.onBrowseFile,
+            required: this.props.required })
         );
       }
     },
@@ -1338,6 +1344,7 @@ rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value',
           label: field.get('label'),
           rows: field.get('rows'),
           cols: field.get('cols'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -1353,6 +1360,7 @@ rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value',
       rows: React.PropTypes.number,
       cols: React.PropTypes.number,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
@@ -1376,7 +1384,8 @@ rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value',
           rows: this.props.rows,
           cols: this.props.cols,
           value: this.props.value || '',
-          onChange: this.handleChange });
+          onChange: this.handleChange,
+          required: this.props.required });
       } else {
         content = React.createElement(Value, {
           className: 'memo-value',
@@ -1426,6 +1435,7 @@ rey.component('uim.PasswordField', ['React', 'Immutable', 'classNames', 'uim.Fie
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          required: field.get('required'),
           style: field.get('style'),
           empty: !values.getIn(path)
         };
@@ -1437,6 +1447,7 @@ rey.component('uim.PasswordField', ['React', 'Immutable', 'classNames', 'uim.Fie
       name: React.PropTypes.string.isRequired,
       label: React.PropTypes.string.isRequired,
       empty: React.PropTypes.bool,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
@@ -1471,7 +1482,8 @@ rey.component('uim.PasswordField', ['React', 'Immutable', 'classNames', 'uim.Fie
         React.createElement('input', {
           ref: 'input',
           type: 'password',
-          onChange: this.handleChange })
+          onChange: this.handleChange,
+          required: this.props.required })
       );
     }
   };
@@ -1950,6 +1962,7 @@ rey.component('uim.SelectField', ['React', 'Immutable', 'classNames', 'uim.Value
           name: field.get('name'),
           label: field.get('label'),
           options: field.get('options'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -1964,6 +1977,7 @@ rey.component('uim.SelectField', ['React', 'Immutable', 'classNames', 'uim.Value
       input: React.PropTypes.bool.isRequired,
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
@@ -2000,7 +2014,9 @@ rey.component('uim.SelectField', ['React', 'Immutable', 'classNames', 'uim.Value
       if (this.props.input) {
         content = React.createElement(
           'select',
-          { ref: 'input', value: this.props.value || '', onChange: this.handleChange },
+          { ref: 'input', value: this.props.value || '',
+            onChange: this.handleChange,
+            required: this.props.required },
           this.props.options.map(this.renderOption)
         );
       } else {
@@ -2051,6 +2067,7 @@ rey.component('uim.TextField', ['React', 'Immutable', 'classNames', 'uim.Value',
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           options: field.get('options'),
           style: field.get('style'),
@@ -2066,6 +2083,7 @@ rey.component('uim.TextField', ['React', 'Immutable', 'classNames', 'uim.Value',
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       options: React.PropTypes.List,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
@@ -2107,6 +2125,7 @@ rey.component('uim.TextField', ['React', 'Immutable', 'classNames', 'uim.Value',
           type: 'text',
           value: this.props.value || '',
           list: this.getId() + '-options',
+          required: this.props.required,
           onChange: this.handleChange });
       } else {
         content = React.createElement(Value, {
@@ -2157,6 +2176,7 @@ rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value',
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -2170,6 +2190,7 @@ rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value',
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func.isRequired,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
@@ -2192,7 +2213,8 @@ rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value',
           ref: 'input',
           type: 'time',
           value: this.props.value,
-          onChange: this.handleChange });
+          onChange: this.handleChange,
+          required: this.props.required });
       } else {
         content = React.createElement(Value, {
           className: 'time-value',

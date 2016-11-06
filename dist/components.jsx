@@ -546,6 +546,7 @@ rey.component('uim.DateField', [
           className: field.get('className'),
           value: values.getIn(path),
           style: field.get('style'),
+          required: field.get('required'),
           inputFormat: field.get('inputFormat'),
           outputFormat: field.get('outputFormat'),
           placeholder: field.get('placeholder')
@@ -557,6 +558,7 @@ rey.component('uim.DateField', [
       path: React.PropTypes.List.isRequired,
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
+      required: React.PropTypes.bool,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
@@ -605,7 +607,8 @@ rey.component('uim.DateField', [
             dateFormat={this.props.inputFormat}
             selected={this.parseInput(this.props.value)}
             onChange={this.handleChange}
-            placeholderText={this.props.placeholder} />
+            placeholderText={this.props.placeholder}
+            required={this.props.required} />
         );
       } else {
         content = (
@@ -1161,6 +1164,7 @@ rey.component('uim.FileField', [
           label: field.get('label'),
           className: field.get('className'),
           style: field.get('style'),
+          required: field.get('required'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
           value: values.getIn(path)
@@ -1177,6 +1181,7 @@ rey.component('uim.FileField', [
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
+      required: React.PropTypes.bool,
       style: React.PropTypes.oneOfType([
         React.PropTypes.Map,
         React.PropTypes.object
@@ -1243,7 +1248,8 @@ rey.component('uim.FileField', [
               ref='input'
               type='file'
               multiple={this.props.multiple}
-              onChange={this.onBrowseFile} />
+              onChange={this.onBrowseFile}
+              required={this.props.required} />
           </div>
         );
       }
@@ -1421,6 +1427,7 @@ rey.component('uim.MemoField', [
           label: field.get('label'),
           rows: field.get('rows'),
           cols: field.get('cols'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -1436,6 +1443,7 @@ rey.component('uim.MemoField', [
       rows: React.PropTypes.number,
       cols: React.PropTypes.number,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -1464,7 +1472,8 @@ rey.component('uim.MemoField', [
             rows={this.props.rows}
             cols={this.props.cols}
             value={this.props.value || ''}
-            onChange={this.handleChange} />
+            onChange={this.handleChange}
+            required={this.props.required} />
         );
       } else {
         content = (
@@ -1521,6 +1530,7 @@ rey.component('uim.PasswordField', [
           name: field.get('name'),
           label: field.get('label'),
           className: field.get('className'),
+          required: field.get('required'),
           style: field.get('style'),
           empty: !values.getIn(path)
         };
@@ -1532,6 +1542,7 @@ rey.component('uim.PasswordField', [
       name: React.PropTypes.string.isRequired,
       label: React.PropTypes.string.isRequired,
       empty: React.PropTypes.bool,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -1571,7 +1582,8 @@ rey.component('uim.PasswordField', [
           <input
             ref='input'
             type='password'
-            onChange={this.handleChange} />
+            onChange={this.handleChange}
+            required={this.props.required} />
         </Field>
       );
     }
@@ -2112,6 +2124,7 @@ rey.component('uim.SelectField', [
           name: field.get('name'),
           label: field.get('label'),
           options: field.get('options'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -2126,6 +2139,7 @@ rey.component('uim.SelectField', [
       input: React.PropTypes.bool.isRequired,
       options: React.PropTypes.List.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -2167,7 +2181,9 @@ rey.component('uim.SelectField', [
       let content;
       if (this.props.input) {
         content = (
-          <select ref='input' value={this.props.value || ''} onChange={this.handleChange}>
+          <select ref='input' value={this.props.value || ''}
+            onChange={this.handleChange}
+            required={this.props.required}>
             {this.props.options.map(this.renderOption)}
           </select>
         );
@@ -2225,6 +2241,7 @@ rey.component('uim.TextField', [
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           options: field.get('options'),
           style: field.get('style'),
@@ -2240,6 +2257,7 @@ rey.component('uim.TextField', [
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       options: React.PropTypes.List,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -2286,6 +2304,7 @@ rey.component('uim.TextField', [
             type='text'
             value={this.props.value || ''}
             list={this.getId() + '-options'}
+            required={this.props.required}
             onChange={this.handleChange} />
         );
       } else {
@@ -2343,6 +2362,7 @@ rey.component('uim.TimeField', [
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           style: field.get('style'),
           value: values.getIn(path)
@@ -2356,6 +2376,7 @@ rey.component('uim.TimeField', [
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func.isRequired,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -2383,7 +2404,8 @@ rey.component('uim.TimeField', [
             ref='input'
             type='time'
             value={this.props.value}
-            onChange={this.handleChange} />
+            onChange={this.handleChange}
+            required={this.props.required} />
         );
       } else {
         content = (

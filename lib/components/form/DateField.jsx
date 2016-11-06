@@ -24,6 +24,7 @@ rey.component('uim.DateField', [
           className: field.get('className'),
           value: values.getIn(path),
           style: field.get('style'),
+          required: field.get('required'),
           inputFormat: field.get('inputFormat'),
           outputFormat: field.get('outputFormat'),
           placeholder: field.get('placeholder')
@@ -35,6 +36,7 @@ rey.component('uim.DateField', [
       path: React.PropTypes.List.isRequired,
       label: React.PropTypes.string.isRequired,
       input: React.PropTypes.bool.isRequired,
+      required: React.PropTypes.bool,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
@@ -83,7 +85,8 @@ rey.component('uim.DateField', [
             dateFormat={this.props.inputFormat}
             selected={this.parseInput(this.props.value)}
             onChange={this.handleChange}
-            placeholderText={this.props.placeholder} />
+            placeholderText={this.props.placeholder}
+            required={this.props.required} />
         );
       } else {
         content = (

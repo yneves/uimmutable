@@ -20,6 +20,7 @@ rey.component('uim.TextField', [
           path: path,
           name: field.get('name'),
           label: field.get('label'),
+          required: field.get('required'),
           className: field.get('className'),
           options: field.get('options'),
           style: field.get('style'),
@@ -35,6 +36,7 @@ rey.component('uim.TextField', [
       input: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       options: React.PropTypes.List,
+      required: React.PropTypes.bool,
       onChange: React.PropTypes.func,
       className: React.PropTypes.string,
       style: React.PropTypes.oneOfType([
@@ -81,6 +83,7 @@ rey.component('uim.TextField', [
             type='text'
             value={this.props.value || ''}
             list={this.getId() + '-options'}
+            required={this.props.required}
             onChange={this.handleChange} />
         );
       } else {

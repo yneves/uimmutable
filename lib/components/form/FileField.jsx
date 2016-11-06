@@ -23,6 +23,7 @@ rey.component('uim.FileField', [
           label: field.get('label'),
           className: field.get('className'),
           style: field.get('style'),
+          required: field.get('required'),
           multiple: field.get('multiple'),
           placeholder: field.get('placeholder'),
           value: values.getIn(path)
@@ -39,6 +40,7 @@ rey.component('uim.FileField', [
       multiple: React.PropTypes.bool.isRequired,
       value: React.PropTypes.any,
       onChange: React.PropTypes.func,
+      required: React.PropTypes.bool,
       style: React.PropTypes.oneOfType([
         React.PropTypes.Map,
         React.PropTypes.object
@@ -105,7 +107,8 @@ rey.component('uim.FileField', [
               ref='input'
               type='file'
               multiple={this.props.multiple}
-              onChange={this.onBrowseFile} />
+              onChange={this.onBrowseFile}
+              required={this.props.required} />
           </div>
         );
       }

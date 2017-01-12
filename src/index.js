@@ -8,10 +8,13 @@
 
 import rey from 'rey';
 import moment from 'moment';
+import window from 'global/window';
 import classNames from 'classnames';
 import DatePicker from 'react-datepicker';
 import DateFormat from './utils/DateFormat.js';
 import ValueFormat from './utils/ValueFormat.js';
+
+window.moment = moment;
 
 rey.factory('moment', [() => (moment)]);
 rey.factory('classNames', [() => (classNames)]);

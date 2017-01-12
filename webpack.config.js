@@ -15,8 +15,6 @@ module.exports = {
   entry,
 
   output: {
-    libraryTarget: 'var',
-    library: ['rey'],
     filename: dev ? 'uimmutable.dev.js' : 'uimmutable.js',
     path: dist,
     sourcePrefix: '  '
@@ -30,6 +28,13 @@ module.exports = {
     colors: true,
     reasons: true,
     warnings: false
+  },
+
+  resolve: {
+    alias: {
+      rey: path.resolve(__dirname, dev ? '../rey' : 'node_modules/rey'),
+      react: path.resolve(__dirname, 'node_modules/react')
+    }
   },
 
   plugins: [

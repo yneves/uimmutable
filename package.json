@@ -29,7 +29,6 @@
   "homepage": "https://github.com/yneves/uimmutable#readme",
   "dependencies": {
     "classnames": "^2.2.5",
-    "extract-text-webpack-plugin": "^1.0.1",
     "less-loader": "^2.2.3",
     "moment": "^2.15.2",
     "react-datepicker": "^0.34.0",
@@ -47,6 +46,7 @@
     "esdoc": "^0.5.2",
     "esdoc-es7-plugin": "0.0.3",
     "eslint": "^3.12.2",
+    "extract-text-webpack-plugin": "^1.0.1",
     "webpack": "1.13.2"
   }
 }

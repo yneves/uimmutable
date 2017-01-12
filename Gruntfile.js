@@ -18,7 +18,8 @@ module.exports = function (grunt) {
     babel: {
       components: {
         options: {
-          presets: ['es2015', 'react']
+          presets: ['es2015', 'react'],
+          compact: false
         },
         files: [{
           src: ['./dist/components.jsx'],
@@ -36,9 +37,10 @@ module.exports = function (grunt) {
         src: [
           './node_modules/moment/moment.js',
           './node_modules/moment/locale/pt-br.js',
+          './node_modules/classnames/index.js',
           './node_modules/react-onclickoutside/index.js',
-          './node_modules/react-datepicker/dist/react-datepicker.js',
-          './dist/components.js'
+          './dist/components.js',
+          './node_modules/react-datepicker/dist/react-datepicker.js'
         ],
         dest: './dist/uimmutable.js'
       }
@@ -83,6 +85,10 @@ module.exports = function (grunt) {
     'babel:components',
     'concat:distribute',
     'uglify:distribute'
+  ]);
+
+  grunt.registerTask('default', [
+    'distribute'
   ]);
 
 };

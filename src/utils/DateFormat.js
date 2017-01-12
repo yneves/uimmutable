@@ -6,6 +6,20 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
+export default {
 
-rey.factory('uim.DatePicker', [() => (DatePicker)]);
+  date: {
+    input: 'DD/MM/YYYY',
+    output: 'YYYY-MM-DD'
+  },
+
+  time: {
+    input: 'HH:mm',
+    output: 'HH:mm:ss'
+  },
+
+  datetime: {
+    input: 'DD/MM/YYYY HH:mm',
+    output: 'YYYY-MM-DD HH:mm:ss'
+  }
+};

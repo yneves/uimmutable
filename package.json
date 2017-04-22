@@ -13,8 +13,7 @@
   },
   "scripts": {
     "docs": "./node_modules/esdoc/out/src/ESDocCLI.js -c ./esdoc.json",
-    "test": "eslint src && yarn run mocha",
-    "mocha": "mocha test/setup.js",
+    "test": "eslint src",
     "build": "webpack"
   },
   "main": "index.js",

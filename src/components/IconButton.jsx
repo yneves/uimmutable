@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.IconButton', [
   'React', 'Immutable', 'classNames', 'uim.Icon',
   (React, Immutable, classNames, Icon) => ({

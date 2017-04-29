@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.View', [
   'React', 'Immutable', 'classNames', 'ReactCSSTransitionGroup', 'uim.Loading', 'uim.Toolbar', 'uim.Overlay',
   (React, Immutable, classNames, CSSTransitionGroup, Loading, Toolbar, Overlay) => ({
@@ -17,7 +15,8 @@ rey.component('uim.View', [
       footer: React.PropTypes.any,
       overlay: React.PropTypes.any,
       isLoading: React.PropTypes.bool,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func
     },
 
     renderOverlay() {

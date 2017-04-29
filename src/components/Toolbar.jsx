@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Toolbar', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({

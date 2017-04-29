@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.MenuButton', [
   'React', 'Immutable', 'classNames', 'uim.Icon', 'uim.LinkGroup', 'uim.IconButton',
   (React, Immutable, classNames, Icon, LinkGroup, IconButton) => ({
@@ -37,7 +35,8 @@ rey.component('uim.MenuButton', [
       links: React.PropTypes.List,
       groups: React.PropTypes.List,
       counter: React.PropTypes.number,
-      className: React.PropTypes.string
+      className: React.PropTypes.string,
+      onClick: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -54,8 +53,15 @@ rey.component('uim.MenuButton', [
       };
     },
 
-    handleClick() {
+    handleClick(e) {
       this.setState({ showMenu: !this.state.showMenu });
+      if (this.props.onClick) {
+        this.props.onClick({
+          name: this.props.name,
+          path: this.props.path,
+          event: e.event
+        });
+      }
     },
 
     renderIcon() {

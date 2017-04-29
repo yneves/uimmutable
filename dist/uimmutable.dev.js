@@ -43699,6 +43699,10 @@
 /* 510 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43706,10 +43710,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.IconButton', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
     return {
@@ -44299,6 +44299,10 @@
 /* 517 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44306,10 +44310,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.MenuButton', ['React', 'Immutable', 'classNames', 'uim.Icon', 'uim.LinkGroup', 'uim.IconButton', function (React, Immutable, classNames, Icon, LinkGroup, IconButton) {
     return {
@@ -44338,7 +44338,8 @@
         links: React.PropTypes.List,
         groups: React.PropTypes.List,
         counter: React.PropTypes.number,
-        className: React.PropTypes.string
+        className: React.PropTypes.string,
+        onClick: React.PropTypes.func
       },
 
       getDefaultProps: function getDefaultProps() {
@@ -44353,8 +44354,15 @@
           showMenu: false
         };
       },
-      handleClick: function handleClick() {
+      handleClick: function handleClick(e) {
         this.setState({ showMenu: !this.state.showMenu });
+        if (this.props.onClick) {
+          this.props.onClick({
+            name: this.props.name,
+            path: this.props.path,
+            event: e.event
+          });
+        }
       },
       renderIcon: function renderIcon() {
         var icon = void 0;
@@ -45872,6 +45880,12 @@
 /* 531 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45879,12 +45893,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Toolbar', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -46054,6 +46062,10 @@
 /* 533 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -46061,10 +46073,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.View', ['React', 'Immutable', 'classNames', 'ReactCSSTransitionGroup', 'uim.Loading', 'uim.Toolbar', 'uim.Overlay', function (React, Immutable, classNames, CSSTransitionGroup, Loading, Toolbar, Overlay) {
     return {
@@ -46074,7 +46082,8 @@
         footer: React.PropTypes.any,
         overlay: React.PropTypes.any,
         isLoading: React.PropTypes.bool,
-        className: React.PropTypes.string
+        className: React.PropTypes.string,
+        onClick: React.PropTypes.func
       },
 
       renderOverlay: function renderOverlay() {

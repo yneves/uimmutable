@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.DateRangeField', [
   'React', 'Immutable', 'classNames',
   'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat',

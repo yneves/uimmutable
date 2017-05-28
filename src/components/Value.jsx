@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Value', [
   'React', 'Immutable', 'classNames', 'uim.ValueFormat',
   (React, Immutable, classNames, ValueFormat) => ({

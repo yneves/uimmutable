@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.RadioGroup', [
   'React', 'Immutable', 'classNames', 'uim.Field', 'uim.Value', 'uim.Radio',
   (React, Immutable, classNames, Field, Value, Radio) => ({

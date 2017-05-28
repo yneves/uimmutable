@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Failure', [
   'React', 'Immutable', 'classNames', 'uim.Icon',
   (React, Immutable, classNames, Icon) => ({

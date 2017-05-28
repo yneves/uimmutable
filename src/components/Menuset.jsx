@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Menuset', [
   'React', 'Immutable', 'classNames', 'uim.LinkGroup',
   (React, Immutable, classNames, LinkGroup) => ({

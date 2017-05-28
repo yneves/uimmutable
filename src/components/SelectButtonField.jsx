@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.SelectButtonField', [
   'React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field',
   (React, Immutable, classNames, SelectButton, Field) => ({

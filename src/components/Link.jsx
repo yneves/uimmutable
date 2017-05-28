@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Link', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames, globals = {}) => ({

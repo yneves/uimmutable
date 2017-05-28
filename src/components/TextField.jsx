@@ -6,7 +6,7 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
+
 
 rey.component('uim.TextField', [
   'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
@@ -43,6 +43,12 @@ rey.component('uim.TextField', [
         React.PropTypes.Map,
         React.PropTypes.object
       ])
+    },
+
+    componentDidMount() {
+      if (this.props.input) {
+        this.handleChange();
+      }
     },
 
     handleChange(event) {

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.List', [
   'React', 'Immutable', 'classNames',
   'uim.Table', 'uim.Formset', 'uim.Toolbar',

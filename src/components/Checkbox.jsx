@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Checkbox', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({
@@ -43,6 +41,10 @@ rey.component('uim.Checkbox', [
         React.PropTypes.Map,
         React.PropTypes.object
       ])
+    },
+
+    componentDidMount() {
+      this.handleClick();
     },
 
     handleClick(event) {

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.ButtonGroup', [
   'React', 'Immutable', 'classNames', 'uim.Button',
   (React, Immutable, classNames, Button) => ({

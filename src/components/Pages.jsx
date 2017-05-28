@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Pages', [
   'React', 'Immutable', 'classNames', 'uim.Icon',
   (React, Immutable, classNames, Icon) => ({
@@ -107,9 +105,9 @@ rey.component('uim.Pages', [
       const style = Immutable.Map.isMap(this.props.style)
         ? this.props.style.toJS() : this.props.style;
       const classes = {
-         pages: true,
-         [this.props.className]: !!this.props.className
-       };
+        pages: true,
+        [this.props.className]: !!this.props.className
+      };
       return (
         <ul style={style} className={classNames(classes)}>
            {this.renderPages()}

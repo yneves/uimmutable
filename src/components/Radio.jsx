@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Radio', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({

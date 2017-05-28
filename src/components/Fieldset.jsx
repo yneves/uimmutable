@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Fieldset', [
   'React', 'Immutable', 'classNames', 'uim.FieldGroup',
   (React, Immutable, classNames, FieldGroup) => ({

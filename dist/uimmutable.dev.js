@@ -42608,6 +42608,10 @@
 /* 500 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42616,9 +42620,6 @@
   */
   // - -------------------------------------------------------------------- - //
 
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Checkbox', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -42652,6 +42653,9 @@
         style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
       },
 
+      componentDidMount: function componentDidMount() {
+        this.handleClick();
+      },
       handleClick: function handleClick(event) {
         if (this.props.onClick) {
           this.props.onClick({
@@ -44201,6 +44205,10 @@
 /* 516 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44209,9 +44217,6 @@
   */
   // - -------------------------------------------------------------------- - //
 
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
     return {
@@ -44247,6 +44252,9 @@
         style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
       },
 
+      componentDidMount: function componentDidMount() {
+        this.handleChange();
+      },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
           this.props.onChange({
@@ -45257,6 +45265,10 @@
 /* 526 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45265,9 +45277,6 @@
   */
   // - -------------------------------------------------------------------- - //
 
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.SelectField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
     return {
@@ -45301,6 +45310,9 @@
         style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
       },
 
+      componentDidMount: function componentDidMount() {
+        this.handleChange();
+      },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
           this.props.onChange({
@@ -45674,6 +45686,10 @@
 /* 529 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45682,9 +45698,6 @@
   */
   // - -------------------------------------------------------------------- - //
 
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.TextField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
     return {
@@ -45718,6 +45731,9 @@
         style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
       },
 
+      componentDidMount: function componentDidMount() {
+        this.handleChange();
+      },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
           this.props.onChange({

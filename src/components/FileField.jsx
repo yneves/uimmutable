@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.FileField', [
   'React', 'Immutable', 'classNames',
   'uim.Value', 'uim.Field', 'uim.Icon',

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.TimeField', [
   'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
   (React, Immutable, classNames, Value, Field) => ({
@@ -41,6 +39,12 @@ rey.component('uim.TimeField', [
         React.PropTypes.Map,
         React.PropTypes.object
       ])
+    },
+
+    componentDidMount() {
+      if (this.props.input) {
+        this.handleChange();
+      }
     },
 
     handleChange(event) {

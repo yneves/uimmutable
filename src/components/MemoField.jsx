@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.MemoField', [
   'React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field',
   (React, Immutable, classNames, Value, Field) => ({
@@ -45,6 +43,12 @@ rey.component('uim.MemoField', [
         React.PropTypes.Map,
         React.PropTypes.object
       ])
+    },
+
+    componentDidMount() {
+      if (this.props.input) {
+        this.handleChange();
+      }
     },
 
     handleChange(event) {

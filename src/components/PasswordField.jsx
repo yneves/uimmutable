@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.PasswordField', [
   'React', 'Immutable', 'classNames', 'uim.Field',
   (React, Immutable, classNames, Field) => ({

@@ -6,8 +6,6 @@
 */
 // - -------------------------------------------------------------------- - //
 
-'use strict';
-
 rey.component('uim.Overlay', [
   'React', 'Immutable', 'classNames',
   (React, Immutable, classNames) => ({

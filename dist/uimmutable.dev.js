@@ -42336,6 +42336,12 @@
 /* 496 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42343,12 +42349,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Breadcrumb', ['React', 'Immutable', 'classNames', 'uim.LinkGroup', function (React, Immutable, classNames, LinkGroup) {
     return {
@@ -42376,6 +42376,10 @@
 /* 497 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42383,10 +42387,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Button', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -42461,6 +42461,12 @@
 /* 498 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42468,12 +42474,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.ButtonGroup', ['React', 'Immutable', 'classNames', 'uim.Button', function (React, Immutable, classNames, Button) {
     return {
@@ -42531,6 +42531,10 @@
 /* 499 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42538,10 +42542,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.CheckGroup', ['React', 'Immutable', 'classNames', 'uim.Button', 'uim.Field', function (React, Immutable, classNames, Button, Field) {
     return {
@@ -42619,7 +42619,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
 
   rey.component('uim.Checkbox', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -42709,6 +42708,10 @@
 /* 501 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42716,10 +42719,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.DateField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat', function (React, Immutable, classNames, Value, Field, DatePicker, DateFormat) {
     return {
@@ -42820,6 +42819,10 @@
 /* 502 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42827,10 +42830,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.DateRangeField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.DatePicker', 'uim.DateFormat', function (React, Immutable, classNames, Value, Field, DatePicker, DateFormat) {
     return {
@@ -42977,6 +42976,8 @@
 /* 503 */
 /***/ function(module, exports) {
 
+  'use strict';
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -42984,8 +42985,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
 
   rey.component('uim.Failure', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
     return {
@@ -43041,6 +43040,10 @@
 /* 504 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43048,10 +43051,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Field', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -43088,6 +43087,12 @@
 /* 505 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43095,12 +43100,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.FieldGroup', ['React', 'Immutable', 'classNames', 'uim.IconButton', function (React, Immutable, classNames, IconButton) {
     return {
@@ -43273,6 +43272,10 @@
 /* 506 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43280,10 +43283,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Fieldset', ['React', 'Immutable', 'classNames', 'uim.FieldGroup', function (React, Immutable, classNames, FieldGroup) {
     return {
@@ -43379,6 +43378,10 @@
 /* 507 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43386,10 +43389,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.FileField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', 'uim.Icon', function (React, Immutable, classNames, Value, Field, Icon) {
     return {
@@ -43543,6 +43542,10 @@
 /* 508 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43550,10 +43553,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Formset', ['React', 'Immutable', 'classNames', 'uim.FieldGroup', function (React, Immutable, classNames, FieldGroup) {
     return {
@@ -43632,6 +43631,10 @@
 /* 509 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43639,10 +43642,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Icon', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     var globals = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -43776,6 +43775,10 @@
 /* 511 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43783,10 +43786,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Link', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     var globals = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -43855,6 +43854,10 @@
 /* 512 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43862,10 +43865,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.LinkButton', ['React', 'Immutable', 'classNames', 'uim.Link', function (React, Immutable, classNames, Link) {
     return {
@@ -43931,6 +43930,10 @@
 /* 513 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -43938,10 +43941,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.LinkGroup', ['React', 'Immutable', 'classNames', 'uim.Link', 'uim.Icon', function (React, Immutable, classNames, Link, Icon) {
     return {
@@ -44014,6 +44013,10 @@
 /* 514 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44021,10 +44024,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.List', ['React', 'Immutable', 'classNames', 'uim.Table', 'uim.Formset', 'uim.Toolbar', 'uim.Pages', 'uim.SelectButton', function (React, Immutable, classNames, Table, Formset, Toolbar, Pages, SelectButton) {
     return {
@@ -44177,6 +44176,8 @@
 /* 515 */
 /***/ function(module, exports) {
 
+  'use strict';
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44184,8 +44185,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
 
   rey.component('uim.Loading', ['React', function (React) {
     return {
@@ -44216,7 +44215,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
 
   rey.component('uim.MemoField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
     return {
@@ -44253,7 +44251,9 @@
       },
 
       componentDidMount: function componentDidMount() {
-        this.handleChange();
+        if (this.props.input) {
+          this.handleChange();
+        }
       },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
@@ -44450,6 +44450,10 @@
 /* 518 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44457,10 +44461,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Menuset', ['React', 'Immutable', 'classNames', 'uim.LinkGroup', function (React, Immutable, classNames, LinkGroup) {
     return {
@@ -44546,6 +44546,8 @@
 /* 519 */
 /***/ function(module, exports) {
 
+  'use strict';
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44553,8 +44555,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
 
   rey.component('uim.Overlay', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -44578,6 +44578,10 @@
 /* 520 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44585,10 +44589,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Pages', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
     return {
@@ -44708,6 +44708,10 @@
 /* 521 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44715,10 +44719,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.PasswordField', ['React', 'Immutable', 'classNames', 'uim.Field', function (React, Immutable, classNames, Field) {
     return {
@@ -44791,6 +44791,10 @@
 /* 522 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44798,10 +44802,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Radio', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -44860,6 +44860,10 @@
 /* 523 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44867,10 +44871,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.RadioGroup', ['React', 'Immutable', 'classNames', 'uim.Field', 'uim.Value', 'uim.Radio', function (React, Immutable, classNames, Field, Value, Radio) {
     return {
@@ -44958,6 +44958,10 @@
 /* 524 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -44965,10 +44969,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.SelectButton', ['React', 'Immutable', 'classNames', 'uim.Icon', 'uim.Value', function (React, Immutable, classNames, Icon, Value) {
     return {
@@ -45193,6 +45193,10 @@
 /* 525 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45200,10 +45204,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.SelectButtonField', ['React', 'Immutable', 'classNames', 'uim.SelectButton', 'uim.Field', function (React, Immutable, classNames, SelectButton, Field) {
     return {
@@ -45311,7 +45311,9 @@
       },
 
       componentDidMount: function componentDidMount() {
-        this.handleChange();
+        if (this.props.input) {
+          this.handleChange();
+        }
       },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
@@ -45381,6 +45383,8 @@
 /* 527 */
 /***/ function(module, exports) {
 
+  'use strict';
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45388,8 +45392,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
 
   rey.component('uim.Success', ['React', 'Immutable', 'classNames', 'uim.Icon', function (React, Immutable, classNames, Icon) {
     return {
@@ -45445,6 +45447,12 @@
 /* 528 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45452,12 +45460,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Table', ['React', 'Immutable', 'classNames', function (React, Immutable, classNames) {
     return {
@@ -45732,7 +45734,9 @@
       },
 
       componentDidMount: function componentDidMount() {
-        this.handleChange();
+        if (this.props.input) {
+          this.handleChange();
+        }
       },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
@@ -45805,6 +45809,10 @@
 /* 530 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45812,10 +45820,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.TimeField', ['React', 'Immutable', 'classNames', 'uim.Value', 'uim.Field', function (React, Immutable, classNames, Value, Field) {
     return {
@@ -45847,6 +45851,11 @@
         style: React.PropTypes.oneOfType([React.PropTypes.Map, React.PropTypes.object])
       },
 
+      componentDidMount: function componentDidMount() {
+        if (this.props.input) {
+          this.handleChange();
+        }
+      },
       handleChange: function handleChange(event) {
         if (this.props.onChange) {
           this.props.onChange({
@@ -45987,6 +45996,10 @@
 /* 532 */
 /***/ function(module, exports) {
 
+  'use strict';
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
   /*!
   **  uimmutable -- UI components for Rey framework.
   **  Copyright (c) 2016 Yuri Neves Silveira <http://yneves.com>
@@ -45994,10 +46007,6 @@
   **  Distributed on <http://github.com/yneves/uimmutable>
   */
   // - -------------------------------------------------------------------- - //
-
-  'use strict';
-
-  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   rey.component('uim.Value', ['React', 'Immutable', 'classNames', 'uim.ValueFormat', function (React, Immutable, classNames, ValueFormat) {
     return {

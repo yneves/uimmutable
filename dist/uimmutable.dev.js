@@ -45504,6 +45504,9 @@
         };
       },
       handleClick: function handleClick(row, column, event) {
+        if (!event.event) {
+          return;
+        }
         if (this.props.onClick) {
           event.row = row;
           event.column = column;

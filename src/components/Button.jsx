@@ -58,7 +58,7 @@ rey.component('uim.Button', [
       }
     },
 
-    render: function () {
+    render() {
       const style = Immutable.Map.isMap(this.props.style)
         ? this.props.style.toJS() : this.props.style;
       const classes = {

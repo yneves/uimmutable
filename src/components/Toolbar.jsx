@@ -64,7 +64,7 @@ rey.component('uim.Toolbar', [
       );
     },
 
-    render: function () {
+    render() {
 
       const classes = {
         toolbar: true,

@@ -48,7 +48,7 @@ rey.component('uim.FileField', [
 
     getInitialState() {
       return {
-        files: []
+        files: this.getFilesFromProp()
       };
     },
 
@@ -59,16 +59,24 @@ rey.component('uim.FileField', [
       };
     },
 
-    getFiles() {
-      var files;
-      if (this.props.input) {
-        files = this.state.files;
-      } else if (Immutable.List.isList(this.props.value)) {
+    getFilesFromProp() {
+      let files;
+      if (Immutable.List.isList(this.props.value)) {
         files = this.props.value.toJS();
       } else if (Immutable.Map.isMap(this.props.value)) {
         files = [this.props.value.toJS()];
       } else {
         files = [];
+      }
+      return files;
+    },
+
+    getFiles() {
+      var files;
+      if (this.props.input) {
+        files = this.state.files;
+      } else {
+        files = this.getFilesFromProp();
       }
       return files;
     },

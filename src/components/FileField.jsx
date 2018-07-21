@@ -131,8 +131,10 @@ rey.component('uim.FileField', [
       }
     },
 
-    onRemoveFile(removedFile, event) {
-      event.stopPropagation();
+    onRemoveFile(removedFile, {event}) {
+      if (event) {
+        event.stopPropagation();
+      }
       this.setState({
         files: this.state.files.filter((file) => (file !== removedFile))
       }, this.handleChange.bind(this, event));

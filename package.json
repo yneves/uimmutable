@@ -42,7 +42,7 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "6.16.0",
     "babel-register": "^6.16.3",
-    "esdoc": "^0.5.2",
+    "esdoc": "^1.1.0",
     "esdoc-es7-plugin": "0.0.3",
     "eslint": "^3.12.2",
     "extract-text-webpack-plugin": "^1.0.1",
